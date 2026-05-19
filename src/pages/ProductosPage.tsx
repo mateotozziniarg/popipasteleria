@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Producto, getProductos, createProducto, updateProducto, deleteProducto } from '../api/productos'
 import Modal from '../components/Modal'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 interface FormState {
   nombre: string
@@ -92,7 +93,7 @@ export default function ProductosPage() {
       </div>
 
       {loading ? (
-        <p className="text-sm text-gray-500">Cargando...</p>
+        <LoadingSpinner />
       ) : productos.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           <p className="text-base">No hay productos todavía.</p>
@@ -171,7 +172,7 @@ export default function ProductosPage() {
                 disabled={saving}
                 className="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors"
               >
-                {saving ? 'Guardando...' : editTarget ? 'Guardar cambios' : 'Crear producto'}
+                {saving ? <><LoadingSpinner inline /> <span className="ml-1.5">Guardando...</span></> : editTarget ? 'Guardar cambios' : 'Crear producto'}
               </button>
             </div>
           </form>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { PedidoConEvento, FiltrosPedidos, EstadoEntrega, EstadoPago, getPedidosGlobal } from '../api/pedidos'
 import { Evento, getEventos } from '../api/eventos'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 type Modo = 'tabla' | 'dashboard'
 
@@ -135,7 +136,7 @@ export default function PedidosPage() {
       </div>
 
       {loading ? (
-        <p className="text-sm text-gray-500">Cargando...</p>
+        <LoadingSpinner />
       ) : modo === 'tabla' ? (
         /* ── MODO TABLA ── */
         pedidos.length === 0 ? (

@@ -4,6 +4,7 @@ import { Evento, getEventos } from '../api/eventos'
 import { Pedido, PedidoInput, EstadoEntrega, EstadoPago, getPedidos, createPedido, updatePedido, deletePedido } from '../api/pedidos'
 import { Producto, getProductos, createProducto, addPedidoProducto, deletePedidoProducto, updatePedidoProducto } from '../api/productos'
 import Modal from '../components/Modal'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 interface ItemForm {
   productoId: number
@@ -319,7 +320,7 @@ export default function EventoPage() {
   const entregados = pedidos.filter(p => p.estadoEntrega === 'entregado').length
   const pagados = pedidos.filter(p => p.estadoPago === 'pagado').length
 
-  if (loading) return <p className="p-6 text-sm text-gray-500">Cargando...</p>
+  if (loading) return <LoadingSpinner fullscreen />
   if (!evento) return <p className="p-6 text-sm text-red-500">Evento no encontrado.</p>
 
   return (
@@ -553,7 +554,7 @@ export default function EventoPage() {
                 disabled={saving}
                 className="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors"
               >
-                {saving ? 'Guardando...' : editTarget ? 'Guardar cambios' : 'Crear pedido'}
+                {saving ? <><LoadingSpinner inline /> <span className="ml-1.5">Guardando...</span></> : editTarget ? 'Guardar cambios' : 'Crear pedido'}
               </button>
             </div>
           </form>

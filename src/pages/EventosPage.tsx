@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Evento, getEventos, createEvento, updateEvento, deleteEvento } from '../api/eventos'
 import { getPedidos, Pedido } from '../api/pedidos'
 import Modal from '../components/Modal'
+import LoadingSpinner from '../components/LoadingSpinner'
 
 interface EventoConResumen extends Evento {
   totalPedidos: number
@@ -108,7 +109,7 @@ export default function EventosPage() {
       </div>
 
       {loading ? (
-        <p className="text-gray-500 text-sm">Cargando...</p>
+        <LoadingSpinner />
       ) : eventos.length === 0 ? (
         <div className="text-center py-16 text-gray-400">
           <p className="text-base">No hay eventos todavía.</p>
@@ -196,7 +197,7 @@ export default function EventosPage() {
                 disabled={saving}
                 className="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors"
               >
-                {saving ? 'Guardando...' : editTarget ? 'Guardar cambios' : 'Crear evento'}
+                {saving ? <><LoadingSpinner inline /> <span className="ml-1.5">Guardando...</span></> : editTarget ? 'Guardar cambios' : 'Crear evento'}
               </button>
             </div>
           </form>
