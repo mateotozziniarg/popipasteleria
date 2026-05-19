@@ -9,6 +9,7 @@ router.get('/', async (req: Request, res: Response) => {
     const pedidos = await prisma.pedido.findMany({
       where: { eventoId },
       orderBy: { createdAt: 'asc' },
+      include: { productos: { include: { producto: true } } },
     })
     res.json(pedidos)
   } catch (error) {
