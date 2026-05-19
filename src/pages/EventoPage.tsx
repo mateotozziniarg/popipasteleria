@@ -143,6 +143,14 @@ export default function EventoPage() {
   const formatFecha = (iso: string) =>
     new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
 
+  // Ordenamiento: pendientes primero, entregados después; dentro de cada grupo por createdAt asc
+  const pedidosOrdenados = [...pedidos].sort((a, b) => {
+    if (a.estadoEntrega !== b.estadoEntrega) {
+      return a.estadoEntrega === 'pendiente' ? -1 : 1
+    }
+    return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  })
+
   // Dashboard
   const totalMonto = pedidos.reduce((s, p) => s + parseFloat(p.precioTotal), 0)
   const cobrado = pedidos
@@ -204,7 +212,7 @@ export default function EventoPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-3">
-          {pedidos.map((p) => (
+          {pedidosOrdenados.map((p) => (
             <div key={p.id} className="bg-white border border-gray-200 rounded-xl px-5 py-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
