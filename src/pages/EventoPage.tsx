@@ -1,8 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import {
+  ArrowLeft, Plus, Pencil, Trash2, ShoppingCart, Truck, DollarSign, CreditCard,
+  X, RefreshCw, CheckCircle2, Clock, AlertCircle, Circle, Calendar
+} from 'lucide-react'
 import { Evento, getEventos } from '../api/eventos'
 import { Pedido, PedidoInput, EstadoEntrega, EstadoPago, getPedidos, createPedido, updatePedido, deletePedido } from '../api/pedidos'
-import { Producto, getProductos, createProducto, addPedidoProducto, deletePedidoProducto, updatePedidoProducto } from '../api/productos'
+import { Producto, getProductos, createProducto, addPedidoProducto, deletePedidoProducto } from '../api/productos'
 import Modal from '../components/Modal'
 import LoadingSpinner from '../components/LoadingSpinner'
 
@@ -37,10 +41,24 @@ const emptyForm: PedidoFormState = {
 
 const etiquetaEntrega: Record<EstadoEntrega, string> = { pendiente: 'Pendiente', entregado: 'Entregado' }
 const etiquetaPago: Record<EstadoPago, string> = { sin_seña: 'Sin seña', señado: 'Señado', pagado: 'Pagado' }
-const badgeEntrega = (e: EstadoEntrega) => e === 'entregado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
-const badgePago = (e: EstadoPago) => e === 'pagado' ? 'bg-green-100 text-green-700' : e === 'señado' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+
+const badgeEntrega = (e: EstadoEntrega) =>
+  e === 'entregado' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
+
+const badgePago = (e: EstadoPago) =>
+  e === 'pagado'
+    ? 'bg-emerald-50 text-emerald-700'
+    : e === 'señado'
+    ? 'bg-[#CFE6F7] text-[#1F2937]'
+    : 'bg-[#E5EAF1] text-[#6B7280]'
+
 const formatMonto = (n: number) => n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 const formatFecha = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
+
+const inputClass = 'w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors'
+const labelClass = 'block text-sm font-medium text-[#1F2937] mb-1.5'
+const btnPrimary = 'bg-[#1F2937] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors flex items-center gap-2'
+const btnGhost = 'text-sm text-[#6B7280] hover:text-[#1F2937] transition-colors'
 
 function calcularTotal(items: ItemForm[]): number {
   return items.reduce((s, i) => s + i.cantidad * (parseFloat(i.precioUnitario) || 0), 0)
@@ -82,32 +100,33 @@ function BuscadorProductos({ productos, itemsActuales, onAgregar, onCrearYAgrega
   return (
     <div ref={ref} className="relative">
       <input
-        className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+        className={inputClass}
         placeholder="Buscar producto..."
         value={query}
         onChange={e => { setQuery(e.target.value); setOpen(true) }}
         onFocus={() => setOpen(true)}
       />
       {open && (filtrados.length > 0 || mostrarCrear) && (
-        <div className="absolute z-10 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+        <div className="absolute z-10 mt-1 w-full bg-white border border-[#E5EAF1] rounded-xl shadow-lg max-h-48 overflow-y-auto">
           {filtrados.map(p => (
             <button
               key={p.id}
               type="button"
               onClick={() => seleccionar(p)}
-              className="w-full text-left px-3 py-2 text-sm hover:bg-gray-50 flex justify-between items-center"
+              className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#F7FAFC] flex justify-between items-center transition-colors"
             >
-              <span>{p.nombre}</span>
-              <span className="text-gray-400 text-xs">{formatMonto(parseFloat(p.precioDefault))}</span>
+              <span className="text-[#1F2937]">{p.nombre}</span>
+              <span className="text-[#6B7280] text-xs">{formatMonto(parseFloat(p.precioDefault))}</span>
             </button>
           ))}
           {mostrarCrear && (
             <button
               type="button"
               onClick={() => { onCrearYAgregar(query.trim()); setQuery(''); setOpen(false) }}
-              className="w-full text-left px-3 py-2 text-sm text-blue-600 hover:bg-blue-50 border-t border-gray-100"
+              className="w-full text-left px-3 py-2.5 text-sm text-[#9CC6EA] hover:bg-[#F7FAFC] border-t border-[#E5EAF1] flex items-center gap-1.5 transition-colors"
             >
-              + Crear "{query.trim()}"
+              <Plus size={13} strokeWidth={2.5} />
+              Crear "{query.trim()}"
             </button>
           )}
         </div>
@@ -140,26 +159,34 @@ function MiniCrearProducto({ nombre, onConfirmar, onCancelar }: MiniCrearProps) 
   }
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
-      <p className="text-sm font-medium text-blue-800 mb-2">Crear producto "{nombre}"</p>
+    <div className="bg-[#F7FAFC] border border-[#CFE6F7] rounded-xl p-3 mt-2">
+      <p className="text-sm font-medium text-[#1F2937] mb-2.5">Crear producto "{nombre}"</p>
       <form onSubmit={handleSubmit} className="flex gap-2 items-end">
         <div className="flex-1">
-          <label className="block text-xs text-blue-700 mb-1">Precio por defecto</label>
+          <label className="block text-xs text-[#6B7280] mb-1">Precio por defecto</label>
           <input
             type="number"
             min="0"
             step="0.01"
             autoFocus
-            className="w-full border border-blue-300 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
             value={precio}
             onChange={e => setPrecio(e.target.value)}
             placeholder="0"
           />
         </div>
-        <button type="submit" disabled={saving || !precio} className="bg-blue-600 text-white text-xs px-3 py-2 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+        <button
+          type="submit"
+          disabled={saving || !precio}
+          className="bg-[#1F2937] text-white text-xs px-3 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors"
+        >
           {saving ? '...' : 'Crear'}
         </button>
-        <button type="button" onClick={onCancelar} className="text-xs text-gray-500 hover:text-gray-800 px-2 py-2">
+        <button
+          type="button"
+          onClick={onCancelar}
+          className="text-xs text-[#6B7280] hover:text-[#1F2937] px-2 py-2 transition-colors"
+        >
           Cancelar
         </button>
       </form>
@@ -286,7 +313,6 @@ export default function EventoPage() {
     try {
       if (editTarget) {
         await updatePedido(editTarget.id, payload)
-        // Sync productos: borrar todos y re-crear
         await Promise.all(editTarget.productos.map(pp => deletePedidoProducto(editTarget.id, pp.productoId).catch(() => {})))
         await Promise.all(form.items.map(it => addPedidoProducto(editTarget.id, {
           productoId: it.productoId,
@@ -324,86 +350,123 @@ export default function EventoPage() {
   if (!evento) return <p className="p-6 text-sm text-red-500">Evento no encontrado.</p>
 
   return (
-    <div className="max-w-3xl mx-auto px-4 pt-16 pb-6">
-      <button onClick={() => navigate('/')} className="text-sm text-gray-400 hover:text-gray-700 mb-4 inline-flex items-center gap-1">
-        ← Eventos
+    <div className="max-w-3xl mx-auto px-4 pt-16 pb-8">
+      <button
+        onClick={() => navigate('/')}
+        className="flex items-center gap-1.5 text-sm text-[#6B7280] hover:text-[#1F2937] mb-5 transition-colors"
+      >
+        <ArrowLeft size={14} strokeWidth={2} />
+        Eventos
       </button>
 
-      <div className="mb-5">
-        <h1 className="text-xl font-semibold text-gray-900">{evento.nombre}</h1>
-        <p className="text-sm text-gray-500 mt-0.5">{formatFecha(evento.fecha)}</p>
-        {evento.descripcion && <p className="text-sm text-gray-400 mt-1">{evento.descripcion}</p>}
+      <div className="mb-6">
+        <h1 className="text-xl font-semibold text-[#1F2937]">{evento.nombre}</h1>
+        <div className="flex items-center gap-1.5 mt-1.5">
+          <Calendar size={13} color="#9CC6EA" strokeWidth={2} />
+          <p className="text-sm text-[#6B7280]">{formatFecha(evento.fecha)}</p>
+        </div>
+        {evento.descripcion && (
+          <p className="text-sm text-[#6B7280] mt-1">{evento.descripcion}</p>
+        )}
       </div>
 
-      {/* Dashboard */}
+      {/* Dashboard KPIs */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <p className="text-xs text-gray-400 mb-1">Pedidos</p>
-          <p className="text-2xl font-semibold text-gray-900">{pedidos.length}</p>
+        <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+          <div className="flex items-center gap-1.5 mb-2">
+            <ShoppingCart size={13} color="#9CC6EA" strokeWidth={2} />
+            <p className="text-xs text-[#6B7280]">Pedidos</p>
+          </div>
+          <p className="text-2xl font-semibold text-[#1F2937]">{pedidos.length}</p>
         </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <p className="text-xs text-gray-400 mb-1">Entregados</p>
-          <p className="text-2xl font-semibold text-gray-900">{entregados}</p>
+        <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+          <div className="flex items-center gap-1.5 mb-2">
+            <Truck size={13} color="#9CC6EA" strokeWidth={2} />
+            <p className="text-xs text-[#6B7280]">Entregados</p>
+          </div>
+          <p className="text-2xl font-semibold text-[#1F2937]">{entregados}</p>
         </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <p className="text-xs text-gray-400 mb-1">Monto total</p>
-          <p className="text-lg font-semibold text-gray-900">{formatMonto(totalMonto)}</p>
+        <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+          <div className="flex items-center gap-1.5 mb-2">
+            <DollarSign size={13} color="#9CC6EA" strokeWidth={2} />
+            <p className="text-xs text-[#6B7280]">Monto total</p>
+          </div>
+          <p className="text-lg font-semibold text-[#1F2937]">{formatMonto(totalMonto)}</p>
         </div>
-        <div className="bg-white border border-gray-200 rounded-xl p-4">
-          <p className="text-xs text-gray-400 mb-1">Cobrado</p>
-          <p className="text-lg font-semibold text-green-600">{formatMonto(cobrado)}</p>
-          <p className="text-xs text-gray-400">{pagados} pagados</p>
+        <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+          <div className="flex items-center gap-1.5 mb-2">
+            <CreditCard size={13} color="#10b981" strokeWidth={2} />
+            <p className="text-xs text-[#6B7280]">Cobrado</p>
+          </div>
+          <p className="text-lg font-semibold text-emerald-600">{formatMonto(cobrado)}</p>
+          <p className="text-xs text-[#6B7280] mt-0.5">{pagados} pagados</p>
         </div>
       </div>
 
-      <hr className="border-t border-[#B8D4E3] mb-6" />
+      <hr className="border-t border-[#E5EAF1] mb-6" />
 
-      {/* Pedidos */}
+      {/* Encabezado pedidos */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="font-medium text-gray-800">Pedidos</h2>
-        <button onClick={openCreate} className="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors">
-          + Nuevo pedido
+        <h2 className="font-semibold text-[#1F2937] flex items-center gap-2">
+          <ShoppingCart size={15} color="#9CC6EA" strokeWidth={2} />
+          Pedidos
+        </h2>
+        <button onClick={openCreate} className={btnPrimary}>
+          <Plus size={14} strokeWidth={2.5} />
+          Nuevo pedido
         </button>
       </div>
 
       {pedidos.length === 0 ? (
-        <div className="text-center py-12 text-gray-400">
+        <div className="text-center py-12 text-[#6B7280]">
+          <ShoppingCart size={28} className="mx-auto mb-3 text-[#E5EAF1]" strokeWidth={1.5} />
           <p className="text-sm">No hay pedidos para este evento.</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2.5">
           {pedidosOrdenados.map((p) => (
-            <div key={p.id} className="bg-white border border-gray-200 rounded-xl px-5 py-4 hover:border-[#B8D4E3] transition-colors">
+            <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl px-5 py-4 hover:border-[#9CC6EA] transition-colors">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="font-medium text-gray-900">{p.nombreCliente}</p>
-                  {p.telefono && <p className="text-xs text-gray-400 mt-0.5">{p.telefono}</p>}
-                  {/* 3C: mostrar productos si los hay, fallback a descripcion */}
+                  <p className="font-semibold text-[#1F2937]">{p.nombreCliente}</p>
+                  {p.telefono && <p className="text-xs text-[#6B7280] mt-0.5">{p.telefono}</p>}
                   {p.productos.length > 0 ? (
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-[#6B7280] mt-1.5">
                       {p.productos.map(pp => `${pp.producto.nombre} × ${pp.cantidad}`).join(' — ')}
                     </p>
                   ) : p.descripcion ? (
-                    <p className="text-sm text-gray-600 mt-1">{p.descripcion}</p>
+                    <p className="text-sm text-[#6B7280] mt-1.5">{p.descripcion}</p>
                   ) : null}
-                  {p.notas && <p className="text-xs text-gray-400 mt-1 italic">{p.notas}</p>}
+                  {p.notas && <p className="text-xs text-[#6B7280] mt-1 italic">{p.notas}</p>}
                 </div>
                 <div className="text-right shrink-0">
-                  <p className="font-semibold text-gray-900">{formatMonto(parseFloat(p.precioTotal))}</p>
+                  <p className="font-semibold text-[#1F2937]">{formatMonto(parseFloat(p.precioTotal))}</p>
                 </div>
               </div>
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                <div className="flex gap-2">
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badgeEntrega(p.estadoEntrega)}`}>
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#E5EAF1]">
+                <div className="flex gap-1.5">
+                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgeEntrega(p.estadoEntrega)}`}>
                     {etiquetaEntrega[p.estadoEntrega]}
                   </span>
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badgePago(p.estadoPago)}`}>
+                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgePago(p.estadoPago)}`}>
                     {etiquetaPago[p.estadoPago]}
                   </span>
                 </div>
-                <div className="flex gap-3">
-                  <button onClick={() => openEdit(p)} className="text-xs text-gray-500 hover:text-gray-900 transition-colors">Editar</button>
-                  <button onClick={() => handleDelete(p.id)} className="text-xs text-red-400 hover:text-red-600 transition-colors">Eliminar</button>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => openEdit(p)}
+                    className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#1F2937] transition-colors px-2 py-1 rounded-lg hover:bg-[#F7FAFC]"
+                  >
+                    <Pencil size={11} strokeWidth={2} />
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(p.id)}
+                    className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
+                  >
+                    <Trash2 size={11} strokeWidth={2} />
+                    Eliminar
+                  </button>
                 </div>
               </div>
             </div>
@@ -415,21 +478,22 @@ export default function EventoPage() {
       {modalOpen && (
         <Modal title={editTarget ? 'Editar pedido' : 'Nuevo pedido'} onClose={() => setModalOpen(false)}>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* Cliente + teléfono */}
             <div className="grid grid-cols-2 gap-3">
               <div className="col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
+                <label className={labelClass}>Cliente</label>
                 <input
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className={inputClass}
                   value={form.nombreCliente}
                   onChange={e => setForm(f => ({ ...f, nombreCliente: e.target.value }))}
                   placeholder="Nombre del cliente"
                 />
               </div>
               <div className="col-span-2 sm:col-span-1">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono <span className="text-gray-400 font-normal">(opcional)</span></label>
+                <label className={labelClass}>
+                  Teléfono <span className="text-[#6B7280] font-normal">(opcional)</span>
+                </label>
                 <input
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className={inputClass}
                   value={form.telefono}
                   onChange={e => setForm(f => ({ ...f, telefono: e.target.value }))}
                   placeholder="11 1234-5678"
@@ -439,29 +503,35 @@ export default function EventoPage() {
 
             {/* Productos */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Productos</label>
+              <label className={labelClass}>Productos</label>
               {form.items.length > 0 && (
                 <div className="flex flex-col gap-2 mb-3">
                   {form.items.map((item, idx) => (
-                    <div key={item.productoId} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2">
-                      <span className="text-sm text-gray-800 flex-1 truncate">{item.nombre}</span>
+                    <div key={item.productoId} className="flex items-center gap-2 bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl px-3 py-2">
+                      <span className="text-sm text-[#1F2937] flex-1 truncate">{item.nombre}</span>
                       <input
                         type="number"
                         min="1"
-                        className="w-14 border border-gray-300 rounded px-2 py-1 text-sm text-center focus:outline-none focus:ring-1 focus:ring-gray-900"
+                        className="w-14 border border-[#E5EAF1] rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
                         value={item.cantidad}
                         onChange={e => actualizarItem(idx, 'cantidad', e.target.value)}
                       />
-                      <span className="text-gray-400 text-xs">×</span>
+                      <span className="text-[#6B7280] text-xs">×</span>
                       <input
                         type="number"
                         min="0"
                         step="0.01"
-                        className="w-24 border border-gray-300 rounded px-2 py-1 text-sm text-right focus:outline-none focus:ring-1 focus:ring-gray-900"
+                        className="w-24 border border-[#E5EAF1] rounded-lg px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
                         value={item.precioUnitario}
                         onChange={e => actualizarItem(idx, 'precioUnitario', e.target.value)}
                       />
-                      <button type="button" onClick={() => quitarItem(idx)} className="text-red-400 hover:text-red-600 text-sm ml-1">×</button>
+                      <button
+                        type="button"
+                        onClick={() => quitarItem(idx)}
+                        className="text-[#6B7280] hover:text-red-500 transition-colors ml-1"
+                      >
+                        <X size={14} strokeWidth={2} />
+                      </button>
                     </div>
                   ))}
                 </div>
@@ -487,11 +557,16 @@ export default function EventoPage() {
 
             {/* Precio total */}
             <div>
-              <div className="flex items-center justify-between mb-1">
-                <label className="block text-sm font-medium text-gray-700">Precio total</label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label className="text-sm font-medium text-[#1F2937]">Precio total</label>
                 {form.precioManual && form.items.length > 0 && (
-                  <button type="button" onClick={resetPrecioAuto} className="text-xs text-blue-600 hover:text-blue-800">
-                    ↺ Usar suma de productos ({formatMonto(calcularTotal(form.items))})
+                  <button
+                    type="button"
+                    onClick={resetPrecioAuto}
+                    className="flex items-center gap-1 text-xs text-[#9CC6EA] hover:text-[#1F2937] transition-colors"
+                  >
+                    <RefreshCw size={11} strokeWidth={2} />
+                    Usar suma ({formatMonto(calcularTotal(form.items))})
                   </button>
                 )}
               </div>
@@ -499,22 +574,22 @@ export default function EventoPage() {
                 type="number"
                 min="0"
                 step="0.01"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className={inputClass}
                 value={form.precioTotal}
                 onChange={e => handlePrecioManual(e.target.value)}
                 placeholder="0"
               />
               {!form.precioManual && form.items.length > 0 && (
-                <p className="text-xs text-gray-400 mt-1">Calculado automáticamente desde los productos</p>
+                <p className="text-xs text-[#6B7280] mt-1">Calculado automáticamente desde los productos</p>
               )}
             </div>
 
             {/* Estados */}
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Estado entrega</label>
+                <label className={labelClass}>Estado entrega</label>
                 <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className={inputClass}
                   value={form.estadoEntrega}
                   onChange={e => setForm(f => ({ ...f, estadoEntrega: e.target.value as EstadoEntrega }))}
                 >
@@ -523,9 +598,9 @@ export default function EventoPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Estado pago</label>
+                <label className={labelClass}>Estado pago</label>
                 <select
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                  className={inputClass}
                   value={form.estadoPago}
                   onChange={e => setForm(f => ({ ...f, estadoPago: e.target.value as EstadoPago }))}
                 >
@@ -538,9 +613,11 @@ export default function EventoPage() {
 
             {/* Notas */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Notas <span className="text-gray-400 font-normal">(opcional)</span></label>
+              <label className={labelClass}>
+                Notas <span className="text-[#6B7280] font-normal">(opcional)</span>
+              </label>
               <textarea
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
+                className={`${inputClass} resize-none`}
                 rows={2}
                 value={form.notas}
                 onChange={e => setForm(f => ({ ...f, notas: e.target.value }))}
@@ -548,15 +625,16 @@ export default function EventoPage() {
               />
             </div>
 
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && (
+              <p className="text-red-500 text-sm flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+                {error}
+              </p>
+            )}
             <div className="flex gap-3 justify-end pt-1">
-              <button type="button" onClick={() => setModalOpen(false)} className="text-sm text-gray-500 hover:text-gray-900">Cancelar</button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors"
-              >
-                {saving ? <><LoadingSpinner inline /> <span className="ml-1.5">Guardando...</span></> : editTarget ? 'Guardar cambios' : 'Crear pedido'}
+              <button type="button" onClick={() => setModalOpen(false)} className={btnGhost}>Cancelar</button>
+              <button type="submit" disabled={saving} className={btnPrimary}>
+                {saving ? <><LoadingSpinner inline /><span>Guardando...</span></> : editTarget ? 'Guardar cambios' : 'Crear pedido'}
               </button>
             </div>
           </form>

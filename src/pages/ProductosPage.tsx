@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Package, Plus, Pencil, Trash2 } from 'lucide-react'
 import { Producto, getProductos, createProducto, updateProducto, deleteProducto } from '../api/productos'
 import Modal from '../components/Modal'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -13,6 +14,11 @@ const emptyForm: FormState = { nombre: '', descripcion: '', precioDefault: '' }
 
 const formatMonto = (n: number) =>
   n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
+
+const inputClass = 'w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors'
+const labelClass = 'block text-sm font-medium text-[#1F2937] mb-1.5'
+const btnPrimary = 'bg-[#1F2937] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors flex items-center gap-2'
+const btnGhost = 'text-sm text-[#6B7280] hover:text-[#1F2937] transition-colors'
 
 export default function ProductosPage() {
   const [productos, setProductos] = useState<Producto[]>([])
@@ -81,47 +87,63 @@ export default function ProductosPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 pt-16 pb-6">
+    <div className="max-w-3xl mx-auto px-4 pt-16 pb-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold text-gray-900">Productos</h1>
-        <button
-          onClick={openCreate}
-          className="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-        >
-          + Nuevo producto
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center">
+            <Package size={16} color="#1F2937" strokeWidth={2} />
+          </div>
+          <h1 className="text-xl font-semibold text-[#1F2937]">Productos</h1>
+        </div>
+        <button onClick={openCreate} className={btnPrimary}>
+          <Plus size={14} strokeWidth={2.5} />
+          Nuevo producto
         </button>
       </div>
 
       {loading ? (
         <LoadingSpinner />
       ) : productos.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
-          <p className="text-base">No hay productos todavía.</p>
+        <div className="text-center py-16 text-[#6B7280]">
+          <Package size={32} className="mx-auto mb-3 text-[#E5EAF1]" strokeWidth={1.5} />
+          <p className="text-base font-medium">No hay productos todavía.</p>
           <p className="text-sm mt-1">Creá el primero para empezar.</p>
         </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-gray-100 text-xs text-gray-400 font-medium">
+              <tr className="border-b border-[#E5EAF1] text-xs text-[#6B7280] font-medium">
                 <th className="text-left px-4 py-3">Nombre</th>
                 <th className="text-left px-4 py-3 hidden sm:table-cell">Descripción</th>
                 <th className="text-right px-4 py-3">Precio</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody className="divide-y divide-[#F7FAFC]">
               {productos.map(p => (
-                <tr key={p.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-gray-900">{p.nombre}</td>
-                  <td className="px-4 py-3 text-gray-500 hidden sm:table-cell">{p.descripcion ?? '—'}</td>
-                  <td className="px-4 py-3 text-right font-medium text-gray-900 whitespace-nowrap">
+                <tr key={p.id} className="hover:bg-[#F7FAFC] transition-colors">
+                  <td className="px-4 py-3 font-medium text-[#1F2937]">{p.nombre}</td>
+                  <td className="px-4 py-3 text-[#6B7280] hidden sm:table-cell">{p.descripcion ?? '—'}</td>
+                  <td className="px-4 py-3 text-right font-semibold text-[#1F2937] whitespace-nowrap">
                     {formatMonto(parseFloat(p.precioDefault))}
                   </td>
                   <td className="px-4 py-3">
-                    <div className="flex gap-3 justify-end">
-                      <button onClick={() => openEdit(p)} className="text-xs text-gray-500 hover:text-gray-900 transition-colors">Editar</button>
-                      <button onClick={() => handleDelete(p)} className="text-xs text-red-400 hover:text-red-600 transition-colors">Eliminar</button>
+                    <div className="flex gap-1 justify-end">
+                      <button
+                        onClick={() => openEdit(p)}
+                        className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#1F2937] transition-colors px-2 py-1 rounded-lg hover:bg-[#F7FAFC]"
+                      >
+                        <Pencil size={12} strokeWidth={2} />
+                        Editar
+                      </button>
+                      <button
+                        onClick={() => handleDelete(p)}
+                        className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
+                      >
+                        <Trash2 size={12} strokeWidth={2} />
+                        Eliminar
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -135,44 +157,47 @@ export default function ProductosPage() {
         <Modal title={editTarget ? 'Editar producto' : 'Nuevo producto'} onClose={() => setModalOpen(false)}>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+              <label className={labelClass}>Nombre</label>
               <input
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className={inputClass}
                 value={form.nombre}
                 onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))}
                 placeholder="Ej: Torta de chocolate"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-gray-400 font-normal">(opcional)</span></label>
+              <label className={labelClass}>
+                Descripción <span className="text-[#6B7280] font-normal">(opcional)</span>
+              </label>
               <input
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className={inputClass}
                 value={form.descripcion}
                 onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))}
                 placeholder="Ej: 30 porciones, 3 pisos"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Precio por defecto</label>
+              <label className={labelClass}>Precio por defecto</label>
               <input
                 type="number"
                 min="0"
                 step="0.01"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className={inputClass}
                 value={form.precioDefault}
                 onChange={e => setForm(f => ({ ...f, precioDefault: e.target.value }))}
                 placeholder="0"
               />
             </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && (
+              <p className="text-red-500 text-sm flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+                {error}
+              </p>
+            )}
             <div className="flex gap-3 justify-end pt-1">
-              <button type="button" onClick={() => setModalOpen(false)} className="text-sm text-gray-500 hover:text-gray-900">Cancelar</button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors"
-              >
-                {saving ? <><LoadingSpinner inline /> <span className="ml-1.5">Guardando...</span></> : editTarget ? 'Guardar cambios' : 'Crear producto'}
+              <button type="button" onClick={() => setModalOpen(false)} className={btnGhost}>Cancelar</button>
+              <button type="submit" disabled={saving} className={btnPrimary}>
+                {saving ? <><LoadingSpinner inline /><span>Guardando...</span></> : editTarget ? 'Guardar cambios' : 'Crear producto'}
               </button>
             </div>
           </form>

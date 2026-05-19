@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { ShoppingCart, LayoutList, BarChart2, CheckCircle2, Clock, CreditCard, TrendingDown, DollarSign, SlidersHorizontal } from 'lucide-react'
 import { PedidoConEvento, FiltrosPedidos, EstadoEntrega, EstadoPago, getPedidosGlobal } from '../api/pedidos'
 import { Evento, getEventos } from '../api/eventos'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -9,16 +10,24 @@ const etiquetaEntrega: Record<EstadoEntrega, string> = { pendiente: 'Pendiente',
 const etiquetaPago: Record<EstadoPago, string> = { sin_seña: 'Sin seña', señado: 'Señado', pagado: 'Pagado' }
 
 const badgeEntrega = (e: EstadoEntrega) =>
-  e === 'entregado' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+  e === 'entregado'
+    ? 'bg-emerald-50 text-emerald-700'
+    : 'bg-amber-50 text-amber-700'
 
 const badgePago = (e: EstadoPago) =>
-  e === 'pagado' ? 'bg-green-100 text-green-700' : e === 'señado' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+  e === 'pagado'
+    ? 'bg-emerald-50 text-emerald-700'
+    : e === 'señado'
+    ? 'bg-[#CFE6F7] text-[#1F2937]'
+    : 'bg-[#E5EAF1] text-[#6B7280]'
 
 const formatMonto = (n: number) =>
   n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 
 const formatFecha = (iso: string) =>
   new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
+
+const inputClass = 'w-full border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white'
 
 export default function PedidosPage() {
   const [modo, setModo] = useState<Modo>('tabla')
@@ -44,7 +53,6 @@ export default function PedidosPage() {
     setFiltros(f => ({ ...f, [key]: value || undefined }))
   }
 
-  // Métricas dashboard
   const totalMonto = pedidos.reduce((s, p) => s + parseFloat(p.precioTotal), 0)
   const cobrado = pedidos.filter(p => p.estadoPago === 'pagado').reduce((s, p) => s + parseFloat(p.precioTotal), 0)
   const pendienteCobro = totalMonto - cobrado
@@ -58,79 +66,100 @@ export default function PedidosPage() {
   }))
 
   return (
-    <div className="max-w-5xl mx-auto px-4 pt-16 pb-6">
+    <div className="max-w-5xl mx-auto px-4 pt-16 pb-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold text-gray-900">Pedidos</h1>
-        <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center">
+            <ShoppingCart size={16} color="#1F2937" strokeWidth={2} />
+          </div>
+          <h1 className="text-xl font-semibold text-[#1F2937]">Pedidos</h1>
+        </div>
+        <div className="flex gap-1 bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl p-1">
           <button
             onClick={() => setModo('tabla')}
-            className={`text-sm px-3 py-1.5 rounded-md transition-colors ${modo === 'tabla' ? 'bg-white shadow-sm font-medium text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`text-sm px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
+              modo === 'tabla'
+                ? 'bg-white shadow-sm font-medium text-[#1F2937] border border-[#E5EAF1]'
+                : 'text-[#6B7280] hover:text-[#1F2937]'
+            }`}
           >
+            <LayoutList size={14} strokeWidth={2} />
             Tabla
           </button>
           <button
             onClick={() => setModo('dashboard')}
-            className={`text-sm px-3 py-1.5 rounded-md transition-colors ${modo === 'dashboard' ? 'bg-white shadow-sm font-medium text-gray-900' : 'text-gray-500 hover:text-gray-700'}`}
+            className={`text-sm px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
+              modo === 'dashboard'
+                ? 'bg-white shadow-sm font-medium text-[#1F2937] border border-[#E5EAF1]'
+                : 'text-[#6B7280] hover:text-[#1F2937]'
+            }`}
           >
+            <BarChart2 size={14} strokeWidth={2} />
             Dashboard
           </button>
         </div>
       </div>
 
       {/* Filtros */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4 mb-5 grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Evento</label>
-          <select
-            className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-            value={filtros.eventoId ?? ''}
-            onChange={e => setFiltro('eventoId', e.target.value ? parseInt(e.target.value) : undefined)}
-          >
-            <option value="">Todos</option>
-            {eventos.map(ev => <option key={ev.id} value={ev.id}>{ev.nombre}</option>)}
-          </select>
+      <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4 mb-5">
+        <div className="flex items-center gap-1.5 mb-3">
+          <SlidersHorizontal size={13} color="#9CC6EA" strokeWidth={2} />
+          <span className="text-xs font-medium text-[#6B7280]">Filtros</span>
         </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Entrega</label>
-          <select
-            className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-            value={filtros.estadoEntrega ?? ''}
-            onChange={e => setFiltro('estadoEntrega', e.target.value as EstadoEntrega || undefined)}
-          >
-            <option value="">Todos</option>
-            <option value="pendiente">Pendiente</option>
-            <option value="entregado">Entregado</option>
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-medium text-gray-500 mb-1">Pago</label>
-          <select
-            className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-            value={filtros.estadoPago ?? ''}
-            onChange={e => setFiltro('estadoPago', e.target.value as EstadoPago || undefined)}
-          >
-            <option value="">Todos</option>
-            <option value="sin_seña">Sin seña</option>
-            <option value="señado">Señado</option>
-            <option value="pagado">Pagado</option>
-          </select>
-        </div>
-        <div className="col-span-2 sm:col-span-1 flex flex-col gap-1">
-          <label className="block text-xs font-medium text-gray-500">Fecha evento</label>
-          <div className="flex gap-1 items-center">
-            <input
-              type="date"
-              className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900"
-              value={filtros.fechaDesde ?? ''}
-              onChange={e => setFiltro('fechaDesde', e.target.value || undefined)}
-            />
-            <span className="text-gray-400 text-xs shrink-0">–</span>
-            <input
-              type="date"
-              className="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-gray-900"
-              value={filtros.fechaHasta ?? ''}
-              onChange={e => setFiltro('fechaHasta', e.target.value || undefined)}
-            />
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Evento</label>
+            <select
+              className={inputClass}
+              value={filtros.eventoId ?? ''}
+              onChange={e => setFiltro('eventoId', e.target.value ? parseInt(e.target.value) : undefined)}
+            >
+              <option value="">Todos</option>
+              {eventos.map(ev => <option key={ev.id} value={ev.id}>{ev.nombre}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Entrega</label>
+            <select
+              className={inputClass}
+              value={filtros.estadoEntrega ?? ''}
+              onChange={e => setFiltro('estadoEntrega', e.target.value as EstadoEntrega || undefined)}
+            >
+              <option value="">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="entregado">Entregado</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Pago</label>
+            <select
+              className={inputClass}
+              value={filtros.estadoPago ?? ''}
+              onChange={e => setFiltro('estadoPago', e.target.value as EstadoPago || undefined)}
+            >
+              <option value="">Todos</option>
+              <option value="sin_seña">Sin seña</option>
+              <option value="señado">Señado</option>
+              <option value="pagado">Pagado</option>
+            </select>
+          </div>
+          <div className="col-span-2 sm:col-span-1">
+            <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Fecha evento</label>
+            <div className="flex gap-1 items-center">
+              <input
+                type="date"
+                className="w-full border border-[#E5EAF1] rounded-xl px-2 py-2 text-xs text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
+                value={filtros.fechaDesde ?? ''}
+                onChange={e => setFiltro('fechaDesde', e.target.value || undefined)}
+              />
+              <span className="text-[#6B7280] text-xs shrink-0">–</span>
+              <input
+                type="date"
+                className="w-full border border-[#E5EAF1] rounded-xl px-2 py-2 text-xs text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
+                value={filtros.fechaHasta ?? ''}
+                onChange={e => setFiltro('fechaHasta', e.target.value || undefined)}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -138,15 +167,17 @@ export default function PedidosPage() {
       {loading ? (
         <LoadingSpinner />
       ) : modo === 'tabla' ? (
-        /* ── MODO TABLA ── */
         pedidos.length === 0 ? (
-          <div className="text-center py-12 text-gray-400 text-sm">No hay pedidos con esos filtros.</div>
+          <div className="text-center py-12 text-[#6B7280] text-sm">
+            <ShoppingCart size={28} className="mx-auto mb-3 text-[#E5EAF1]" strokeWidth={1.5} />
+            No hay pedidos con esos filtros.
+          </div>
         ) : (
-          <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-gray-100 text-xs text-gray-400 font-medium">
+                  <tr className="border-b border-[#E5EAF1] text-xs text-[#6B7280] font-medium">
                     <th className="text-left px-4 py-3">Cliente</th>
                     <th className="text-left px-4 py-3">Evento</th>
                     <th className="text-left px-4 py-3 hidden md:table-cell">Descripción</th>
@@ -156,31 +187,31 @@ export default function PedidosPage() {
                     <th className="text-left px-4 py-3 hidden lg:table-cell">Notas</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-[#F7FAFC]">
                   {pedidos.map(p => (
-                    <tr key={p.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">{p.nombreCliente}</td>
-                      <td className="px-4 py-3 text-gray-600 whitespace-nowrap">
-                        <div>{p.evento.nombre}</div>
-                        <div className="text-xs text-gray-400">{formatFecha(p.evento.fecha)}</div>
+                    <tr key={p.id} className="hover:bg-[#F7FAFC] transition-colors">
+                      <td className="px-4 py-3 font-medium text-[#1F2937] whitespace-nowrap">{p.nombreCliente}</td>
+                      <td className="px-4 py-3 whitespace-nowrap">
+                        <div className="text-[#1F2937]">{p.evento.nombre}</div>
+                        <div className="text-xs text-[#6B7280]">{formatFecha(p.evento.fecha)}</div>
                       </td>
-                      <td className="px-4 py-3 text-gray-600 max-w-48 hidden md:table-cell">
+                      <td className="px-4 py-3 text-[#6B7280] max-w-48 hidden md:table-cell">
                         <p className="truncate">{p.descripcion}</p>
                       </td>
-                      <td className="px-4 py-3 text-right font-medium text-gray-900 whitespace-nowrap">
+                      <td className="px-4 py-3 text-right font-semibold text-[#1F2937] whitespace-nowrap">
                         {formatMonto(parseFloat(p.precioTotal))}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badgeEntrega(p.estadoEntrega)}`}>
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgeEntrega(p.estadoEntrega)}`}>
                           {etiquetaEntrega[p.estadoEntrega]}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badgePago(p.estadoPago)}`}>
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgePago(p.estadoPago)}`}>
                           {etiquetaPago[p.estadoPago]}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-gray-400 text-xs max-w-36 hidden lg:table-cell">
+                      <td className="px-4 py-3 text-[#6B7280] text-xs max-w-36 hidden lg:table-cell">
                         <p className="truncate italic">{p.notas ?? '—'}</p>
                       </td>
                     </tr>
@@ -191,53 +222,70 @@ export default function PedidosPage() {
           </div>
         )
       ) : (
-        /* ── MODO DASHBOARD ── */
-        <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-white border border-gray-200 rounded-xl p-4">
-              <p className="text-xs text-gray-400 mb-1">Total pedidos</p>
-              <p className="text-2xl font-semibold text-gray-900">{pedidos.length}</p>
+            <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <ShoppingCart size={14} color="#9CC6EA" strokeWidth={2} />
+                <p className="text-xs text-[#6B7280]">Total pedidos</p>
+              </div>
+              <p className="text-2xl font-semibold text-[#1F2937]">{pedidos.length}</p>
             </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-4">
-              <p className="text-xs text-gray-400 mb-1">Monto esperado</p>
-              <p className="text-lg font-semibold text-gray-900">{formatMonto(totalMonto)}</p>
+            <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <DollarSign size={14} color="#9CC6EA" strokeWidth={2} />
+                <p className="text-xs text-[#6B7280]">Monto esperado</p>
+              </div>
+              <p className="text-lg font-semibold text-[#1F2937]">{formatMonto(totalMonto)}</p>
             </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-4">
-              <p className="text-xs text-gray-400 mb-1">Cobrado</p>
-              <p className="text-lg font-semibold text-green-600">{formatMonto(cobrado)}</p>
+            <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <CheckCircle2 size={14} color="#10b981" strokeWidth={2} />
+                <p className="text-xs text-[#6B7280]">Cobrado</p>
+              </div>
+              <p className="text-lg font-semibold text-emerald-600">{formatMonto(cobrado)}</p>
             </div>
-            <div className="bg-white border border-gray-200 rounded-xl p-4">
-              <p className="text-xs text-gray-400 mb-1">Pendiente cobro</p>
-              <p className="text-lg font-semibold text-orange-500">{formatMonto(pendienteCobro)}</p>
+            <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+              <div className="flex items-center gap-2 mb-2">
+                <TrendingDown size={14} color="#f59e0b" strokeWidth={2} />
+                <p className="text-xs text-[#6B7280]">Pendiente cobro</p>
+              </div>
+              <p className="text-lg font-semibold text-amber-500">{formatMonto(pendienteCobro)}</p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div className="bg-white border border-gray-200 rounded-xl p-5">
-              <p className="text-sm font-medium text-gray-700 mb-4">Estado de entrega</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="bg-white border border-[#E5EAF1] rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Clock size={14} color="#9CC6EA" strokeWidth={2} />
+                <p className="text-sm font-semibold text-[#1F2937]">Estado de entrega</p>
+              </div>
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-yellow-600 bg-yellow-50 px-2 py-0.5 rounded-full font-medium">Pendiente</span>
-                  <span className="text-sm font-semibold text-gray-900">{pendientesEntrega}</span>
+                  <span className="text-sm text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full font-medium">Pendiente</span>
+                  <span className="text-sm font-semibold text-[#1F2937]">{pendientesEntrega}</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-sm text-green-600 bg-green-50 px-2 py-0.5 rounded-full font-medium">Entregado</span>
-                  <span className="text-sm font-semibold text-gray-900">{entregados}</span>
+                  <span className="text-sm text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-medium">Entregado</span>
+                  <span className="text-sm font-semibold text-[#1F2937]">{entregados}</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-xl p-5">
-              <p className="text-sm font-medium text-gray-700 mb-4">Estado de pago</p>
+            <div className="bg-white border border-[#E5EAF1] rounded-2xl p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <CreditCard size={14} color="#9CC6EA" strokeWidth={2} />
+                <p className="text-sm font-semibold text-[#1F2937]">Estado de pago</p>
+              </div>
               <div className="flex flex-col gap-3">
                 {porEstadoPago.map(({ estado, cantidad, monto }) => (
                   <div key={estado} className="flex items-center justify-between">
-                    <span className={`text-sm px-2 py-0.5 rounded-full font-medium ${badgePago(estado)}`}>
+                    <span className={`text-sm px-2.5 py-1 rounded-full font-medium ${badgePago(estado)}`}>
                       {etiquetaPago[estado]}
                     </span>
                     <div className="text-right">
-                      <span className="text-sm font-semibold text-gray-900">{cantidad}</span>
-                      <span className="text-xs text-gray-400 ml-2">{formatMonto(monto)}</span>
+                      <span className="text-sm font-semibold text-[#1F2937]">{cantidad}</span>
+                      <span className="text-xs text-[#6B7280] ml-2">{formatMonto(monto)}</span>
                     </div>
                   </div>
                 ))}

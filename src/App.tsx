@@ -8,7 +8,7 @@ import ProductosPage from './pages/ProductosPage'
 export default function App() {
   return (
     <BrowserRouter>
-      <div className="min-h-screen" style={{ backgroundColor: '#FAFAF8' }}>
+      <div className="min-h-screen" style={{ backgroundColor: '#F7FAFC' }}>
         <Sidebar />
         <div className="pl-0">
           <Routes>

@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { Menu, X, Calendar, ShoppingCart, Package } from 'lucide-react'
 
 const navItems = [
-  { label: 'Eventos', path: '/' },
-  { label: 'Pedidos', path: '/pedidos' },
-  { label: 'Productos', path: '/productos' },
+  { label: 'Eventos', path: '/', icon: Calendar },
+  { label: 'Pedidos', path: '/pedidos', icon: ShoppingCart },
+  { label: 'Productos', path: '/productos', icon: Package },
 ]
 
 export default function Sidebar() {
@@ -35,44 +36,56 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* Hamburger button */}
       <button
         ref={btnRef}
         onClick={() => setOpen(o => !o)}
-        className="fixed top-4 left-4 z-50 flex flex-col justify-center items-center w-9 h-9 gap-1.5 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
+        className="fixed top-4 left-4 z-50 flex items-center justify-center w-9 h-9 bg-white border border-[#E5EAF1] rounded-lg shadow-sm hover:bg-[#F7FAFC] transition-colors"
         aria-label="Menú"
       >
-        <span className={`block w-4.5 h-0.5 bg-gray-700 transition-transform origin-center ${open ? 'translate-y-2 rotate-45' : ''}`} />
-        <span className={`block w-4.5 h-0.5 bg-gray-700 transition-opacity ${open ? 'opacity-0' : ''}`} />
-        <span className={`block w-4.5 h-0.5 bg-gray-700 transition-transform origin-center ${open ? '-translate-y-2 -rotate-45' : ''}`} />
+        {open
+          ? <X size={16} color="#1F2937" strokeWidth={2} />
+          : <Menu size={16} color="#1F2937" strokeWidth={2} />
+        }
       </button>
 
-      {/* Overlay */}
       {open && <div className="fixed inset-0 z-40 bg-black/20 sm:bg-transparent" />}
 
-      {/* Sidebar panel */}
       <div
         ref={ref}
-        className={`fixed top-0 left-0 z-40 h-full w-full sm:w-64 bg-white border-r shadow-lg transform transition-transform duration-200 ${
-          open ? 'translate-x-0 border-[#B8D4E3]' : '-translate-x-full border-gray-200'
+        className={`fixed top-0 left-0 z-40 h-full w-full sm:w-64 bg-white border-r border-[#E5EAF1] shadow-lg transform transition-transform duration-200 ${
+          open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="px-5 pt-16 pb-6">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-4">Navegación</p>
+          <div className="mb-6">
+            <div className="flex items-center gap-2.5 mb-1">
+              <div className="w-7 h-7 rounded-lg bg-[#CFE6F7] flex items-center justify-center">
+                <ShoppingCart size={14} color="#1F2937" strokeWidth={2} />
+              </div>
+              <span className="text-sm font-semibold text-[#1F2937]">Popipastelería</span>
+            </div>
+            <p className="text-xs text-[#6B7280] pl-9">Admin de pedidos</p>
+          </div>
+
+          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">Navegación</p>
           <nav className="flex flex-col gap-1">
-            {navItems.map(item => (
-              <button
-                key={item.path}
-                onClick={() => goTo(item.path)}
-                className={`text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  pathname === item.path
-                    ? 'bg-gray-900 text-white'
-                    : 'text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                {item.label}
-              </button>
-            ))}
+            {navItems.map(({ label, path, icon: Icon }) => {
+              const active = pathname === path
+              return (
+                <button
+                  key={path}
+                  onClick={() => goTo(path)}
+                  className={`text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-3 ${
+                    active
+                      ? 'bg-[#CFE6F7] text-[#1F2937]'
+                      : 'text-[#6B7280] hover:bg-[#F7FAFC] hover:text-[#1F2937]'
+                  }`}
+                >
+                  <Icon size={16} strokeWidth={2} className={active ? 'text-[#1F2937]' : 'text-[#9CC6EA]'} />
+                  {label}
+                </button>
+              )
+            })}
           </nav>
         </div>
       </div>

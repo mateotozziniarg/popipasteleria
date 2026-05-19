@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Calendar, Plus, Pencil, Trash2, ChevronRight, ShoppingCart } from 'lucide-react'
 import { Evento, getEventos, createEvento, updateEvento, deleteEvento } from '../api/eventos'
 import { getPedidos, Pedido } from '../api/pedidos'
 import Modal from '../components/Modal'
@@ -17,6 +18,11 @@ interface FormState {
 }
 
 const emptyForm: FormState = { nombre: '', fecha: '', descripcion: '' }
+
+const inputClass = 'w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] focus:border-[#9CC6EA] transition-colors'
+const labelClass = 'block text-sm font-medium text-[#1F2937] mb-1.5'
+const btnPrimary = 'bg-[#1F2937] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors flex items-center gap-2'
+const btnGhost = 'text-sm text-[#6B7280] hover:text-[#1F2937] transition-colors'
 
 export default function EventosPage() {
   const navigate = useNavigate()
@@ -97,58 +103,75 @@ export default function EventosPage() {
     n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 
   return (
-    <div className="max-w-3xl mx-auto px-4 pt-16 pb-6">
+    <div className="max-w-3xl mx-auto px-4 pt-16 pb-8">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-xl font-semibold text-gray-900">Eventos</h1>
-        <button
-          onClick={openCreate}
-          className="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 transition-colors"
-        >
-          + Nuevo evento
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center">
+            <Calendar size={16} color="#1F2937" strokeWidth={2} />
+          </div>
+          <h1 className="text-xl font-semibold text-[#1F2937]">Eventos</h1>
+        </div>
+        <button onClick={openCreate} className={btnPrimary}>
+          <Plus size={14} strokeWidth={2.5} />
+          Nuevo evento
         </button>
       </div>
 
       {loading ? (
         <LoadingSpinner />
       ) : eventos.length === 0 ? (
-        <div className="text-center py-16 text-gray-400">
-          <p className="text-base">No hay eventos todavía.</p>
+        <div className="text-center py-16 text-[#6B7280]">
+          <Calendar size={32} className="mx-auto mb-3 text-[#E5EAF1]" strokeWidth={1.5} />
+          <p className="text-base font-medium">No hay eventos todavía.</p>
           <p className="text-sm mt-1">Creá el primero para empezar.</p>
         </div>
       ) : (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2.5">
           {eventos.map((ev) => (
             <div
               key={ev.id}
               onClick={() => navigate(`/eventos/${ev.id}`)}
-              className="bg-white border border-gray-200 rounded-xl px-5 py-4 cursor-pointer hover:border-gray-400 hover:shadow-sm transition-all"
+              className="bg-white border border-[#E5EAF1] rounded-2xl px-5 py-4 cursor-pointer hover:border-[#9CC6EA] hover:shadow-sm transition-all group"
             >
               <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="font-medium text-gray-900 truncate">{ev.nombre}</p>
-                  <p className="text-sm text-gray-500 mt-0.5">{formatFecha(ev.fecha)}</p>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-semibold text-[#1F2937] truncate">{ev.nombre}</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <Calendar size={12} color="#9CC6EA" strokeWidth={2} />
+                    <p className="text-xs text-[#6B7280]">{formatFecha(ev.fecha)}</p>
+                  </div>
                   {ev.descripcion && (
-                    <p className="text-sm text-gray-400 mt-1 truncate">{ev.descripcion}</p>
+                    <p className="text-sm text-[#6B7280] mt-1.5 truncate">{ev.descripcion}</p>
                   )}
                 </div>
-                <div className="text-right shrink-0">
-                  <p className="text-sm font-medium text-gray-900">{formatMonto(ev.montoTotal)}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {ev.totalPedidos} {ev.totalPedidos === 1 ? 'pedido' : 'pedidos'}
-                  </p>
+                <div className="text-right shrink-0 flex items-center gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[#1F2937]">{formatMonto(ev.montoTotal)}</p>
+                    <div className="flex items-center gap-1 justify-end mt-0.5">
+                      <ShoppingCart size={11} color="#9CC6EA" strokeWidth={2} />
+                      <p className="text-xs text-[#6B7280]">
+                        {ev.totalPedidos} {ev.totalPedidos === 1 ? 'pedido' : 'pedidos'}
+                      </p>
+                    </div>
+                  </div>
+                  <ChevronRight size={16} color="#E5EAF1" strokeWidth={2} className="group-hover:text-[#9CC6EA] transition-colors" />
                 </div>
               </div>
-              <div className="flex gap-3 mt-3 pt-3 border-t border-gray-100">
+              <div className="flex gap-2 mt-3 pt-3 border-t border-[#E5EAF1]">
                 <button
                   onClick={(e) => openEdit(ev, e)}
-                  className="text-xs text-gray-500 hover:text-gray-900 transition-colors"
+                  className="flex items-center gap-1.5 text-xs text-[#6B7280] hover:text-[#1F2937] transition-colors px-2 py-1 rounded-lg hover:bg-[#F7FAFC]"
                 >
+                  <Pencil size={12} strokeWidth={2} />
                   Editar
                 </button>
                 <button
                   onClick={(e) => handleDelete(ev.id, e)}
-                  className="text-xs text-red-400 hover:text-red-600 transition-colors"
+                  className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-600 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
                 >
+                  <Trash2 size={12} strokeWidth={2} />
                   Eliminar
                 </button>
               </div>
@@ -161,43 +184,46 @@ export default function EventosPage() {
         <Modal title={editTarget ? 'Editar evento' : 'Nuevo evento'} onClose={() => setModalOpen(false)}>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+              <label className={labelClass}>Nombre</label>
               <input
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className={inputClass}
                 value={form.nombre}
                 onChange={e => setForm(f => ({ ...f, nombre: e.target.value }))}
                 placeholder="Ej: Casamiento García"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+              <label className={labelClass}>Fecha</label>
               <input
                 type="date"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                className={inputClass}
                 value={form.fecha}
                 onChange={e => setForm(f => ({ ...f, fecha: e.target.value }))}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Descripción <span className="text-gray-400 font-normal">(opcional)</span></label>
+              <label className={labelClass}>
+                Descripción <span className="text-[#6B7280] font-normal">(opcional)</span>
+              </label>
               <textarea
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 resize-none"
+                className={`${inputClass} resize-none`}
                 rows={2}
                 value={form.descripcion}
                 onChange={e => setForm(f => ({ ...f, descripcion: e.target.value }))}
               />
             </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
+            {error && (
+              <p className="text-red-500 text-sm flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" />
+                {error}
+              </p>
+            )}
             <div className="flex gap-3 justify-end pt-1">
-              <button type="button" onClick={() => setModalOpen(false)} className="text-sm text-gray-500 hover:text-gray-900">
+              <button type="button" onClick={() => setModalOpen(false)} className={btnGhost}>
                 Cancelar
               </button>
-              <button
-                type="submit"
-                disabled={saving}
-                className="bg-gray-900 text-white text-sm px-4 py-2 rounded-lg hover:bg-gray-700 disabled:opacity-50 transition-colors"
-              >
-                {saving ? <><LoadingSpinner inline /> <span className="ml-1.5">Guardando...</span></> : editTarget ? 'Guardar cambios' : 'Crear evento'}
+              <button type="submit" disabled={saving} className={btnPrimary}>
+                {saving ? <><LoadingSpinner inline /><span>Guardando...</span></> : editTarget ? 'Guardar cambios' : 'Crear evento'}
               </button>
             </div>
           </form>
