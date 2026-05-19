@@ -47,8 +47,8 @@ export default function Sidebar() {
       {/* Sidebar panel */}
       <div
         ref={ref}
-        className={`fixed top-0 left-0 z-40 h-full w-full sm:w-64 bg-white border-r border-gray-200 shadow-lg transform transition-transform duration-200 ${
-          open ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 left-0 z-40 h-full w-full sm:w-64 bg-white border-r shadow-lg transform transition-transform duration-200 ${
+          open ? 'translate-x-0 border-[#B8D4E3]' : '-translate-x-full border-gray-200'
         }`}
       >
         <div className="px-5 pt-16 pb-6">

@@ -1,1 +1,17 @@
 @import "tailwindcss";
+
+@theme {
+  --color-warm-bg: #FAFAF8;
+  --color-accent: #B8D4E3;
+}
+
+body {
+  background-color: #FAFAF8;
+}
+
+/* Focus ring global con celeste */
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px #B8D4E3;
+  border-color: #B8D4E3;
+}

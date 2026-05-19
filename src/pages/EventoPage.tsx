@@ -356,6 +356,8 @@ export default function EventoPage() {
         </div>
       </div>
 
+      <hr className="border-t border-[#B8D4E3] mb-6" />
+
       {/* Pedidos */}
       <div className="flex items-center justify-between mb-4">
         <h2 className="font-medium text-gray-800">Pedidos</h2>
@@ -371,7 +373,7 @@ export default function EventoPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {pedidosOrdenados.map((p) => (
-            <div key={p.id} className="bg-white border border-gray-200 rounded-xl px-5 py-4">
+            <div key={p.id} className="bg-white border border-gray-200 rounded-xl px-5 py-4 hover:border-[#B8D4E3] transition-colors">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="font-medium text-gray-900">{p.nombreCliente}</p>
