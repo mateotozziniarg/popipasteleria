@@ -3,6 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import eventosRouter from './routes/eventos'
 import pedidosRouter from './routes/pedidos'
+import pedidosGlobalRouter from './routes/pedidosGlobal'
 
 const app = express()
 const port = process.env.PORT || 3001
@@ -20,7 +21,7 @@ app.get('/health', (_req, res) => {
 
 app.use('/events', eventosRouter)
 app.use('/events/:eventoId/pedidos', pedidosRouter)
-app.use('/pedidos', pedidosRouter)
+app.use('/pedidos', pedidosGlobalRouter)
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`)

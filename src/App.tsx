@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import EventosPage from './pages/EventosPage'
 import EventoPage from './pages/EventoPage'
+import PedidosPage from './pages/PedidosPage'
 
 export default function App() {
   return (
@@ -12,6 +13,7 @@ export default function App() {
           <Routes>
             <Route path="/" element={<EventosPage />} />
             <Route path="/eventos/:id" element={<EventoPage />} />
+            <Route path="/pedidos" element={<PedidosPage />} />
           </Routes>
         </div>
       </div>

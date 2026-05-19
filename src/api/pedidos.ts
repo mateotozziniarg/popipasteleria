@@ -26,8 +26,30 @@ export interface PedidoInput {
   notas?: string
 }
 
+export interface PedidoConEvento extends Pedido {
+  evento: { id: number; nombre: string; fecha: string }
+}
+
+export interface FiltrosPedidos {
+  eventoId?: number
+  estadoEntrega?: EstadoEntrega
+  estadoPago?: EstadoPago
+  fechaDesde?: string
+  fechaHasta?: string
+}
+
 export const getPedidos = (eventoId: number) =>
   client.get<Pedido[]>(`/events/${eventoId}/pedidos`).then(r => r.data)
+
+export const getPedidosGlobal = (filtros: FiltrosPedidos = {}) => {
+  const params: Record<string, string> = {}
+  if (filtros.eventoId) params.eventoId = String(filtros.eventoId)
+  if (filtros.estadoEntrega) params.estadoEntrega = filtros.estadoEntrega
+  if (filtros.estadoPago) params.estadoPago = filtros.estadoPago
+  if (filtros.fechaDesde) params.fechaDesde = filtros.fechaDesde
+  if (filtros.fechaHasta) params.fechaHasta = filtros.fechaHasta
+  return client.get<PedidoConEvento[]>('/pedidos', { params }).then(r => r.data)
+}
 
 export const createPedido = (eventoId: number, data: PedidoInput) =>
   client.post<Pedido>(`/events/${eventoId}/pedidos`, data).then(r => r.data)
