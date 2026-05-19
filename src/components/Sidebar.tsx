@@ -12,10 +12,15 @@ export default function Sidebar() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const ref = useRef<HTMLDivElement>(null)
+  const btnRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
+      const target = e.target as Node
+      if (
+        ref.current && !ref.current.contains(target) &&
+        btnRef.current && !btnRef.current.contains(target)
+      ) {
         setOpen(false)
       }
     }
@@ -32,6 +37,7 @@ export default function Sidebar() {
     <>
       {/* Hamburger button */}
       <button
+        ref={btnRef}
         onClick={() => setOpen(o => !o)}
         className="fixed top-4 left-4 z-50 flex flex-col justify-center items-center w-9 h-9 gap-1.5 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-50 transition-colors"
         aria-label="Menú"
