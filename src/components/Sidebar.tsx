@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 const navItems = [
   { label: 'Eventos', path: '/' },
   { label: 'Pedidos', path: '/pedidos' },
+  { label: 'Productos', path: '/productos' },
 ]
 
 export default function Sidebar() {

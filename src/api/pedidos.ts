@@ -3,23 +3,32 @@ import client from './client'
 export type EstadoEntrega = 'pendiente' | 'entregado'
 export type EstadoPago = 'sin_seña' | 'señado' | 'pagado'
 
+export interface PedidoProductoEnPedido {
+  id: number
+  productoId: number
+  cantidad: number
+  precioUnitario: string
+  producto: { id: number; nombre: string; descripcion: string | null; precioDefault: string }
+}
+
 export interface Pedido {
   id: number
   eventoId: number
   nombreCliente: string
   telefono: string | null
-  descripcion: string
+  descripcion: string | null
   precioTotal: string
   estadoEntrega: EstadoEntrega
   estadoPago: EstadoPago
   notas: string | null
   createdAt: string
+  productos: PedidoProductoEnPedido[]
 }
 
 export interface PedidoInput {
   nombreCliente: string
   telefono?: string
-  descripcion: string
+  descripcion?: string
   precioTotal: number
   estadoEntrega?: EstadoEntrega
   estadoPago?: EstadoPago

@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar'
 import EventosPage from './pages/EventosPage'
 import EventoPage from './pages/EventoPage'
 import PedidosPage from './pages/PedidosPage'
+import ProductosPage from './pages/ProductosPage'
 
 export default function App() {
   return (
@@ -14,6 +15,7 @@ export default function App() {
             <Route path="/" element={<EventosPage />} />
             <Route path="/eventos/:id" element={<EventoPage />} />
             <Route path="/pedidos" element={<PedidosPage />} />
+            <Route path="/productos" element={<ProductosPage />} />
           </Routes>
         </div>
       </div>
