@@ -163,7 +163,7 @@ export default function EventoPage() {
   if (!evento) return <p className="p-6 text-sm text-red-500">Evento no encontrado.</p>
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6">
+    <div className="max-w-3xl mx-auto px-4 pt-16 pb-6">
       <button onClick={() => navigate('/')} className="text-sm text-gray-400 hover:text-gray-700 mb-4 inline-flex items-center gap-1">
         ← Eventos
       </button>
