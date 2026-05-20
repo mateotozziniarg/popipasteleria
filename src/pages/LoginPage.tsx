@@ -36,20 +36,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 bg-center bg-cover"
-      style={{ backgroundImage: 'url(/login-mobile.png)' }}
-    >
-      {/* Desktop background */}
+    <div className="login-page min-h-screen flex items-center justify-center px-4 relative">
       <style>{`
+        .login-page {
+          background-image: url(/login-mobile.png);
+          background-size: cover;
+          background-position: center;
+        }
         @media (min-width: 768px) {
-          .login-bg { background-image: url(/login-desktop.png) !important; }
+          .login-page {
+            background-image: url(/login-desktop.png);
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            background-color: #faf9f7;
+          }
         }
       `}</style>
-      <div
-        className="login-bg absolute inset-0 bg-center bg-cover -z-10"
-        style={{ backgroundImage: 'url(/login-mobile.png)' }}
-      />
 
       <div className="w-full max-w-sm relative">
         {/* Logo */}
