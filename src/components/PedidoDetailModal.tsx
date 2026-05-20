@@ -122,11 +122,11 @@ export default function PedidoDetailModal({ pedido, onClose, onEdit }: Props) {
                 <>
                   <div className="flex justify-between text-sm">
                     <span className="text-[#6B7280]">Seña abonada</span>
-                    <span className="text-emerald-600 font-medium">{fmt(seña)}</span>
+                    <span className="font-medium" style={{ color: '#059669' }}>{fmt(seña)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-[#6B7280]">Saldo restante</span>
-                    <span className="text-amber-600 font-medium">{fmt(saldo!)}</span>
+                    <span className="font-medium" style={{ color: '#d97706' }}>{fmt(saldo!)}</span>
                   </div>
                 </>
               )}
