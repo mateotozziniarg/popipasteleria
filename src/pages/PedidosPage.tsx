@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { ShoppingCart, LayoutList, BarChart2, CheckCircle2, Clock, CreditCard, TrendingDown, DollarSign, SlidersHorizontal } from 'lucide-react'
+import { ShoppingCart, LayoutList, BarChart2, CheckCircle2, Clock, CreditCard, TrendingDown, TrendingUp, DollarSign, SlidersHorizontal, FlaskConical } from 'lucide-react'
 import { PedidoConEvento, FiltrosPedidos, EstadoEntrega, EstadoPago, getPedidosGlobal } from '../api/pedidos'
 import { Evento, getEventos } from '../api/eventos'
+import { getGastosTotal } from '../api/materiasPrimas'
 import LoadingSpinner from '../components/LoadingSpinner'
 
 type Modo = 'tabla' | 'dashboard'
@@ -10,9 +11,7 @@ const etiquetaEntrega: Record<EstadoEntrega, string> = { pendiente: 'Pendiente',
 const etiquetaPago: Record<EstadoPago, string> = { sin_seña: 'Sin seña', señado: 'Señado', pagado: 'Pagado' }
 
 const badgeEntrega = (e: EstadoEntrega) =>
-  e === 'entregado'
-    ? 'bg-emerald-50 text-emerald-700'
-    : 'bg-amber-50 text-amber-700'
+  e === 'entregado' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
 
 const badgePago = (e: EstadoPago) =>
   e === 'pagado'
@@ -35,13 +34,24 @@ export default function PedidosPage() {
   const [eventos, setEventos] = useState<Evento[]>([])
   const [loading, setLoading] = useState(true)
   const [filtros, setFiltros] = useState<FiltrosPedidos>({})
+  const [totalGastosGlobal, setTotalGastosGlobal] = useState(0)
 
   async function load() {
     setLoading(true)
     try {
-      const [peds, evs] = await Promise.all([getPedidosGlobal(filtros), getEventos()])
+      const gastosFilter = {
+        eventoId: filtros.eventoId,
+        fechaDesde: filtros.fechaDesde,
+        fechaHasta: filtros.fechaHasta,
+      }
+      const [peds, evs, totalGastos] = await Promise.all([
+        getPedidosGlobal(filtros),
+        getEventos(),
+        getGastosTotal(gastosFilter),
+      ])
       setPedidos(peds)
       setEventos(evs)
+      setTotalGastosGlobal(totalGastos)
     } finally {
       setLoading(false)
     }
@@ -58,6 +68,8 @@ export default function PedidosPage() {
   const pendienteCobro = totalMonto - cobrado
   const entregados = pedidos.filter(p => p.estadoEntrega === 'entregado').length
   const pendientesEntrega = pedidos.filter(p => p.estadoEntrega === 'pendiente').length
+  const gananciaNeta = cobrado - totalGastosGlobal
+  const gananciaEsperada = totalMonto - totalGastosGlobal
 
   const porEstadoPago = (['sin_seña', 'señado', 'pagado'] as EstadoPago[]).map(estado => ({
     estado,
@@ -223,37 +235,85 @@ export default function PedidosPage() {
         )
       ) : (
         <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <ShoppingCart size={14} color="#9CC6EA" strokeWidth={2} />
-                <p className="text-xs text-[#6B7280]">Total pedidos</p>
+          {/* Métricas de ingresos */}
+          <div>
+            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Ingresos</p>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <ShoppingCart size={14} color="#9CC6EA" strokeWidth={2} />
+                  <p className="text-xs text-[#6B7280]">Total pedidos</p>
+                </div>
+                <p className="text-2xl font-semibold text-[#1F2937]">{pedidos.length}</p>
               </div>
-              <p className="text-2xl font-semibold text-[#1F2937]">{pedidos.length}</p>
-            </div>
-            <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <DollarSign size={14} color="#9CC6EA" strokeWidth={2} />
-                <p className="text-xs text-[#6B7280]">Monto esperado</p>
+              <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <DollarSign size={14} color="#9CC6EA" strokeWidth={2} />
+                  <p className="text-xs text-[#6B7280]">Monto esperado</p>
+                </div>
+                <p className="text-lg font-semibold text-[#1F2937]">{formatMonto(totalMonto)}</p>
               </div>
-              <p className="text-lg font-semibold text-[#1F2937]">{formatMonto(totalMonto)}</p>
-            </div>
-            <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <CheckCircle2 size={14} color="#10b981" strokeWidth={2} />
-                <p className="text-xs text-[#6B7280]">Cobrado</p>
+              <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <CheckCircle2 size={14} color="#10b981" strokeWidth={2} />
+                  <p className="text-xs text-[#6B7280]">Cobrado</p>
+                </div>
+                <p className="text-lg font-semibold text-emerald-600">{formatMonto(cobrado)}</p>
               </div>
-              <p className="text-lg font-semibold text-emerald-600">{formatMonto(cobrado)}</p>
-            </div>
-            <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingDown size={14} color="#f59e0b" strokeWidth={2} />
-                <p className="text-xs text-[#6B7280]">Pendiente cobro</p>
+              <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <TrendingDown size={14} color="#f59e0b" strokeWidth={2} />
+                  <p className="text-xs text-[#6B7280]">Pendiente cobro</p>
+                </div>
+                <p className="text-lg font-semibold text-amber-500">{formatMonto(pendienteCobro)}</p>
               </div>
-              <p className="text-lg font-semibold text-amber-500">{formatMonto(pendienteCobro)}</p>
             </div>
           </div>
 
+          {/* Rentabilidad global */}
+          <div>
+            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Rentabilidad</p>
+            <div className="grid grid-cols-3 gap-3">
+              <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <FlaskConical size={14} color="#9CC6EA" strokeWidth={2} />
+                  <p className="text-xs text-[#6B7280]">Total gastos</p>
+                </div>
+                <p className="text-lg font-semibold text-[#1F2937]">{formatMonto(totalGastosGlobal)}</p>
+                {filtros.eventoId && (
+                  <p className="text-xs text-[#6B7280] mt-0.5">evento seleccionado</p>
+                )}
+              </div>
+              <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  {gananciaNeta >= 0
+                    ? <TrendingUp size={14} color="#10b981" strokeWidth={2} />
+                    : <TrendingDown size={14} color="#ef4444" strokeWidth={2} />
+                  }
+                  <p className="text-xs text-[#6B7280]">Ganancia neta</p>
+                </div>
+                <p className={`text-lg font-semibold ${gananciaNeta >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+                  {formatMonto(gananciaNeta)}
+                </p>
+                <p className="text-xs text-[#6B7280] mt-0.5">cobrado − gastos</p>
+              </div>
+              <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  {gananciaEsperada >= 0
+                    ? <TrendingUp size={14} color="#9CC6EA" strokeWidth={2} />
+                    : <TrendingDown size={14} color="#f59e0b" strokeWidth={2} />
+                  }
+                  <p className="text-xs text-[#6B7280]">Ganancia esperada</p>
+                </div>
+                <p className={`text-lg font-semibold ${gananciaEsperada >= 0 ? 'text-[#1F2937]' : 'text-amber-500'}`}>
+                  {formatMonto(gananciaEsperada)}
+                </p>
+                <p className="text-xs text-[#6B7280] mt-0.5">total − gastos</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Estados */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="bg-white border border-[#E5EAF1] rounded-2xl p-5">
               <div className="flex items-center gap-2 mb-4">

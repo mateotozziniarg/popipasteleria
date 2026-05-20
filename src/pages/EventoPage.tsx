@@ -2,11 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
   ArrowLeft, Plus, Pencil, Trash2, ShoppingCart, Truck, DollarSign, CreditCard,
-  X, RefreshCw, CheckCircle2, Clock, AlertCircle, Circle, Calendar
+  X, RefreshCw, ChevronDown, ChevronRight, FlaskConical, TrendingUp, TrendingDown, Calendar
 } from 'lucide-react'
 import { Evento, getEventos } from '../api/eventos'
 import { Pedido, PedidoInput, EstadoEntrega, EstadoPago, getPedidos, createPedido, updatePedido, deletePedido } from '../api/pedidos'
 import { Producto, getProductos, createProducto, addPedidoProducto, deletePedidoProducto } from '../api/productos'
+import {
+  MateriaPrima, EventoGasto,
+  getMateriasPrimas, createMateriaPrima,
+  getEventoGastos, createEventoGasto, updateEventoGasto, deleteEventoGasto
+} from '../api/materiasPrimas'
 import Modal from '../components/Modal'
 import LoadingSpinner from '../components/LoadingSpinner'
 
@@ -59,20 +64,21 @@ const inputClass = 'w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-s
 const labelClass = 'block text-sm font-medium text-[#1F2937] mb-1.5'
 const btnPrimary = 'bg-[#1F2937] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors flex items-center gap-2'
 const btnGhost = 'text-sm text-[#6B7280] hover:text-[#1F2937] transition-colors'
+const inputInline = 'border border-[#E5EAF1] rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors'
 
 function calcularTotal(items: ItemForm[]): number {
   return items.reduce((s, i) => s + i.cantidad * (parseFloat(i.precioUnitario) || 0), 0)
 }
 
 // ── Buscador de productos ──────────────────────────────────────────
-interface BuscadorProps {
+interface BuscadorProductosProps {
   productos: Producto[]
   itemsActuales: ItemForm[]
   onAgregar: (item: ItemForm) => void
   onCrearYAgregar: (nombre: string) => void
 }
 
-function BuscadorProductos({ productos, itemsActuales, onAgregar, onCrearYAgregar }: BuscadorProps) {
+function BuscadorProductos({ productos, itemsActuales, onAgregar, onCrearYAgregar }: BuscadorProductosProps) {
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -136,13 +142,13 @@ function BuscadorProductos({ productos, itemsActuales, onAgregar, onCrearYAgrega
 }
 
 // ── Mini-form para crear producto nuevo inline ─────────────────────
-interface MiniCrearProps {
+interface MiniCrearProductoProps {
   nombre: string
   onConfirmar: (producto: Producto) => void
   onCancelar: () => void
 }
 
-function MiniCrearProducto({ nombre, onConfirmar, onCancelar }: MiniCrearProps) {
+function MiniCrearProducto({ nombre, onConfirmar, onCancelar }: MiniCrearProductoProps) {
   const [precio, setPrecio] = useState('')
   const [saving, setSaving] = useState(false)
 
@@ -165,31 +171,201 @@ function MiniCrearProducto({ nombre, onConfirmar, onCancelar }: MiniCrearProps) 
         <div className="flex-1">
           <label className="block text-xs text-[#6B7280] mb-1">Precio por defecto</label>
           <input
-            type="number"
-            min="0"
-            step="0.01"
-            autoFocus
+            type="number" min="0" step="0.01" autoFocus
             className="w-full border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
             value={precio}
             onChange={e => setPrecio(e.target.value)}
             placeholder="0"
           />
         </div>
-        <button
-          type="submit"
-          disabled={saving || !precio}
-          className="bg-[#1F2937] text-white text-xs px-3 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors"
-        >
+        <button type="submit" disabled={saving || !precio} className="bg-[#1F2937] text-white text-xs px-3 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors">
           {saving ? '...' : 'Crear'}
         </button>
-        <button
-          type="button"
-          onClick={onCancelar}
-          className="text-xs text-[#6B7280] hover:text-[#1F2937] px-2 py-2 transition-colors"
-        >
+        <button type="button" onClick={onCancelar} className="text-xs text-[#6B7280] hover:text-[#1F2937] px-2 py-2 transition-colors">
           Cancelar
         </button>
       </form>
+    </div>
+  )
+}
+
+// ── Buscador de materias primas ────────────────────────────────────
+interface BuscadorMpProps {
+  materias: MateriaPrima[]
+  gastosActuales: EventoGasto[]
+  onAgregar: (mp: MateriaPrima) => void
+  onCrearYAgregar: (nombre: string) => void
+}
+
+function BuscadorMateriaPrima({ materias, gastosActuales, onAgregar, onCrearYAgregar }: BuscadorMpProps) {
+  const [query, setQuery] = useState('')
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const idsActuales = new Set(gastosActuales.map(g => g.materiaPrimaId))
+  const filtradas = materias.filter(
+    m => !idsActuales.has(m.id) && m.nombre.toLowerCase().includes(query.toLowerCase())
+  )
+  const mostrarCrear = query.trim().length > 0 && !materias.some(m => m.nombre.toLowerCase() === query.toLowerCase())
+
+  return (
+    <div ref={ref} className="relative">
+      <input
+        className={inputClass}
+        placeholder="Buscar materia prima..."
+        value={query}
+        onChange={e => { setQuery(e.target.value); setOpen(true) }}
+        onFocus={() => setOpen(true)}
+      />
+      {open && (filtradas.length > 0 || mostrarCrear) && (
+        <div className="absolute z-10 mt-1 w-full bg-white border border-[#E5EAF1] rounded-xl shadow-lg max-h-48 overflow-y-auto">
+          {filtradas.map(m => (
+            <button
+              key={m.id}
+              type="button"
+              onClick={() => { onAgregar(m); setQuery(''); setOpen(false) }}
+              className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#F7FAFC] flex justify-between items-center transition-colors"
+            >
+              <span className="text-[#1F2937]">{m.nombre}</span>
+              <span className="text-[#6B7280] text-xs">{formatMonto(parseFloat(m.precioDefault))}</span>
+            </button>
+          ))}
+          {mostrarCrear && (
+            <button
+              type="button"
+              onClick={() => { onCrearYAgregar(query.trim()); setQuery(''); setOpen(false) }}
+              className="w-full text-left px-3 py-2.5 text-sm text-[#9CC6EA] hover:bg-[#F7FAFC] border-t border-[#E5EAF1] flex items-center gap-1.5 transition-colors"
+            >
+              <Plus size={13} strokeWidth={2.5} />
+              Crear "{query.trim()}"
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Mini-form para crear materia prima inline ──────────────────────
+interface MiniCrearMpProps {
+  nombre: string
+  onConfirmar: (mp: MateriaPrima) => void
+  onCancelar: () => void
+}
+
+function MiniCrearMateriaPrima({ nombre, onConfirmar, onCancelar }: MiniCrearMpProps) {
+  const [precio, setPrecio] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!precio) return
+    setSaving(true)
+    try {
+      const mp = await createMateriaPrima({ nombre, precioDefault: parseFloat(precio) })
+      onConfirmar(mp)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="bg-[#F7FAFC] border border-[#CFE6F7] rounded-xl p-3 mt-2">
+      <p className="text-sm font-medium text-[#1F2937] mb-2.5">Crear materia prima "{nombre}"</p>
+      <form onSubmit={handleSubmit} className="flex gap-2 items-end">
+        <div className="flex-1">
+          <label className="block text-xs text-[#6B7280] mb-1">Precio por defecto</label>
+          <input
+            type="number" min="0" step="0.01" autoFocus
+            className="w-full border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
+            value={precio}
+            onChange={e => setPrecio(e.target.value)}
+            placeholder="0"
+          />
+        </div>
+        <button type="submit" disabled={saving || !precio} className="bg-[#1F2937] text-white text-xs px-3 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors">
+          {saving ? '...' : 'Crear'}
+        </button>
+        <button type="button" onClick={onCancelar} className="text-xs text-[#6B7280] hover:text-[#1F2937] px-2 py-2 transition-colors">
+          Cancelar
+        </button>
+      </form>
+    </div>
+  )
+}
+
+// ── Fila de gasto (inline editable) ───────────────────────────────
+interface GastoRowProps {
+  gasto: EventoGasto
+  eventoId: number
+  onDelete: () => void
+  onUpdate: (g: EventoGasto) => void
+}
+
+function GastoRow({ gasto, eventoId, onDelete, onUpdate }: GastoRowProps) {
+  const [cantidad, setCantidad] = useState(gasto.cantidad)
+  const [precio, setPrecio] = useState(gasto.precioUnitario)
+  const [notas, setNotas] = useState(gasto.notas ?? '')
+
+  async function save() {
+    try {
+      const updated = await updateEventoGasto(eventoId, gasto.id, {
+        cantidad: parseFloat(cantidad) || 0,
+        precioUnitario: parseFloat(precio) || 0,
+        notas: notas || undefined,
+      })
+      onUpdate(updated)
+    } catch { /* silent */ }
+  }
+
+  const subtotal = (parseFloat(cantidad) || 0) * (parseFloat(precio) || 0)
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl px-3 py-2.5">
+      <span className="text-sm font-medium text-[#1F2937] flex-1 min-w-24">{gasto.materiaPrima.nombre}</span>
+      <div className="flex items-center gap-2">
+        <input
+          type="number" min="0" step="0.01"
+          className={`w-16 text-center ${inputInline}`}
+          value={cantidad}
+          onChange={e => setCantidad(e.target.value)}
+          onBlur={save}
+          title="Cantidad"
+        />
+        <span className="text-[#6B7280] text-xs">×</span>
+        <input
+          type="number" min="0" step="0.01"
+          className={`w-24 text-right ${inputInline}`}
+          value={precio}
+          onChange={e => setPrecio(e.target.value)}
+          onBlur={save}
+          title="Precio unitario"
+        />
+        <span className="text-sm font-semibold text-[#1F2937] w-24 text-right whitespace-nowrap">
+          {formatMonto(subtotal)}
+        </span>
+      </div>
+      <input
+        className={`flex-1 min-w-28 text-xs ${inputInline}`}
+        value={notas}
+        onChange={e => setNotas(e.target.value)}
+        onBlur={save}
+        placeholder="Notas..."
+      />
+      <button
+        onClick={onDelete}
+        className="text-red-400 hover:text-red-600 transition-colors"
+      >
+        <Trash2 size={13} strokeWidth={2} />
+      </button>
     </div>
   )
 }
@@ -203,6 +379,8 @@ export default function EventoPage() {
   const [evento, setEvento] = useState<Evento | null>(null)
   const [pedidos, setPedidos] = useState<Pedido[]>([])
   const [productos, setProductos] = useState<Producto[]>([])
+  const [gastos, setGastos] = useState<EventoGasto[]>([])
+  const [materias, setMaterias] = useState<MateriaPrima[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Pedido | null>(null)
@@ -210,14 +388,25 @@ export default function EventoPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [crearNombre, setCrearNombre] = useState<string | null>(null)
+  const [gastosOpen, setGastosOpen] = useState(true)
+  const [crearMpNombre, setCrearMpNombre] = useState<string | null>(null)
+  const [addingGasto, setAddingGasto] = useState(false)
 
   async function load() {
     setLoading(true)
     try {
-      const [evs, peds, prods] = await Promise.all([getEventos(), getPedidos(eventoId), getProductos()])
+      const [evs, peds, prods, gsts, mats] = await Promise.all([
+        getEventos(),
+        getPedidos(eventoId),
+        getProductos(),
+        getEventoGastos(eventoId),
+        getMateriasPrimas(),
+      ])
       setEvento(evs.find(e => e.id === eventoId) ?? null)
       setPedidos(peds)
       setProductos(prods)
+      setGastos(gsts)
+      setMaterias(mats)
     } finally {
       setLoading(false)
     }
@@ -336,15 +525,38 @@ export default function EventoPage() {
     }
   }
 
+  async function handleAgregarGasto(mp: MateriaPrima) {
+    setAddingGasto(true)
+    try {
+      const gasto = await createEventoGasto(eventoId, {
+        materiaPrimaId: mp.id,
+        cantidad: 1,
+        precioUnitario: parseFloat(mp.precioDefault),
+      })
+      setGastos(prev => [...prev, gasto])
+    } finally {
+      setAddingGasto(false)
+    }
+  }
+
+  async function handleEliminarGasto(gastoId: number) {
+    if (!confirm('¿Eliminar este gasto?')) return
+    await deleteEventoGasto(eventoId, gastoId)
+    setGastos(prev => prev.filter(g => g.id !== gastoId))
+  }
+
   const pedidosOrdenados = [...pedidos].sort((a, b) => {
     if (a.estadoEntrega !== b.estadoEntrega) return a.estadoEntrega === 'pendiente' ? -1 : 1
     return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   })
 
-  const totalMonto = pedidos.reduce((s, p) => s + parseFloat(p.precioTotal), 0)
-  const cobrado = pedidos.filter(p => p.estadoPago === 'pagado').reduce((s, p) => s + parseFloat(p.precioTotal), 0)
+  const totalEsperado = pedidos.reduce((s, p) => s + parseFloat(p.precioTotal), 0)
+  const totalCobrado = pedidos.filter(p => p.estadoPago === 'pagado').reduce((s, p) => s + parseFloat(p.precioTotal), 0)
   const entregados = pedidos.filter(p => p.estadoEntrega === 'entregado').length
   const pagados = pedidos.filter(p => p.estadoPago === 'pagado').length
+  const totalGastos = gastos.reduce((s, g) => s + g.subtotal, 0)
+  const gananciaNeta = totalCobrado - totalGastos
+  const gananciaEsperada = totalEsperado - totalGastos
 
   if (loading) return <LoadingSpinner fullscreen />
   if (!evento) return <p className="p-6 text-sm text-red-500">Evento no encontrado.</p>
@@ -370,8 +582,9 @@ export default function EventoPage() {
         )}
       </div>
 
-      {/* Dashboard KPIs */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+      {/* Fila 1 — Ingresos */}
+      <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Ingresos</p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
           <div className="flex items-center gap-1.5 mb-2">
             <ShoppingCart size={13} color="#9CC6EA" strokeWidth={2} />
@@ -389,21 +602,123 @@ export default function EventoPage() {
         <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
           <div className="flex items-center gap-1.5 mb-2">
             <DollarSign size={13} color="#9CC6EA" strokeWidth={2} />
-            <p className="text-xs text-[#6B7280]">Monto total</p>
+            <p className="text-xs text-[#6B7280]">Total esperado</p>
           </div>
-          <p className="text-lg font-semibold text-[#1F2937]">{formatMonto(totalMonto)}</p>
+          <p className="text-lg font-semibold text-[#1F2937]">{formatMonto(totalEsperado)}</p>
         </div>
         <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
           <div className="flex items-center gap-1.5 mb-2">
             <CreditCard size={13} color="#10b981" strokeWidth={2} />
             <p className="text-xs text-[#6B7280]">Cobrado</p>
           </div>
-          <p className="text-lg font-semibold text-emerald-600">{formatMonto(cobrado)}</p>
+          <p className="text-lg font-semibold text-emerald-600">{formatMonto(totalCobrado)}</p>
           <p className="text-xs text-[#6B7280] mt-0.5">{pagados} pagados</p>
         </div>
       </div>
 
-      <hr className="border-t border-[#E5EAF1] mb-6" />
+      {/* Fila 2 — Rentabilidad */}
+      <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Rentabilidad</p>
+      <div className="grid grid-cols-3 gap-3 mb-6">
+        <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+          <div className="flex items-center gap-1.5 mb-2">
+            <FlaskConical size={13} color="#9CC6EA" strokeWidth={2} />
+            <p className="text-xs text-[#6B7280]">Total gastos</p>
+          </div>
+          <p className="text-lg font-semibold text-[#1F2937]">{formatMonto(totalGastos)}</p>
+        </div>
+        <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+          <div className="flex items-center gap-1.5 mb-2">
+            {gananciaNeta >= 0
+              ? <TrendingUp size={13} color="#10b981" strokeWidth={2} />
+              : <TrendingDown size={13} color="#ef4444" strokeWidth={2} />
+            }
+            <p className="text-xs text-[#6B7280]">Ganancia neta</p>
+          </div>
+          <p className={`text-lg font-semibold ${gananciaNeta >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+            {formatMonto(gananciaNeta)}
+          </p>
+          <p className="text-xs text-[#6B7280] mt-0.5">cobrado − gastos</p>
+        </div>
+        <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+          <div className="flex items-center gap-1.5 mb-2">
+            {gananciaEsperada >= 0
+              ? <TrendingUp size={13} color="#9CC6EA" strokeWidth={2} />
+              : <TrendingDown size={13} color="#f59e0b" strokeWidth={2} />
+            }
+            <p className="text-xs text-[#6B7280]">Ganancia esperada</p>
+          </div>
+          <p className={`text-lg font-semibold ${gananciaEsperada >= 0 ? 'text-[#1F2937]' : 'text-amber-500'}`}>
+            {formatMonto(gananciaEsperada)}
+          </p>
+          <p className="text-xs text-[#6B7280] mt-0.5">total − gastos</p>
+        </div>
+      </div>
+
+      <hr className="border-t border-[#E5EAF1] mb-5" />
+
+      {/* Sección gastos */}
+      <div className="mb-5">
+        <button
+          onClick={() => setGastosOpen(o => !o)}
+          className="flex items-center gap-2 w-full text-left mb-3"
+        >
+          {gastosOpen ? <ChevronDown size={15} color="#9CC6EA" strokeWidth={2} /> : <ChevronRight size={15} color="#9CC6EA" strokeWidth={2} />}
+          <FlaskConical size={15} color="#9CC6EA" strokeWidth={2} />
+          <span className="font-semibold text-[#1F2937]">Gastos del evento</span>
+          {totalGastos > 0 && (
+            <span className="ml-auto text-sm font-semibold text-[#1F2937]">{formatMonto(totalGastos)}</span>
+          )}
+        </button>
+
+        {gastosOpen && (
+          <div className="flex flex-col gap-2">
+            {gastos.map(g => (
+              <GastoRow
+                key={g.id}
+                gasto={g}
+                eventoId={eventoId}
+                onDelete={() => handleEliminarGasto(g.id)}
+                onUpdate={updated => setGastos(prev => prev.map(x => x.id === updated.id ? updated : x))}
+              />
+            ))}
+
+            {gastos.length === 0 && (
+              <p className="text-sm text-[#6B7280] py-2">No hay gastos registrados para este evento.</p>
+            )}
+
+            {gastos.length > 0 && (
+              <div className="flex justify-end pt-1 border-t border-[#E5EAF1]">
+                <span className="text-sm font-semibold text-[#1F2937]">
+                  Total: {formatMonto(totalGastos)}
+                </span>
+              </div>
+            )}
+
+            <div className="mt-2">
+              <BuscadorMateriaPrima
+                materias={materias}
+                gastosActuales={gastos}
+                onAgregar={handleAgregarGasto}
+                onCrearYAgregar={nombre => setCrearMpNombre(nombre)}
+              />
+              {addingGasto && <p className="text-xs text-[#6B7280] mt-1">Agregando...</p>}
+              {crearMpNombre && (
+                <MiniCrearMateriaPrima
+                  nombre={crearMpNombre}
+                  onConfirmar={mp => {
+                    setMaterias(prev => [...prev, mp].sort((a, b) => a.nombre.localeCompare(b.nombre)))
+                    handleAgregarGasto(mp)
+                    setCrearMpNombre(null)
+                  }}
+                  onCancelar={() => setCrearMpNombre(null)}
+                />
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <hr className="border-t border-[#E5EAF1] mb-5" />
 
       {/* Encabezado pedidos */}
       <div className="flex items-center justify-between mb-4">
@@ -501,7 +816,6 @@ export default function EventoPage() {
               </div>
             </div>
 
-            {/* Productos */}
             <div>
               <label className={labelClass}>Productos</label>
               {form.items.length > 0 && (
@@ -510,26 +824,19 @@ export default function EventoPage() {
                     <div key={item.productoId} className="flex items-center gap-2 bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl px-3 py-2">
                       <span className="text-sm text-[#1F2937] flex-1 truncate">{item.nombre}</span>
                       <input
-                        type="number"
-                        min="1"
+                        type="number" min="1"
                         className="w-14 border border-[#E5EAF1] rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
                         value={item.cantidad}
                         onChange={e => actualizarItem(idx, 'cantidad', e.target.value)}
                       />
                       <span className="text-[#6B7280] text-xs">×</span>
                       <input
-                        type="number"
-                        min="0"
-                        step="0.01"
+                        type="number" min="0" step="0.01"
                         className="w-24 border border-[#E5EAF1] rounded-lg px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
                         value={item.precioUnitario}
                         onChange={e => actualizarItem(idx, 'precioUnitario', e.target.value)}
                       />
-                      <button
-                        type="button"
-                        onClick={() => quitarItem(idx)}
-                        className="text-[#6B7280] hover:text-red-500 transition-colors ml-1"
-                      >
+                      <button type="button" onClick={() => quitarItem(idx)} className="text-[#6B7280] hover:text-red-500 transition-colors ml-1">
                         <X size={14} strokeWidth={2} />
                       </button>
                     </div>
@@ -555,7 +862,6 @@ export default function EventoPage() {
               )}
             </div>
 
-            {/* Precio total */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
                 <label className="text-sm font-medium text-[#1F2937]">Precio total</label>
@@ -571,9 +877,7 @@ export default function EventoPage() {
                 )}
               </div>
               <input
-                type="number"
-                min="0"
-                step="0.01"
+                type="number" min="0" step="0.01"
                 className={inputClass}
                 value={form.precioTotal}
                 onChange={e => handlePrecioManual(e.target.value)}
@@ -584,7 +888,6 @@ export default function EventoPage() {
               )}
             </div>
 
-            {/* Estados */}
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={labelClass}>Estado entrega</label>
@@ -611,7 +914,6 @@ export default function EventoPage() {
               </div>
             </div>
 
-            {/* Notas */}
             <div>
               <label className={labelClass}>
                 Notas <span className="text-[#6B7280] font-normal">(opcional)</span>

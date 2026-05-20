@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Menu, X, Calendar, ShoppingCart, Package } from 'lucide-react'
+import { Menu, X, Calendar, ShoppingCart, Package, FlaskConical } from 'lucide-react'
 
 const navItems = [
   { label: 'Eventos', path: '/', icon: Calendar },
   { label: 'Pedidos', path: '/pedidos', icon: ShoppingCart },
   { label: 'Productos', path: '/productos', icon: Package },
+  { label: 'Materias primas', path: '/materias-primas', icon: FlaskConical },
 ]
 
 export default function Sidebar() {
