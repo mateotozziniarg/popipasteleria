@@ -104,7 +104,7 @@ export default function PedidosPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 pt-20 pb-8">
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center">
             <ShoppingCart size={16} color="#1F2937" strokeWidth={2} />
@@ -113,7 +113,8 @@ export default function PedidosPage() {
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => setModalOpen(true)} className={btnPrimary}>
-            <Plus size={14} strokeWidth={2.5} /> Nuevo pedido
+            <Plus size={14} strokeWidth={2.5} />
+            <span className="sm:inline">Nuevo pedido</span>
           </button>
           <div className="flex gap-1 bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl p-1">
             <button onClick={() => setModo('tabla')}
