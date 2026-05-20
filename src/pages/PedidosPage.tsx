@@ -118,56 +118,58 @@ export default function PedidosPage() {
           <SlidersHorizontal size={13} color="#9CC6EA" strokeWidth={2} />
           <span className="text-xs font-medium text-[#6B7280]">Filtros</span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          <div>
-            <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Evento</label>
-            <select
-              className={inputClass}
-              value={filtros.eventoId ?? ''}
-              onChange={e => setFiltro('eventoId', e.target.value ? parseInt(e.target.value) : undefined)}
-            >
-              <option value="">Todos</option>
-              {eventos.map(ev => <option key={ev.id} value={ev.id}>{ev.nombre}</option>)}
-            </select>
+        <div className="flex flex-col gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Evento</label>
+              <select
+                className={inputClass}
+                value={filtros.eventoId ?? ''}
+                onChange={e => setFiltro('eventoId', e.target.value ? parseInt(e.target.value) : undefined)}
+              >
+                <option value="">Todos</option>
+                {eventos.map(ev => <option key={ev.id} value={ev.id}>{ev.nombre}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Entrega</label>
+              <select
+                className={inputClass}
+                value={filtros.estadoEntrega ?? ''}
+                onChange={e => setFiltro('estadoEntrega', e.target.value as EstadoEntrega || undefined)}
+              >
+                <option value="">Todos</option>
+                <option value="pendiente">Pendiente</option>
+                <option value="entregado">Entregado</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Pago</label>
+              <select
+                className={inputClass}
+                value={filtros.estadoPago ?? ''}
+                onChange={e => setFiltro('estadoPago', e.target.value as EstadoPago || undefined)}
+              >
+                <option value="">Todos</option>
+                <option value="sin_seña">Sin seña</option>
+                <option value="señado">Señado</option>
+                <option value="pagado">Pagado</option>
+              </select>
+            </div>
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Entrega</label>
-            <select
-              className={inputClass}
-              value={filtros.estadoEntrega ?? ''}
-              onChange={e => setFiltro('estadoEntrega', e.target.value as EstadoEntrega || undefined)}
-            >
-              <option value="">Todos</option>
-              <option value="pendiente">Pendiente</option>
-              <option value="entregado">Entregado</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Pago</label>
-            <select
-              className={inputClass}
-              value={filtros.estadoPago ?? ''}
-              onChange={e => setFiltro('estadoPago', e.target.value as EstadoPago || undefined)}
-            >
-              <option value="">Todos</option>
-              <option value="sin_seña">Sin seña</option>
-              <option value="señado">Señado</option>
-              <option value="pagado">Pagado</option>
-            </select>
-          </div>
-          <div className="col-span-2 sm:col-span-1">
             <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Fecha del pedido</label>
-            <div className="flex gap-1 items-center">
+            <div className="flex gap-2 items-center">
               <input
                 type="date"
-                className="w-full border border-[#E5EAF1] rounded-xl px-2 py-2 text-xs text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
+                className="flex-1 border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
                 value={filtros.fechaDesde ?? ''}
                 onChange={e => setFiltro('fechaDesde', e.target.value || undefined)}
               />
               <span className="text-[#6B7280] text-xs shrink-0">–</span>
               <input
                 type="date"
-                className="w-full border border-[#E5EAF1] rounded-xl px-2 py-2 text-xs text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
+                className="flex-1 border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
                 value={filtros.fechaHasta ?? ''}
                 onChange={e => setFiltro('fechaHasta', e.target.value || undefined)}
               />
