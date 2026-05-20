@@ -5,6 +5,7 @@ import { Evento, getEventos, createEvento, updateEvento, deleteEvento } from '..
 import { getPedidos, Pedido } from '../api/pedidos'
 import Modal from '../components/Modal'
 import LoadingSpinner from '../components/LoadingSpinner'
+import ConfirmModal from '../components/ConfirmModal'
 
 interface EventoConResumen extends Evento {
   totalPedidos: number
@@ -33,6 +34,8 @@ export default function EventosPage() {
   const [form, setForm] = useState<FormState>(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confirmTarget, setConfirmTarget] = useState<Evento | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   async function loadEventos() {
     setLoading(true)
@@ -69,11 +72,21 @@ export default function EventosPage() {
     setModalOpen(true)
   }
 
-  async function handleDelete(id: number, e: React.MouseEvent) {
+  function handleDelete(ev: Evento, e: React.MouseEvent) {
     e.stopPropagation()
-    if (!confirm('¿Eliminar este evento? También se eliminarán sus pedidos.')) return
-    await deleteEvento(id)
-    loadEventos()
+    setConfirmTarget(ev)
+  }
+
+  async function execDelete() {
+    if (!confirmTarget) return
+    setDeleting(true)
+    try {
+      await deleteEvento(confirmTarget.id)
+      setConfirmTarget(null)
+      loadEventos()
+    } finally {
+      setDeleting(false)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -168,7 +181,7 @@ export default function EventosPage() {
                   Editar
                 </button>
                 <button
-                  onClick={(e) => handleDelete(ev.id, e)}
+                  onClick={(e) => handleDelete(ev, e)}
                   className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-600 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
                 >
                   <Trash2 size={12} strokeWidth={2} />
@@ -179,6 +192,16 @@ export default function EventosPage() {
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmTarget !== null}
+        titulo={`¿Eliminar "${confirmTarget?.nombre}"?`}
+        descripcion="También se eliminarán todos sus pedidos. Esta acción no se puede deshacer."
+        labelConfirmar="Borrar evento"
+        onConfirmar={execDelete}
+        onCancelar={() => setConfirmTarget(null)}
+        loading={deleting}
+      />
 
       {modalOpen && (
         <Modal title={editTarget ? 'Editar evento' : 'Nuevo evento'} onClose={() => setModalOpen(false)}>

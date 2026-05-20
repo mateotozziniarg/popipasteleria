@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   ShoppingCart, LayoutList, BarChart2, CheckCircle2, Clock, CreditCard,
-  TrendingDown, TrendingUp, DollarSign, SlidersHorizontal, FlaskConical, Plus, Search
+  TrendingDown, TrendingUp, DollarSign, SlidersHorizontal, FlaskConical, Plus, Search, Eye, Pencil
 } from 'lucide-react'
 import { PedidoConEvento, FiltrosPedidos, EstadoEntrega, EstadoPago, getPedidosGlobal } from '../api/pedidos'
 import { Evento, getEventos } from '../api/eventos'
 import { getGastosTotal } from '../api/materiasPrimas'
 import LoadingSpinner from '../components/LoadingSpinner'
 import PedidoFormModal from '../components/PedidoFormModal'
+import PedidoDetailModal from '../components/PedidoDetailModal'
 
 type Modo = 'tabla' | 'dashboard'
 
@@ -44,6 +45,8 @@ export default function PedidosPage() {
   const [eventoSelect, setEventoSelect] = useState('')
   const [totalGastosGlobal, setTotalGastosGlobal] = useState(0)
   const [modalOpen, setModalOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState<PedidoConEvento | null>(null)
+  const [viewTarget, setViewTarget] = useState<PedidoConEvento | null>(null)
 
   useEffect(() => {
     if (searchParams.get('nuevo') === '1') {
@@ -210,6 +213,7 @@ export default function PedidosPage() {
                     <th className="text-left px-4 py-3">Entrega</th>
                     <th className="text-left px-4 py-3">Pago</th>
                     <th className="text-left px-4 py-3 hidden lg:table-cell">Notas</th>
+                    <th className="px-4 py-3"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#F7FAFC]">
@@ -246,6 +250,24 @@ export default function PedidosPage() {
                       </td>
                       <td className="px-4 py-3 text-[#6B7280] text-xs max-w-36 hidden lg:table-cell">
                         <p className="truncate italic">{p.notas ?? '—'}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setViewTarget(p)}
+                            className="p-1.5 rounded-lg text-[#9CC6EA] hover:text-[#1F2937] hover:bg-[#F7FAFC] transition-colors"
+                            title="Ver detalle"
+                          >
+                            <Eye size={15} strokeWidth={2} />
+                          </button>
+                          <button
+                            onClick={() => { setEditTarget(p); setModalOpen(true) }}
+                            className="p-1.5 rounded-lg text-[#9CC6EA] hover:text-[#1F2937] hover:bg-[#F7FAFC] transition-colors"
+                            title="Editar"
+                          >
+                            <Pencil size={15} strokeWidth={2} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -344,8 +366,15 @@ export default function PedidosPage() {
 
       <PedidoFormModal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSaved={() => { setModalOpen(false); load() }}
+        onClose={() => { setModalOpen(false); setEditTarget(null) }}
+        onSaved={() => { setModalOpen(false); setEditTarget(null); load() }}
+        editTarget={editTarget}
+      />
+
+      <PedidoDetailModal
+        pedido={viewTarget}
+        onClose={() => setViewTarget(null)}
+        onEdit={() => { setEditTarget(viewTarget); setViewTarget(null); setModalOpen(true) }}
       />
     </div>
   )

@@ -13,6 +13,7 @@ import {
 } from '../api/materiasPrimas'
 import LoadingSpinner from '../components/LoadingSpinner'
 import PedidoFormModal from '../components/PedidoFormModal'
+import ConfirmModal from '../components/ConfirmModal'
 
 const etiquetaEntrega: Record<EstadoEntrega, string> = { pendiente: 'Pendiente', entregado: 'Entregado' }
 const etiquetaPago: Record<EstadoPago, string> = { sin_seña: 'Sin seña', señado: 'Señado', pagado: 'Pagado' }
@@ -192,6 +193,9 @@ export default function EventoPage() {
   const [gastosOpen, setGastosOpen] = useState(true)
   const [crearMpNombre, setCrearMpNombre] = useState<string | null>(null)
   const [addingGasto, setAddingGasto] = useState(false)
+  const [confirmPedidoId, setConfirmPedidoId] = useState<number | null>(null)
+  const [confirmGastoId, setConfirmGastoId] = useState<number | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -216,10 +220,14 @@ export default function EventoPage() {
   function openCreate() { setEditTarget(null); setModalOpen(true) }
   function openEdit(p: Pedido) { setEditTarget(p); setModalOpen(true) }
 
-  async function handleDelete(id: number) {
-    if (!confirm('¿Eliminar este pedido?')) return
-    await deletePedido(id)
-    load()
+  async function execDeletePedido() {
+    if (!confirmPedidoId) return
+    setDeleting(true)
+    try {
+      await deletePedido(confirmPedidoId)
+      setConfirmPedidoId(null)
+      load()
+    } finally { setDeleting(false) }
   }
 
   async function handleAgregarGasto(mp: MateriaPrima) {
@@ -230,10 +238,14 @@ export default function EventoPage() {
     } finally { setAddingGasto(false) }
   }
 
-  async function handleEliminarGasto(gastoId: number) {
-    if (!confirm('¿Eliminar este gasto?')) return
-    await deleteEventoGasto(eventoId, gastoId)
-    setGastos(prev => prev.filter(g => g.id !== gastoId))
+  async function execDeleteGasto() {
+    if (!confirmGastoId) return
+    setDeleting(true)
+    try {
+      await deleteEventoGasto(eventoId, confirmGastoId)
+      setGastos(prev => prev.filter(g => g.id !== confirmGastoId))
+      setConfirmGastoId(null)
+    } finally { setDeleting(false) }
   }
 
   const pedidosOrdenados = [...pedidos].sort((a, b) => {
@@ -331,7 +343,7 @@ export default function EventoPage() {
           <div className="flex flex-col gap-2">
             {gastos.map(g => (
               <GastoRow key={g.id} gasto={g} eventoId={eventoId}
-                onDelete={() => handleEliminarGasto(g.id)}
+                onDelete={() => setConfirmGastoId(g.id)}
                 onUpdate={updated => setGastos(prev => prev.map(x => x.id === updated.id ? updated : x))}
               />
             ))}
@@ -418,7 +430,7 @@ export default function EventoPage() {
                     <button onClick={() => openEdit(p)} className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#1F2937] transition-colors px-2 py-1 rounded-lg hover:bg-[#F7FAFC]">
                       <Pencil size={11} strokeWidth={2} /> Editar
                     </button>
-                    <button onClick={() => handleDelete(p.id)} className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition-colors px-2 py-1 rounded-lg hover:bg-red-50">
+                    <button onClick={() => setConfirmPedidoId(p.id)} className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition-colors px-2 py-1 rounded-lg hover:bg-red-50">
                       <Trash2 size={11} strokeWidth={2} /> Eliminar
                     </button>
                   </div>
@@ -428,6 +440,26 @@ export default function EventoPage() {
           })}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmPedidoId !== null}
+        titulo="¿Eliminar este pedido?"
+        descripcion="Esta acción no se puede deshacer."
+        labelConfirmar="Borrar pedido"
+        onConfirmar={execDeletePedido}
+        onCancelar={() => setConfirmPedidoId(null)}
+        loading={deleting}
+      />
+
+      <ConfirmModal
+        isOpen={confirmGastoId !== null}
+        titulo="¿Eliminar este gasto?"
+        descripcion="Esta acción no se puede deshacer."
+        labelConfirmar="Borrar gasto"
+        onConfirmar={execDeleteGasto}
+        onCancelar={() => setConfirmGastoId(null)}
+        loading={deleting}
+      />
 
       <PedidoFormModal
         isOpen={modalOpen}

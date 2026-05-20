@@ -1,0 +1,183 @@
+import { useRef, useState } from 'react'
+import { X, Download, Edit2 } from 'lucide-react'
+import html2canvas from 'html2canvas'
+import { PedidoConEvento } from '../api/pedidos'
+
+interface Props {
+  pedido: PedidoConEvento | null
+  onClose: () => void
+  onEdit: () => void
+}
+
+const fmt = (n: number) =>
+  n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
+
+const fmtFecha = (iso: string) =>
+  new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'long', year: 'numeric' })
+
+export default function PedidoDetailModal({ pedido, onClose, onEdit }: Props) {
+  const cardRef = useRef<HTMLDivElement>(null)
+  const [downloading, setDownloading] = useState(false)
+
+  if (!pedido) return null
+
+  async function handleDownload() {
+    if (!cardRef.current) return
+    setDownloading(true)
+    try {
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+      })
+      const link = document.createElement('a')
+      link.download = `pedido-${pedido!.nombreCliente.replace(/\s+/g, '-').toLowerCase()}.png`
+      link.href = canvas.toDataURL('image/png')
+      link.click()
+    } finally {
+      setDownloading(false)
+    }
+  }
+
+  const total = parseFloat(pedido.precioTotal)
+  const seña = pedido.montoSeña ? parseFloat(pedido.montoSeña) : null
+  const saldo = seña !== null ? total - seña : null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md border border-[#E5EAF1] flex flex-col max-h-[90vh]">
+        {/* Header */}
+        <div className="flex-none flex items-center justify-between px-5 py-4 border-b-2 border-[#9CC6EA]">
+          <h2 className="text-base font-semibold text-[#1F2937]">Detalle del pedido</h2>
+          <button onClick={onClose} className="text-[#6B7280] hover:text-[#1F2937] transition-colors">
+            <X size={15} strokeWidth={2} />
+          </button>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto p-5">
+          {/* Card que se exporta */}
+          <div ref={cardRef} className="bg-white rounded-xl border border-[#E5EAF1] p-5">
+            {/* Encabezado */}
+            <div className="flex items-start justify-between mb-4 pb-4 border-b border-[#E5EAF1]">
+              <div>
+                <p className="text-xs font-bold text-[#9CC6EA] uppercase tracking-widest mb-1">Popipastelería</p>
+                <p className="text-xl font-bold text-[#1F2937]">{pedido.nombreCliente}</p>
+                {pedido.telefono && <p className="text-sm text-[#6B7280] mt-0.5">{pedido.telefono}</p>}
+              </div>
+              <div className="text-right shrink-0 ml-3">
+                <p className="text-xs text-[#6B7280]">{fmtFecha(pedido.createdAt)}</p>
+                {pedido.evento && (
+                  <p className="text-xs font-medium text-[#1F2937] mt-1 bg-[#F7FAFC] px-2 py-0.5 rounded-full border border-[#E5EAF1]">
+                    {pedido.evento.nombre}
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Descripción */}
+            {pedido.descripcion && (
+              <p className="text-sm text-[#6B7280] mb-4 italic">"{pedido.descripcion}"</p>
+            )}
+
+            {/* Productos */}
+            {pedido.productos.length > 0 && (
+              <div className="mb-4">
+                <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2.5">Productos</p>
+                <div className="flex flex-col gap-2">
+                  {pedido.productos.map(item => (
+                    <div key={item.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs bg-[#F7FAFC] border border-[#E5EAF1] text-[#6B7280] px-1.5 py-0.5 rounded font-medium min-w-[28px] text-center">
+                          {item.cantidad}×
+                        </span>
+                        <span className="text-sm text-[#1F2937]">{item.producto.nombre}</span>
+                      </div>
+                      <span className="text-sm font-medium text-[#1F2937]">
+                        {fmt(parseFloat(item.precioUnitario) * item.cantidad)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Totales */}
+            <div className="border-t border-[#E5EAF1] pt-3 flex flex-col gap-1.5">
+              {seña !== null && (
+                <>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#6B7280]">Seña abonada</span>
+                    <span className="text-emerald-600 font-medium">{fmt(seña)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#6B7280]">Saldo restante</span>
+                    <span className="text-amber-600 font-medium">{fmt(saldo!)}</span>
+                  </div>
+                </>
+              )}
+              <div className="flex justify-between items-center mt-1 pt-1.5 border-t border-[#E5EAF1]">
+                <span className="text-sm font-semibold text-[#1F2937]">Total</span>
+                <span className="text-2xl font-bold text-[#1F2937]">{fmt(total)}</span>
+              </div>
+            </div>
+
+            {/* Estados */}
+            <div className="flex gap-2 mt-4 flex-wrap">
+              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                pedido.estadoEntrega === 'entregado'
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : 'bg-amber-50 text-amber-700'
+              }`}>
+                {pedido.estadoEntrega === 'entregado' ? 'Entregado' : 'Pendiente entrega'}
+              </span>
+              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+                pedido.estadoPago === 'pagado'
+                  ? 'bg-emerald-50 text-emerald-700'
+                  : pedido.estadoPago === 'señado'
+                  ? 'bg-[#CFE6F7] text-[#1F2937]'
+                  : 'bg-rose-50 text-rose-600'
+              }`}>
+                {pedido.estadoPago === 'pagado' ? 'Pagado' : pedido.estadoPago === 'señado' ? 'Señado' : 'Sin seña'}
+              </span>
+            </div>
+
+            {/* Notas */}
+            {pedido.notas && (
+              <div className="mt-4 bg-[#F7FAFC] rounded-lg p-3">
+                <p className="text-xs font-medium text-[#6B7280] mb-1">Notas</p>
+                <p className="text-sm text-[#1F2937]">{pedido.notas}</p>
+              </div>
+            )}
+
+            {/* Branding footer */}
+            <div className="mt-5 pt-3 border-t border-[#E5EAF1] text-center">
+              <p className="text-xs text-[#9CC6EA] font-medium">Popipastelería · Con amor 🍰</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="flex-none px-5 py-4 border-t border-[#E5EAF1] flex items-center justify-between">
+          <button
+            type="button"
+            onClick={onEdit}
+            className="flex items-center gap-1.5 text-sm font-medium text-[#6B7280] hover:text-[#1F2937] transition-colors"
+          >
+            <Edit2 size={14} strokeWidth={2} />
+            Editar pedido
+          </button>
+          <button
+            type="button"
+            onClick={handleDownload}
+            disabled={downloading}
+            className="flex items-center gap-1.5 text-sm font-semibold bg-[#1F2937] text-white px-4 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors"
+          >
+            <Download size={14} strokeWidth={2} />
+            {downloading ? 'Generando...' : 'Descargar imagen'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}

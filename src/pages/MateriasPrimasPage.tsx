@@ -3,6 +3,7 @@ import { FlaskConical, Plus, Pencil, Trash2 } from 'lucide-react'
 import { MateriaPrima, getMateriasPrimas, createMateriaPrima, updateMateriaPrima, deleteMateriaPrima } from '../api/materiasPrimas'
 import Modal from '../components/Modal'
 import LoadingSpinner from '../components/LoadingSpinner'
+import ConfirmModal from '../components/ConfirmModal'
 
 interface FormState {
   nombre: string
@@ -28,6 +29,8 @@ export default function MateriasPrimasPage() {
   const [form, setForm] = useState<FormState>(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confirmTarget, setConfirmTarget] = useState<MateriaPrima | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -54,13 +57,17 @@ export default function MateriasPrimasPage() {
     setModalOpen(true)
   }
 
-  async function handleDelete(m: MateriaPrima) {
-    if (!confirm(`¿Eliminar "${m.nombre}"?`)) return
+  async function execDelete() {
+    if (!confirmTarget) return
+    setDeleting(true)
     try {
-      await deleteMateriaPrima(m.id)
+      await deleteMateriaPrima(confirmTarget.id)
+      setConfirmTarget(null)
       load()
     } catch (err: any) {
       alert(err?.response?.data?.error ?? 'Error al eliminar')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -137,7 +144,7 @@ export default function MateriasPrimasPage() {
                         Editar
                       </button>
                       <button
-                        onClick={() => handleDelete(m)}
+                        onClick={() => setConfirmTarget(m)}
                         className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
                       >
                         <Trash2 size={12} strokeWidth={2} />
@@ -151,6 +158,16 @@ export default function MateriasPrimasPage() {
           </table>
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmTarget !== null}
+        titulo={`¿Eliminar "${confirmTarget?.nombre}"?`}
+        descripcion="Esta acción no se puede deshacer."
+        labelConfirmar="Borrar"
+        onConfirmar={execDelete}
+        onCancelar={() => setConfirmTarget(null)}
+        loading={deleting}
+      />
 
       {modalOpen && (
         <Modal title={editTarget ? 'Editar materia prima' : 'Nueva materia prima'} onClose={() => setModalOpen(false)}>

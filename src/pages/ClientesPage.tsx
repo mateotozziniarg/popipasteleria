@@ -3,6 +3,7 @@ import { Users, Plus, Pencil, Trash2, Phone, MapPin } from 'lucide-react'
 import { Cliente, getClientes, createCliente, updateCliente, deleteCliente } from '../api/clientes'
 import Modal from '../components/Modal'
 import LoadingSpinner from '../components/LoadingSpinner'
+import ConfirmModal from '../components/ConfirmModal'
 
 interface FormState {
   nombre: string
@@ -26,6 +27,8 @@ export default function ClientesPage() {
   const [form, setForm] = useState<FormState>(emptyForm)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
+  const [confirmTarget, setConfirmTarget] = useState<Cliente | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   async function load() {
     setLoading(true)
@@ -57,13 +60,17 @@ export default function ClientesPage() {
     setModalOpen(true)
   }
 
-  async function handleDelete(c: Cliente) {
-    if (!confirm(`¿Eliminar a "${c.nombre}"?`)) return
+  async function execDelete() {
+    if (!confirmTarget) return
+    setDeleting(true)
     try {
-      await deleteCliente(c.id)
+      await deleteCliente(confirmTarget.id)
+      setConfirmTarget(null)
       load()
     } catch (err: any) {
       alert(err?.response?.data?.error ?? 'Error al eliminar')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -154,7 +161,7 @@ export default function ClientesPage() {
                     Editar
                   </button>
                   <button
-                    onClick={() => handleDelete(c)}
+                    onClick={() => setConfirmTarget(c)}
                     className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
                   >
                     <Trash2 size={12} strokeWidth={2} />
@@ -166,6 +173,16 @@ export default function ClientesPage() {
           ))}
         </div>
       )}
+
+      <ConfirmModal
+        isOpen={confirmTarget !== null}
+        titulo={`¿Eliminar a "${confirmTarget?.nombre}"?`}
+        descripcion="Esta acción no se puede deshacer."
+        labelConfirmar="Borrar"
+        onConfirmar={execDelete}
+        onCancelar={() => setConfirmTarget(null)}
+        loading={deleting}
+      />
 
       {modalOpen && (
         <Modal title={editTarget ? 'Editar cliente' : 'Nuevo cliente'} onClose={() => setModalOpen(false)}>
