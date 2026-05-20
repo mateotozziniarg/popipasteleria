@@ -1,12 +1,10 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Calendar, ShoppingCart, Users, Package, FlaskConical } from 'lucide-react'
+import { Calendar, ShoppingCart, Users } from 'lucide-react'
 
 const navItems = [
   { label: 'Eventos', path: '/', icon: Calendar },
   { label: 'Pedidos', path: '/pedidos', icon: ShoppingCart },
   { label: 'Clientes', path: '/clientes', icon: Users },
-  { label: 'Productos', path: '/productos', icon: Package },
-  { label: 'Materias', path: '/materias-primas', icon: FlaskConical },
 ]
 
 export default function BottomNav() {
