@@ -84,21 +84,25 @@ export default function PedidoDetailModal({ pedido, onClose, onEdit }: Props) {
             {pedido.productos.length > 0 && (
               <div className="mb-4">
                 <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2.5">Productos</p>
-                <div className="flex flex-col gap-2">
-                  {pedido.productos.map(item => (
-                    <div key={item.id} className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs bg-[#F7FAFC] border border-[#E5EAF1] text-[#6B7280] px-1.5 py-0.5 rounded font-medium min-w-[28px] text-center">
-                          {item.cantidad}×
-                        </span>
-                        <span className="text-sm text-[#1F2937]">{item.producto.nombre}</span>
-                      </div>
-                      <span className="text-sm font-medium text-[#1F2937]">
-                        {fmt(parseFloat(item.precioUnitario) * item.cantidad)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <tbody>
+                    {pedido.productos.map(item => (
+                      <tr key={item.id}>
+                        <td style={{ width: '36px', paddingBottom: '6px', paddingRight: '8px', verticalAlign: 'middle' }}>
+                          <span style={{ fontSize: '11px', background: '#F7FAFC', border: '1px solid #E5EAF1', color: '#6B7280', padding: '2px 5px', borderRadius: '4px', fontWeight: 600, display: 'inline-block', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                            {item.cantidad}×
+                          </span>
+                        </td>
+                        <td style={{ paddingBottom: '6px', paddingRight: '8px', verticalAlign: 'middle', fontSize: '14px', color: '#1F2937' }}>
+                          {item.producto.nombre}
+                        </td>
+                        <td style={{ paddingBottom: '6px', verticalAlign: 'middle', textAlign: 'right', fontSize: '14px', fontWeight: 500, color: '#1F2937', whiteSpace: 'nowrap' }}>
+                          {fmt(parseFloat(item.precioUnitario) * item.cantidad)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
 
