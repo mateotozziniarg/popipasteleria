@@ -4,6 +4,7 @@ import { Producto, getProductos, createProducto, updateProducto, deleteProducto 
 import Modal from '../components/Modal'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ConfirmModal from '../components/ConfirmModal'
+import EmptyState from '../components/EmptyState'
 
 interface FormState {
   nombre: string
@@ -110,11 +111,16 @@ export default function ProductosPage() {
       {loading ? (
         <LoadingSpinner />
       ) : productos.length === 0 ? (
-        <div className="text-center py-16 text-[#6B7280]">
-          <Package size={32} className="mx-auto mb-3 text-[#E5EAF1]" strokeWidth={1.5} />
-          <p className="text-base font-medium">No hay productos todavía.</p>
-          <p className="text-sm mt-1">Creá el primero para empezar.</p>
-        </div>
+        <EmptyState
+          variant="productos"
+          titulo="Todavía no hay productos"
+          descripcion="Cargá los productos de tu pastelería para agregarlos rápido a los pedidos."
+          accion={
+            <button onClick={openCreate} className="bg-[#1F2937] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-[#374151] transition-colors">
+              Crear primer producto
+            </button>
+          }
+        />
       ) : (
         <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden">
           <table className="w-full text-sm">

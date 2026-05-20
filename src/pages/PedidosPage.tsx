@@ -10,6 +10,7 @@ import { getGastosTotal } from '../api/materiasPrimas'
 import LoadingSpinner from '../components/LoadingSpinner'
 import PedidoFormModal from '../components/PedidoFormModal'
 import PedidoDetailModal from '../components/PedidoDetailModal'
+import EmptyState from '../components/EmptyState'
 
 type Modo = 'tabla' | 'dashboard'
 
@@ -196,10 +197,16 @@ export default function PedidosPage() {
         <LoadingSpinner />
       ) : modo === 'tabla' ? (
         pedidos.length === 0 ? (
-          <div className="text-center py-12 text-[#6B7280] text-sm">
-            <ShoppingCart size={28} className="mx-auto mb-3 text-[#E5EAF1]" strokeWidth={1.5} />
-            No hay pedidos con esos filtros.
-          </div>
+          <EmptyState
+            variant="pedidos"
+            titulo="No hay pedidos"
+            descripcion="No encontramos pedidos con esos filtros. Probá cambiando la búsqueda o creá uno nuevo."
+            accion={
+              <button onClick={() => setModalOpen(true)} className="bg-[#1F2937] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-[#374151] transition-colors">
+                Nuevo pedido
+              </button>
+            }
+          />
         ) : (
           <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden">
             <div className="overflow-x-auto">

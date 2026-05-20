@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Sidebar from './components/Sidebar'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
+import NotFoundPage from './pages/NotFoundPage'
 import EventosPage from './pages/EventosPage'
 import EventoPage from './pages/EventoPage'
 import PedidosPage from './pages/PedidosPage'
@@ -28,6 +29,7 @@ export default function App() {
                     <Route path="/productos" element={<ProductosPage />} />
                     <Route path="/materias-primas" element={<MateriasPrimasPage />} />
                     <Route path="/clientes" element={<ClientesPage />} />
+                    <Route path="*" element={<NotFoundPage />} />
                   </Routes>
                 </div>
               </div>

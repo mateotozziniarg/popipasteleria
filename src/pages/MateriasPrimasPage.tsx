@@ -4,6 +4,7 @@ import { MateriaPrima, getMateriasPrimas, createMateriaPrima, updateMateriaPrima
 import Modal from '../components/Modal'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ConfirmModal from '../components/ConfirmModal'
+import EmptyState from '../components/EmptyState'
 
 interface FormState {
   nombre: string
@@ -110,11 +111,16 @@ export default function MateriasPrimasPage() {
       {loading ? (
         <LoadingSpinner />
       ) : materias.length === 0 ? (
-        <div className="text-center py-16 text-[#6B7280]">
-          <FlaskConical size={32} className="mx-auto mb-3 text-[#E5EAF1]" strokeWidth={1.5} />
-          <p className="text-base font-medium">No hay materias primas todavía.</p>
-          <p className="text-sm mt-1">Creá la primera para empezar.</p>
-        </div>
+        <EmptyState
+          variant="materias"
+          titulo="Todavía no hay materias primas"
+          descripcion="Cargá tus ingredientes para llevar el control de costos de cada evento."
+          accion={
+            <button onClick={openCreate} className="bg-[#1F2937] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-[#374151] transition-colors">
+              Agregar primer ingrediente
+            </button>
+          }
+        />
       ) : (
         <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden">
           <table className="w-full text-sm">

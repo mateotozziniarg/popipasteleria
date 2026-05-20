@@ -4,6 +4,7 @@ import { Cliente, getClientes, createCliente, updateCliente, deleteCliente } fro
 import Modal from '../components/Modal'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ConfirmModal from '../components/ConfirmModal'
+import EmptyState from '../components/EmptyState'
 
 interface FormState {
   nombre: string
@@ -118,11 +119,16 @@ export default function ClientesPage() {
       {loading ? (
         <LoadingSpinner />
       ) : clientes.length === 0 ? (
-        <div className="text-center py-16 text-[#6B7280]">
-          <Users size={32} className="mx-auto mb-3 text-[#E5EAF1]" strokeWidth={1.5} />
-          <p className="text-base font-medium">No hay clientes todavía.</p>
-          <p className="text-sm mt-1">Creá el primero para empezar.</p>
-        </div>
+        <EmptyState
+          variant="clientes"
+          titulo="Todavía no hay clientes"
+          descripcion="Registrá tus clientes para asociarlos a los pedidos fácilmente."
+          accion={
+            <button onClick={openCreate} className="bg-[#1F2937] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-[#374151] transition-colors">
+              Agregar primer cliente
+            </button>
+          }
+        />
       ) : (
         <div className="flex flex-col gap-2">
           {clientes.map(c => (
