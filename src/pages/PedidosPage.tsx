@@ -12,6 +12,7 @@ import { getGastosTotal } from '../api/materiasPrimas'
 import LoadingSpinner from '../components/LoadingSpinner'
 import PedidoFormModal from '../components/PedidoFormModal'
 import PedidoDetailModal from '../components/PedidoDetailModal'
+import ConfirmModal from '../components/ConfirmModal'
 import EmptyState from '../components/EmptyState'
 
 type Modo = 'tabla' | 'cards' | 'dashboard'
@@ -53,6 +54,9 @@ export default function PedidosPage() {
   const [filtrosOpen, setFiltrosOpen] = useState(false)
   const [cobrandoId, setCobrandoId] = useState<number | null>(null)
   const [cobrarMonto, setCobrarMonto] = useState('')
+  const [confirmEntregarTarget, setConfirmEntregarTarget] = useState<PedidoConEvento | null>(null)
+  const [confirmPagarTarget, setConfirmPagarTarget] = useState<PedidoConEvento | null>(null)
+  const [confirmando, setConfirmando] = useState(false)
 
   useEffect(() => {
     if (searchParams.get('nuevo') === '1') {
@@ -109,31 +113,46 @@ export default function PedidosPage() {
   const sinEventoCantidad = pedidos.filter(p => !p.eventoId).length
   const sinEventoMonto = pedidos.filter(p => !p.eventoId).reduce((s, p) => s + parseFloat(p.precioTotal), 0)
 
-  async function handleMarcarEntregado(p: PedidoConEvento) {
+  async function handleConfirmarEntregado() {
+    if (!confirmEntregarTarget) return
+    setConfirmando(true)
     try {
-      await updatePedido(p.id, { estadoEntrega: 'entregado' })
+      await updatePedido(confirmEntregarTarget.id, { estadoEntrega: 'entregado' })
       toast.success('Pedido marcado como entregado')
+      setConfirmEntregarTarget(null)
       load()
     } catch {
       toast.error('Error al actualizar')
+    } finally {
+      setConfirmando(false)
     }
   }
 
-  async function handleCobrar(p: PedidoConEvento, tipo: 'parcial' | 'total') {
+  async function handleConfirmarPagado() {
+    if (!confirmPagarTarget) return
+    setConfirmando(true)
     try {
-      if (tipo === 'total') {
-        await updatePedido(p.id, { estadoPago: 'pagado', montoSeña: null })
-        toast.success('Pedido marcado como pagado')
-      } else {
-        const monto = parseFloat(cobrarMonto)
-        if (!monto || monto <= 0) return
-        const seniaAnterior = p.montoSeña ? parseFloat(p.montoSeña) : 0
-        const nuevaSenia = seniaAnterior + monto
-        const total = parseFloat(p.precioTotal)
-        const nuevoEstado: EstadoPago = nuevaSenia >= total ? 'pagado' : 'señado'
-        await updatePedido(p.id, { estadoPago: nuevoEstado, montoSeña: nuevaSenia })
-        toast.success(nuevoEstado === 'pagado' ? 'Pagado en su totalidad' : `Seña de ${formatMonto(monto)} registrada`)
-      }
+      await updatePedido(confirmPagarTarget.id, { estadoPago: 'pagado', montoSeña: null })
+      toast.success('Pedido marcado como pagado')
+      setConfirmPagarTarget(null)
+      load()
+    } catch {
+      toast.error('Error al actualizar')
+    } finally {
+      setConfirmando(false)
+    }
+  }
+
+  async function handleCobrar(p: PedidoConEvento) {
+    const monto = parseFloat(cobrarMonto)
+    if (!monto || monto <= 0) return
+    try {
+      const seniaAnterior = p.montoSeña ? parseFloat(p.montoSeña) : 0
+      const nuevaSenia = seniaAnterior + monto
+      const total = parseFloat(p.precioTotal)
+      const nuevoEstado: EstadoPago = nuevaSenia >= total ? 'pagado' : 'señado'
+      await updatePedido(p.id, { estadoPago: nuevoEstado, montoSeña: nuevaSenia })
+      toast.success(nuevoEstado === 'pagado' ? 'Pagado en su totalidad' : `Seña de ${formatMonto(monto)} registrada`)
       setCobrandoId(null)
       setCobrarMonto('')
       load()
@@ -318,34 +337,39 @@ export default function PedidosPage() {
                 {cobrandoId === p.id && (
                   <div className="bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl p-3 flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-[#1F2937]">Registrar pago</p>
+                      <p className="text-xs font-semibold text-[#1F2937]">¿Cuánto cobró?</p>
                       <button onClick={() => { setCobrandoId(null); setCobrarMonto('') }}
                         className="text-[#6B7280] hover:text-[#1F2937] transition-colors">
                         <X size={13} strokeWidth={2} />
                       </button>
                     </div>
-                    <input
-                      type="number" min="0" step="0.01" autoFocus
-                      placeholder="Monto a cobrar..."
-                      value={cobrarMonto}
-                      onChange={e => setCobrarMonto(e.target.value)}
-                      className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
-                    />
                     <div className="flex gap-2">
+                      <input
+                        type="number" min="0" step="0.01" autoFocus
+                        placeholder="Monto..."
+                        value={cobrarMonto}
+                        onChange={e => setCobrarMonto(e.target.value)}
+                        className="flex-1 border border-[#E5EAF1] rounded-xl px-3 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
+                      />
                       <button
                         disabled={!cobrarMonto || parseFloat(cobrarMonto) <= 0}
-                        onClick={() => handleCobrar(p, 'parcial')}
-                        className="flex-1 py-2.5 text-sm font-medium bg-[#CFE6F7] text-[#1F2937] rounded-xl hover:bg-[#9CC6EA] disabled:opacity-40 transition-colors"
+                        onClick={() => handleCobrar(p)}
+                        className="px-4 py-2 text-sm font-medium bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors whitespace-nowrap"
                       >
-                        Como seña
-                      </button>
-                      <button
-                        onClick={() => handleCobrar(p, 'total')}
-                        className="flex-1 py-2.5 text-sm font-medium bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] transition-colors"
-                      >
-                        Pago total
+                        Registrar
                       </button>
                     </div>
+                    {cobrarMonto && parseFloat(cobrarMonto) > 0 && (() => {
+                      const pagado = (p.montoSeña ? parseFloat(p.montoSeña) : 0) + parseFloat(cobrarMonto)
+                      const total = parseFloat(p.precioTotal)
+                      return (
+                        <p className="text-xs text-[#6B7280]">
+                          {pagado >= total
+                            ? '✓ Cubre el total — quedará pagado'
+                            : `Resta ${formatMonto(total - pagado)} tras registrar`}
+                        </p>
+                      )
+                    })()}
                   </div>
                 )}
 
@@ -363,8 +387,15 @@ export default function PedidosPage() {
                       Cobrar
                     </button>
                   )}
-                  {p.estadoEntrega !== 'entregado' && (
-                    <button onClick={() => handleMarcarEntregado(p)}
+                  {p.estadoPago !== 'pagado' && cobrandoId !== p.id && (
+                    <button onClick={() => setConfirmPagarTarget(p)}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] transition-colors">
+                      <CheckCircle2 size={16} strokeWidth={2} />
+                      Pagado
+                    </button>
+                  )}
+                  {p.estadoEntrega !== 'entregado' && cobrandoId !== p.id && (
+                    <button onClick={() => setConfirmEntregarTarget(p)}
                       className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium bg-[#fffbeb] text-[#b45309] rounded-xl hover:bg-[#fef3c7] transition-colors">
                       <PackageCheck size={16} strokeWidth={2} />
                       Entregar
@@ -567,6 +598,30 @@ export default function PedidosPage() {
         pedido={viewTarget}
         onClose={() => setViewTarget(null)}
         onEdit={() => { setEditTarget(viewTarget); setViewTarget(null); setModalOpen(true) }}
+      />
+
+      <ConfirmModal
+        isOpen={confirmEntregarTarget !== null}
+        variant="confirm"
+        titulo={`¿Marcar como entregado?`}
+        descripcion={confirmEntregarTarget ? `Pedido de ${confirmEntregarTarget.nombreCliente}` : undefined}
+        labelConfirmar="Marcar entregado"
+        onConfirmar={handleConfirmarEntregado}
+        onCancelar={() => setConfirmEntregarTarget(null)}
+        loading={confirmando}
+      />
+
+      <ConfirmModal
+        isOpen={confirmPagarTarget !== null}
+        variant="confirm"
+        titulo="¿Marcar como pagado?"
+        descripcion={confirmPagarTarget
+          ? `${confirmPagarTarget.nombreCliente} · ${formatMonto(parseFloat(confirmPagarTarget.precioTotal))}`
+          : undefined}
+        labelConfirmar="Marcar pagado"
+        onConfirmar={handleConfirmarPagado}
+        onCancelar={() => setConfirmPagarTarget(null)}
+        loading={confirmando}
       />
     </div>
   )
