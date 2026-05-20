@@ -36,19 +36,33 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ backgroundColor: '#F7FAFC' }}>
-      <div className="w-full max-w-sm">
+    <div
+      className="min-h-screen flex items-center justify-center px-4 bg-center bg-cover"
+      style={{ backgroundImage: 'url(/login-mobile.jpg)' }}
+    >
+      {/* Desktop background */}
+      <style>{`
+        @media (min-width: 768px) {
+          .login-bg { background-image: url(/login-desktop.jpg) !important; }
+        }
+      `}</style>
+      <div
+        className="login-bg absolute inset-0 bg-center bg-cover -z-10"
+        style={{ backgroundImage: 'url(/login-mobile.jpg)' }}
+      />
+
+      <div className="w-full max-w-sm relative">
         {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-[#CFE6F7] flex items-center justify-center mb-3 shadow-sm">
+        <div className="flex flex-col items-center mb-6">
+          <div className="w-14 h-14 rounded-2xl bg-white/80 backdrop-blur-sm flex items-center justify-center mb-3 shadow-md">
             <ChefHat size={28} color="#1F2937" strokeWidth={1.8} />
           </div>
-          <h1 className="text-xl font-bold text-[#1F2937]">Popipastelería</h1>
+          <h1 className="text-xl font-bold text-[#1F2937] drop-shadow-sm">Popipastelería</h1>
           <p className="text-sm text-[#6B7280] mt-1">Ingresá a tu cuenta</p>
         </div>
 
         {/* Card */}
-        <div className="bg-white border border-[#E5EAF1] rounded-2xl p-6 shadow-sm">
+        <div className="bg-white/90 backdrop-blur-md border border-white/60 rounded-2xl p-6 shadow-xl">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
               <label className="block text-sm font-medium text-[#1F2937] mb-1.5">Usuario</label>
