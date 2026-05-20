@@ -69,7 +69,7 @@ export default function Sidebar() {
           className="ml-auto flex items-center gap-1.5 text-xs font-medium text-[#1F2937] bg-[#CFE6F7] hover:bg-[#9CC6EA] px-3 py-1.5 rounded-lg transition-colors shrink-0"
         >
           <Plus size={12} strokeWidth={2.5} />
-          Nuevo pedido
+          <span className="hidden sm:inline">Nuevo pedido</span>
         </button>
       </header>
 

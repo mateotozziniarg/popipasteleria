@@ -51,13 +51,13 @@ export default function LoginPage() {
         <div className="bg-white border border-[#E5EAF1] rounded-2xl p-6 shadow-sm">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#1F2937] mb-1.5">Email</label>
+              <label className="block text-sm font-medium text-[#1F2937] mb-1.5">Usuario</label>
               <input
-                type="email"
-                autoComplete="email"
+                type="text"
+                autoComplete="username"
                 autoFocus
                 className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
-                placeholder="admin@popipasteleria.com"
+                placeholder="tu_usuario"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
               />

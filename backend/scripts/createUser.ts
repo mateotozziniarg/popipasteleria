@@ -5,18 +5,18 @@ import { PrismaClient } from '@prisma/client'
 const prisma = new PrismaClient()
 
 async function main() {
-  const [email, password] = process.argv.slice(2)
-  if (!email || !password) {
-    console.error('Uso: ts-node scripts/createUser.ts <email> <password>')
+  const [username, password] = process.argv.slice(2)
+  if (!username || !password) {
+    console.error('Uso: ts-node scripts/createUser.ts <username> <password>')
     process.exit(1)
   }
 
   const passwordHash = await bcrypt.hash(password, 12)
   const usuario = await prisma.usuario.create({
-    data: { email, passwordHash },
+    data: { username, passwordHash },
   })
 
-  console.log(`✓ Usuario creado: ${usuario.email} (id: ${usuario.id})`)
+  console.log(`✓ Usuario creado: ${usuario.username} (id: ${usuario.id})`)
 }
 
 main()

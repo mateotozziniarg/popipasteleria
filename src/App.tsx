@@ -3,6 +3,7 @@ import Sidebar from './components/Sidebar'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import NotFoundPage from './pages/NotFoundPage'
+import BottomNav from './components/BottomNav'
 import EventosPage from './pages/EventosPage'
 import EventoPage from './pages/EventoPage'
 import PedidosPage from './pages/PedidosPage'
@@ -21,7 +22,8 @@ export default function App() {
             <ProtectedRoute>
               <div className="min-h-screen" style={{ backgroundColor: '#F7FAFC' }}>
                 <Sidebar />
-                <div className="pl-0">
+                <BottomNav />
+                <div className="pl-0 pb-20 sm:pb-0">
                   <Routes>
                     <Route path="/" element={<EventosPage />} />
                     <Route path="/eventos/:id" element={<EventoPage />} />

@@ -69,11 +69,11 @@ El backend acepta requests del dominio de Vercel. Configurado con variable de en
 
 ### Crear el primer usuario (o nuevos usuarios)
 ```
-cd backend && npx ts-node -P tsconfig.scripts.json scripts/createUser.ts <email> <password>
+cd backend && npx ts-node -P tsconfig.scripts.json scripts/createUser.ts <username> <password>
 ```
 Ejemplo:
 ```
-cd backend && npx ts-node -P tsconfig.scripts.json scripts/createUser.ts admin@popipasteleria.com MiPasswordSegura123
+cd backend && npx ts-node -P tsconfig.scripts.json scripts/createUser.ts popi MiPasswordSegura123
 ```
 
 ### Token en el frontend

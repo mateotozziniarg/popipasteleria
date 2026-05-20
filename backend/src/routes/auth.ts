@@ -8,13 +8,13 @@ const router = Router()
 const prisma = new PrismaClient()
 
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
-  const { email, password } = req.body
+  const { email, password } = req.body   // "email" field reused as username from the frontend
   if (!email || !password) {
-    res.status(400).json({ error: 'Email y contraseña requeridos' })
+    res.status(400).json({ error: 'Usuario y contraseña requeridos' })
     return
   }
 
-  const usuario = await prisma.usuario.findUnique({ where: { email: String(email) } })
+  const usuario = await prisma.usuario.findUnique({ where: { username: String(email) } })
   const valid = usuario ? await bcrypt.compare(String(password), usuario.passwordHash) : false
 
   if (!valid) {
@@ -23,12 +23,12 @@ router.post('/login', async (req: Request, res: Response): Promise<void> => {
   }
 
   const token = jwt.sign(
-    { userId: usuario!.id, email: usuario!.email },
+    { userId: usuario!.id, username: usuario!.username },
     process.env.JWT_SECRET!,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
   )
 
-  res.json({ token, user: { id: usuario!.id, email: usuario!.email, nombre: usuario!.nombre } })
+  res.json({ token, user: { id: usuario!.id, username: usuario!.username, nombre: usuario!.nombre } })
 })
 
 router.post('/logout', (_req, res) => {
@@ -41,7 +41,7 @@ router.get('/me', authMiddleware, async (req: AuthRequest, res: Response): Promi
     res.status(404).json({ error: 'Usuario no encontrado' })
     return
   }
-  res.json({ id: usuario.id, email: usuario.email, nombre: usuario.nombre })
+  res.json({ id: usuario.id, username: usuario.username, nombre: usuario.nombre })
 })
 
 export default router

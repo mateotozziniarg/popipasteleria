@@ -99,7 +99,7 @@ enum EstadoPago {
 
 model Usuario {
   id           Int      @id @default(autoincrement())
-  email        String   @unique
+  username     String   @unique
   passwordHash String
   nombre       String?
   createdAt    DateTime @default(now())
