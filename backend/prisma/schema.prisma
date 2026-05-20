@@ -51,8 +51,8 @@ model Cliente {
 
 model Pedido {
   id             Int              @id @default(autoincrement())
-  eventoId       Int
-  evento         Evento           @relation(fields: [eventoId], references: [id])
+  eventoId       Int?
+  evento         Evento?          @relation(fields: [eventoId], references: [id])
   clienteId      Int?
   cliente        Cliente?         @relation(fields: [clienteId], references: [id])
   nombreCliente  String

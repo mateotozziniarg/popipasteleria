@@ -13,7 +13,7 @@ export interface PedidoProductoEnPedido {
 
 export interface Pedido {
   id: number
-  eventoId: number
+  eventoId: number | null
   clienteId: number | null
   cliente: { id: number; nombre: string; telefono: string | null } | null
   nombreCliente: string
@@ -38,17 +38,20 @@ export interface PedidoInput {
   notas?: string
   montoSeña?: number | null
   clienteId?: number | null
+  eventoId?: number | null
 }
 
 export interface PedidoConEvento extends Pedido {
-  evento: { id: number; nombre: string; fecha: string }
+  evento: { id: number; nombre: string; fecha: string } | null
   cliente: { id: number; nombre: string; telefono: string | null } | null
 }
 
 export interface FiltrosPedidos {
   eventoId?: number
+  sinEvento?: boolean
   estadoEntrega?: EstadoEntrega
   estadoPago?: EstadoPago
+  search?: string
   fechaDesde?: string
   fechaHasta?: string
 }
@@ -59,8 +62,10 @@ export const getPedidos = (eventoId: number) =>
 export const getPedidosGlobal = (filtros: FiltrosPedidos = {}) => {
   const params: Record<string, string> = {}
   if (filtros.eventoId) params.eventoId = String(filtros.eventoId)
+  if (filtros.sinEvento) params.sinEvento = 'true'
   if (filtros.estadoEntrega) params.estadoEntrega = filtros.estadoEntrega
   if (filtros.estadoPago) params.estadoPago = filtros.estadoPago
+  if (filtros.search) params.search = filtros.search
   if (filtros.fechaDesde) params.fechaDesde = filtros.fechaDesde
   if (filtros.fechaHasta) params.fechaHasta = filtros.fechaHasta
   return client.get<PedidoConEvento[]>('/pedidos', { params }).then(r => r.data)
@@ -68,6 +73,9 @@ export const getPedidosGlobal = (filtros: FiltrosPedidos = {}) => {
 
 export const createPedido = (eventoId: number, data: PedidoInput) =>
   client.post<Pedido>(`/events/${eventoId}/pedidos`, data).then(r => r.data)
+
+export const createPedidoStandalone = (data: PedidoInput) =>
+  client.post<Pedido>('/pedidos', data).then(r => r.data)
 
 export const updatePedido = (id: number, data: Partial<PedidoInput>) =>
   client.put<Pedido>(`/pedidos/${id}`, data).then(r => r.data)

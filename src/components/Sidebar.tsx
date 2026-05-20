@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Menu, X, Calendar, ShoppingCart, Package, FlaskConical, Users, ChefHat } from 'lucide-react'
+import { Menu, X, Calendar, ShoppingCart, Package, FlaskConical, Users, ChefHat, Plus } from 'lucide-react'
 
 const navItems = [
   { label: 'Eventos', path: '/', icon: Calendar },
@@ -57,6 +57,13 @@ export default function Sidebar() {
           </div>
           <span className="text-sm font-semibold text-[#1F2937]">Popipastelería</span>
         </div>
+        <button
+          onClick={() => { navigate('/pedidos?nuevo=1'); setOpen(false) }}
+          className="ml-auto flex items-center gap-1.5 text-xs font-medium text-[#1F2937] bg-[#CFE6F7] hover:bg-[#9CC6EA] px-3 py-1.5 rounded-lg transition-colors shrink-0"
+        >
+          <Plus size={12} strokeWidth={2.5} />
+          Nuevo pedido
+        </button>
       </header>
 
       {open && <div className="fixed inset-0 z-40 bg-black/20 sm:bg-transparent" />}

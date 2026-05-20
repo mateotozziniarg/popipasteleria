@@ -1,0 +1,1 @@
+ALTER TABLE "Pedido" ALTER COLUMN "eventoId" DROP NOT NULL;
