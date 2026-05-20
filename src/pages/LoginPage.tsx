@@ -46,10 +46,8 @@ export default function LoginPage() {
         @media (min-width: 768px) {
           .login-page {
             background-image: url(/login-desktop.png);
-            background-size: contain;
-            background-repeat: no-repeat;
+            background-size: cover;
             background-position: center;
-            background-color: #faf9f7;
           }
         }
       `}</style>
