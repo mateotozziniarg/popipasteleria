@@ -1,5 +1,4 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { Toaster } from 'sonner'
 import Sidebar from './components/Sidebar'
 import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
@@ -24,7 +23,6 @@ export default function App() {
               <div className="min-h-screen" style={{ backgroundColor: '#F7FAFC' }}>
                 <Sidebar />
                 <BottomNav />
-                <Toaster position="top-center" richColors closeButton />
               <div className="pl-0 lg:pl-64 pb-20 sm:pb-0">
                   <Routes>
                     <Route path="/" element={<EventosPage />} />
