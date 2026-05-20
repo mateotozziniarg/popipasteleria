@@ -124,20 +124,22 @@ export default function PedidoDetailModal({ pedido, onClose, onEdit }: Props) {
 
             {/* Estados */}
             <div className="flex gap-2 mt-4 flex-wrap">
-              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                pedido.estadoEntrega === 'entregado'
-                  ? 'bg-emerald-50 text-emerald-700'
-                  : 'bg-amber-50 text-amber-700'
-              }`}>
+              <span
+                className="text-xs px-2.5 py-1 rounded-full font-medium"
+                style={pedido.estadoEntrega === 'entregado'
+                  ? { backgroundColor: '#ecfdf5', color: '#047857' }
+                  : { backgroundColor: '#fffbeb', color: '#b45309' }}
+              >
                 {pedido.estadoEntrega === 'entregado' ? 'Entregado' : 'Pendiente entrega'}
               </span>
-              <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-                pedido.estadoPago === 'pagado'
-                  ? 'bg-emerald-50 text-emerald-700'
+              <span
+                className="text-xs px-2.5 py-1 rounded-full font-medium"
+                style={pedido.estadoPago === 'pagado'
+                  ? { backgroundColor: '#ecfdf5', color: '#047857' }
                   : pedido.estadoPago === 'señado'
-                  ? 'bg-[#CFE6F7] text-[#1F2937]'
-                  : 'bg-rose-50 text-rose-600'
-              }`}>
+                  ? { backgroundColor: '#CFE6F7', color: '#1F2937' }
+                  : { backgroundColor: '#fff1f2', color: '#e11d48' }}
+              >
                 {pedido.estadoPago === 'pagado' ? 'Pagado' : pedido.estadoPago === 'señado' ? 'Señado' : 'Sin seña'}
               </span>
             </div>
