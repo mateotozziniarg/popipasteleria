@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Menu, X, Calendar, ShoppingCart, Package, FlaskConical, Users } from 'lucide-react'
+import { Menu, X, Calendar, ShoppingCart, Package, FlaskConical, Users, ChefHat } from 'lucide-react'
 
 const navItems = [
   { label: 'Eventos', path: '/', icon: Calendar },
@@ -53,7 +53,7 @@ export default function Sidebar() {
         </button>
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 rounded-md bg-[#CFE6F7] flex items-center justify-center">
-            <ShoppingCart size={12} color="#1F2937" strokeWidth={2} />
+            <ChefHat size={13} color="#1F2937" strokeWidth={2} />
           </div>
           <span className="text-sm font-semibold text-[#1F2937]">Popipastelería</span>
         </div>
