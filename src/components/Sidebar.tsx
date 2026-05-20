@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Menu, X, Calendar, ShoppingCart, Package, FlaskConical, Users, ChefHat, Plus } from 'lucide-react'
+import { Menu, X, Calendar, ShoppingCart, Package, FlaskConical, Users, ChefHat, Plus, LogOut } from 'lucide-react'
+import { clearToken } from '../api/token'
 
 const navItems = [
   { label: 'Eventos', path: '/', icon: Calendar },
@@ -33,6 +34,12 @@ export default function Sidebar() {
 
   function goTo(path: string) {
     navigate(path)
+    setOpen(false)
+  }
+
+  function handleLogout() {
+    clearToken()
+    navigate('/login', { replace: true })
     setOpen(false)
   }
 
@@ -74,9 +81,9 @@ export default function Sidebar() {
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        <div className="px-5 pt-6 pb-6">
+        <div className="px-5 pt-6 pb-6 flex flex-col h-full">
           <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">Navegación</p>
-          <nav className="flex flex-col gap-1">
+          <nav className="flex flex-col gap-1 flex-1">
             {navItems.map(({ label, path, icon: Icon }) => {
               const active = pathname === path
               return (
@@ -95,6 +102,15 @@ export default function Sidebar() {
               )
             })}
           </nav>
+          <div className="pt-4 border-t border-[#E5EAF1] mt-4">
+            <button
+              onClick={handleLogout}
+              className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-[#6B7280] hover:bg-rose-50 hover:text-rose-600 transition-colors flex items-center gap-3"
+            >
+              <LogOut size={16} strokeWidth={2} className="text-[#9CC6EA]" />
+              Cerrar sesión
+            </button>
+          </div>
         </div>
       </div>
     </>

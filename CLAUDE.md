@@ -61,6 +61,27 @@ El backend acepta requests del dominio de Vercel. Configurado con variable de en
 - Frontend: `npm run dev` → http://localhost:5173
 - Backend: `cd backend && npm run dev` → http://localhost:3001
 
+## AUTENTICACIÓN
+
+### Variables de entorno en Railway (backend)
+- `JWT_SECRET` — string largo y aleatorio, nunca expuesto al frontend
+- `JWT_EXPIRES_IN` — duración del token, ej: `7d`
+
+### Crear el primer usuario (o nuevos usuarios)
+```
+cd backend && npx ts-node -P tsconfig.scripts.json scripts/createUser.ts <email> <password>
+```
+Ejemplo:
+```
+cd backend && npx ts-node -P tsconfig.scripts.json scripts/createUser.ts admin@popipasteleria.com MiPasswordSegura123
+```
+
+### Token en el frontend
+- Se guarda en `localStorage` (si "Recordarme" marcado) o `sessionStorage` (si no)
+- Key: `popi_token`
+- Incluido automáticamente en el header `Authorization: Bearer <token>` por el interceptor de axios
+- Si cualquier request devuelve 401, se borra el token y se redirige a `/login`
+
 ## REGLAS DE CÓDIGO
 - No inventar librerías ni dependencias que no existan
 - No generar documentación ni comentarios explicativos en el código salvo que se pida

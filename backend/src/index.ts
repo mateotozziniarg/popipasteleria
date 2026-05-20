@@ -1,6 +1,8 @@
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
+import { authMiddleware } from './middleware/auth'
+import authRouter from './routes/auth'
 import eventosRouter from './routes/eventos'
 import pedidosRouter from './routes/pedidos'
 import pedidosGlobalRouter from './routes/pedidosGlobal'
@@ -24,6 +26,11 @@ app.use(express.json())
 app.get('/health', (_req, res) => {
   res.json({ ok: true })
 })
+
+app.use('/auth', authRouter)
+
+// Todas las rutas siguientes requieren token válido
+app.use(authMiddleware)
 
 app.use('/events', eventosRouter)
 app.use('/events/:eventoId/pedidos', pedidosRouter)
