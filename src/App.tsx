@@ -25,7 +25,7 @@ export default function App() {
                 <Sidebar />
                 <BottomNav />
                 <Toaster position="top-center" richColors closeButton />
-              <div className="pl-0 pb-20 sm:pb-0">
+              <div className="pl-0 lg:pl-64 pb-20 sm:pb-0">
                   <Routes>
                     <Route path="/" element={<EventosPage />} />
                     <Route path="/eventos/:id" element={<EventoPage />} />

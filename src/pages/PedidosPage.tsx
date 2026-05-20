@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   ShoppingCart, LayoutList, BarChart2, CheckCircle2, Clock, CreditCard,
-  TrendingDown, TrendingUp, DollarSign, SlidersHorizontal, FlaskConical, Plus, Search, Eye, Pencil
+  TrendingDown, TrendingUp, DollarSign, SlidersHorizontal, FlaskConical, Plus, Search, Eye, Pencil,
+  LayoutGrid, ChevronDown, ChevronUp
 } from 'lucide-react'
 import { PedidoConEvento, FiltrosPedidos, EstadoEntrega, EstadoPago, getPedidosGlobal } from '../api/pedidos'
 import { Evento, getEventos } from '../api/eventos'
@@ -12,7 +13,7 @@ import PedidoFormModal from '../components/PedidoFormModal'
 import PedidoDetailModal from '../components/PedidoDetailModal'
 import EmptyState from '../components/EmptyState'
 
-type Modo = 'tabla' | 'dashboard'
+type Modo = 'tabla' | 'cards' | 'dashboard'
 
 const etiquetaEntrega: Record<EstadoEntrega, string> = { pendiente: 'Pendiente', entregado: 'Entregado' }
 const etiquetaPago: Record<EstadoPago, string> = { sin_seña: 'Sin seña', señado: 'Señado', pagado: 'Pagado' }
@@ -38,7 +39,7 @@ const btnPrimary = 'bg-[#1F2937] text-white text-sm px-4 py-2.5 rounded-xl hover
 
 export default function PedidosPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [modo, setModo] = useState<Modo>('tabla')
+  const [modo, setModo] = useState<Modo>(() => window.innerWidth < 1024 ? 'cards' : 'tabla')
   const [pedidos, setPedidos] = useState<PedidoConEvento[]>([])
   const [eventos, setEventos] = useState<Evento[]>([])
   const [loading, setLoading] = useState(true)
@@ -48,6 +49,7 @@ export default function PedidosPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<PedidoConEvento | null>(null)
   const [viewTarget, setViewTarget] = useState<PedidoConEvento | null>(null)
+  const [filtrosOpen, setFiltrosOpen] = useState(false)
 
   useEffect(() => {
     if (searchParams.get('nuevo') === '1') {
@@ -86,6 +88,14 @@ export default function PedidosPage() {
     else setFiltros(f => ({ ...f, eventoId: parseInt(val), sinEvento: undefined }))
   }
 
+  const activeFilterCount = [
+    eventoSelect !== '',
+    !!filtros.estadoEntrega,
+    !!filtros.estadoPago,
+    !!filtros.search,
+    !!(filtros.fechaDesde || filtros.fechaHasta),
+  ].filter(Boolean).length
+
   const totalMonto = pedidos.reduce((s, p) => s + parseFloat(p.precioTotal), 0)
   const cobrado = pedidos.filter(p => p.estadoPago === 'pagado').reduce((s, p) => s + parseFloat(p.precioTotal), 0)
   const pendienteCobro = totalMonto - cobrado
@@ -103,7 +113,7 @@ export default function PedidosPage() {
   }))
 
   return (
-    <div className="max-w-5xl mx-auto px-4 pt-20 pb-8">
+    <div className="max-w-7xl mx-auto px-4 pt-20 pb-8">
       <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center">
@@ -114,88 +124,171 @@ export default function PedidosPage() {
         <div className="flex items-center gap-2">
           <button onClick={() => setModalOpen(true)} className={btnPrimary}>
             <Plus size={14} strokeWidth={2.5} />
-            <span className="sm:inline">Nuevo pedido</span>
+            <span>Nuevo pedido</span>
           </button>
           <div className="flex gap-1 bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl p-1">
+            <button onClick={() => setModo('cards')}
+              className={`text-sm px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${modo === 'cards' ? 'bg-white shadow-sm font-medium text-[#1F2937] border border-[#E5EAF1]' : 'text-[#6B7280] hover:text-[#1F2937]'}`}>
+              <LayoutGrid size={14} strokeWidth={2} />
+              <span className="hidden sm:inline">Cards</span>
+            </button>
             <button onClick={() => setModo('tabla')}
               className={`text-sm px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${modo === 'tabla' ? 'bg-white shadow-sm font-medium text-[#1F2937] border border-[#E5EAF1]' : 'text-[#6B7280] hover:text-[#1F2937]'}`}>
-              <LayoutList size={14} strokeWidth={2} /> Tabla
+              <LayoutList size={14} strokeWidth={2} />
+              <span className="hidden sm:inline">Tabla</span>
             </button>
             <button onClick={() => setModo('dashboard')}
               className={`text-sm px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${modo === 'dashboard' ? 'bg-white shadow-sm font-medium text-[#1F2937] border border-[#E5EAF1]' : 'text-[#6B7280] hover:text-[#1F2937]'}`}>
-              <BarChart2 size={14} strokeWidth={2} /> Dashboard
+              <BarChart2 size={14} strokeWidth={2} />
+              <span className="hidden sm:inline">Stats</span>
             </button>
           </div>
         </div>
       </div>
 
-      {/* Filtros */}
-      <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4 mb-5">
-        <div className="flex items-center gap-1.5 mb-3">
-          <SlidersHorizontal size={13} color="#9CC6EA" strokeWidth={2} />
-          <span className="text-xs font-medium text-[#6B7280]">Filtros</span>
-        </div>
-        <div className="flex flex-col gap-3">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Evento</label>
-              <select className={inputClass} value={eventoSelect} onChange={e => handleEventoSelect(e.target.value)}>
-                <option value="">Todos</option>
-                <option value="sin_evento">Sin evento</option>
-                {eventos.map(ev => <option key={ev.id} value={ev.id}>{ev.nombre}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Entrega</label>
-              <select className={inputClass} value={filtros.estadoEntrega ?? ''} onChange={e => setFiltro('estadoEntrega', e.target.value as EstadoEntrega || undefined)}>
-                <option value="">Todos</option>
-                <option value="pendiente">Pendiente</option>
-                <option value="entregado">Entregado</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Pago</label>
-              <select className={inputClass} value={filtros.estadoPago ?? ''} onChange={e => setFiltro('estadoPago', e.target.value as EstadoPago || undefined)}>
-                <option value="">Todos</option>
-                <option value="sin_seña">Sin seña</option>
-                <option value="señado">Señado</option>
-                <option value="pagado">Pagado</option>
-              </select>
-            </div>
+      {/* Filtros colapsables */}
+      <div className="bg-white border border-[#E5EAF1] rounded-2xl mb-5 overflow-hidden">
+        <button
+          onClick={() => setFiltrosOpen(o => !o)}
+          className="w-full flex items-center justify-between px-4 py-3 hover:bg-[#F7FAFC] transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal size={13} color="#9CC6EA" strokeWidth={2} />
+            <span className="text-xs font-medium text-[#6B7280]">Filtros</span>
+            {activeFilterCount > 0 && (
+              <span className="bg-[#CFE6F7] text-[#1F2937] text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none">
+                {activeFilterCount}
+              </span>
+            )}
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Buscar cliente</label>
-              <div className="relative">
-                <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CC6EA]" strokeWidth={2} />
-                <input
-                  className="w-full border border-[#E5EAF1] rounded-xl pl-8 pr-3 py-2 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
-                  placeholder="Nombre del cliente..."
-                  value={filtros.search ?? ''}
-                  onChange={e => setFiltro('search', e.target.value || undefined)}
-                />
+          {filtrosOpen
+            ? <ChevronUp size={14} color="#6B7280" strokeWidth={2} />
+            : <ChevronDown size={14} color="#6B7280" strokeWidth={2} />
+          }
+        </button>
+        {filtrosOpen && (
+          <div className="px-4 pb-4 border-t border-[#E5EAF1] pt-3 flex flex-col gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Evento</label>
+                <select className={inputClass} value={eventoSelect} onChange={e => handleEventoSelect(e.target.value)}>
+                  <option value="">Todos</option>
+                  <option value="sin_evento">Sin evento</option>
+                  {eventos.map(ev => <option key={ev.id} value={ev.id}>{ev.nombre}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Entrega</label>
+                <select className={inputClass} value={filtros.estadoEntrega ?? ''} onChange={e => setFiltro('estadoEntrega', e.target.value as EstadoEntrega || undefined)}>
+                  <option value="">Todos</option>
+                  <option value="pendiente">Pendiente</option>
+                  <option value="entregado">Entregado</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Pago</label>
+                <select className={inputClass} value={filtros.estadoPago ?? ''} onChange={e => setFiltro('estadoPago', e.target.value as EstadoPago || undefined)}>
+                  <option value="">Todos</option>
+                  <option value="sin_seña">Sin seña</option>
+                  <option value="señado">Señado</option>
+                  <option value="pagado">Pagado</option>
+                </select>
               </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Fecha del pedido</label>
-              <div className="flex gap-2 items-center">
-                <input type="date"
-                  className="flex-1 border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
-                  value={filtros.fechaDesde ?? ''} onChange={e => setFiltro('fechaDesde', e.target.value || undefined)}
-                />
-                <span className="text-[#6B7280] text-xs shrink-0">–</span>
-                <input type="date"
-                  className="flex-1 border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
-                  value={filtros.fechaHasta ?? ''} onChange={e => setFiltro('fechaHasta', e.target.value || undefined)}
-                />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Buscar cliente</label>
+                <div className="relative">
+                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CC6EA]" strokeWidth={2} />
+                  <input
+                    className="w-full border border-[#E5EAF1] rounded-xl pl-8 pr-3 py-2 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
+                    placeholder="Nombre del cliente..."
+                    value={filtros.search ?? ''}
+                    onChange={e => setFiltro('search', e.target.value || undefined)}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Fecha del pedido</label>
+                <div className="flex gap-2 items-center">
+                  <input type="date"
+                    className="flex-1 border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
+                    value={filtros.fechaDesde ?? ''} onChange={e => setFiltro('fechaDesde', e.target.value || undefined)}
+                  />
+                  <span className="text-[#6B7280] text-xs shrink-0">–</span>
+                  <input type="date"
+                    className="flex-1 border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
+                    value={filtros.fechaHasta ?? ''} onChange={e => setFiltro('fechaHasta', e.target.value || undefined)}
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       {loading ? (
         <LoadingSpinner />
+      ) : modo === 'cards' ? (
+        pedidos.length === 0 ? (
+          <EmptyState
+            variant="pedidos"
+            titulo="No hay pedidos"
+            descripcion="No encontramos pedidos con esos filtros. Probá cambiando la búsqueda o creá uno nuevo."
+            accion={
+              <button onClick={() => setModalOpen(true)} className="bg-[#1F2937] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-[#374151] transition-colors">
+                Nuevo pedido
+              </button>
+            }
+          />
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {pedidos.map(p => (
+              <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl p-4 flex flex-col gap-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-[#1F2937] truncate">{p.nombreCliente}</p>
+                    {p.telefono && <p className="text-xs text-[#6B7280] mt-0.5">{p.telefono}</p>}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xs text-[#6B7280]">{formatFecha(p.createdAt)}</p>
+                    {p.evento && (
+                      <p className="text-xs text-[#9CC6EA] mt-0.5 font-medium">{p.evento.nombre}</p>
+                    )}
+                  </div>
+                </div>
+                {p.descripcion && (
+                  <p className="text-sm text-[#6B7280] italic truncate">"{p.descripcion}"</p>
+                )}
+                <p className="text-2xl font-bold text-[#1F2937]">{formatMonto(parseFloat(p.precioTotal))}</p>
+                <div className="flex gap-2 flex-wrap">
+                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgeEntrega(p.estadoEntrega)}`}>
+                    {etiquetaEntrega[p.estadoEntrega]}
+                  </span>
+                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgePago(p.estadoPago)}`}>
+                    {etiquetaPago[p.estadoPago]}
+                  </span>
+                </div>
+                <div className="flex gap-2 mt-auto pt-1">
+                  <button
+                    onClick={() => setViewTarget(p)}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium bg-[#F7FAFC] border border-[#E5EAF1] text-[#1F2937] rounded-xl hover:bg-[#E5EAF1] transition-colors"
+                  >
+                    <Eye size={16} strokeWidth={2} />
+                    Ver
+                  </button>
+                  <button
+                    onClick={() => { setEditTarget(p); setModalOpen(true) }}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] transition-colors"
+                  >
+                    <Pencil size={16} strokeWidth={2} />
+                    Editar
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )
       ) : modo === 'tabla' ? (
         pedidos.length === 0 ? (
           <EmptyState

@@ -88,11 +88,6 @@ export default function PedidoDetailModal({ pedido, onClose, onEdit }: Props) {
               </div>
               <div className="text-right shrink-0 ml-3">
                 <p className="text-xs text-[#6B7280]">{fmtFecha(pedido.createdAt)}</p>
-                {pedido.evento && (
-                  <p className="text-xs font-medium text-[#1F2937] mt-1 bg-[#F7FAFC] px-2 py-0.5 rounded-full border border-[#E5EAF1]">
-                    {pedido.evento.nombre}
-                  </p>
-                )}
               </div>
             </div>
 
@@ -145,30 +140,6 @@ export default function PedidoDetailModal({ pedido, onClose, onEdit }: Props) {
                 <span className="text-sm font-semibold text-[#1F2937]">Total</span>
                 <span className="text-2xl font-bold text-[#1F2937]">{fmt(total)}</span>
               </div>
-            </div>
-
-            {/* Estados */}
-            <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
-              <span style={{
-                fontSize: '11px', fontWeight: 600, padding: '4px 10px',
-                borderRadius: '9999px', display: 'inline-block', lineHeight: '1.4',
-                ...(pedido.estadoEntrega === 'entregado'
-                  ? { backgroundColor: '#ecfdf5', color: '#047857' }
-                  : { backgroundColor: '#fffbeb', color: '#b45309' })
-              }}>
-                {pedido.estadoEntrega === 'entregado' ? 'Entregado' : 'Pendiente entrega'}
-              </span>
-              <span style={{
-                fontSize: '11px', fontWeight: 600, padding: '4px 10px',
-                borderRadius: '9999px', display: 'inline-block', lineHeight: '1.4',
-                ...(pedido.estadoPago === 'pagado'
-                  ? { backgroundColor: '#ecfdf5', color: '#047857' }
-                  : pedido.estadoPago === 'señado'
-                  ? { backgroundColor: '#CFE6F7', color: '#1F2937' }
-                  : { backgroundColor: '#fff1f2', color: '#e11d48' })
-              }}>
-                {pedido.estadoPago === 'pagado' ? 'Pagado' : pedido.estadoPago === 'señado' ? 'Señado' : 'Sin seña'}
-              </span>
             </div>
 
             {/* Notas */}
