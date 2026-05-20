@@ -302,7 +302,7 @@ export default function EventoPage() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 pt-20 pb-8">
-      <button onClick={() => navigate('/')} className="flex items-center gap-1.5 text-sm text-[#6B7280] hover:text-[#1F2937] mb-5 transition-colors">
+      <button onClick={() => navigate('/eventos')} className="flex items-center gap-1.5 text-sm text-[#6B7280] hover:text-[#1F2937] mb-5 transition-colors">
         <ArrowLeft size={14} strokeWidth={2} /> Eventos
       </button>
 

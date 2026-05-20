@@ -1,8 +1,8 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Calendar, ShoppingCart, Users } from 'lucide-react'
+import { Zap, ShoppingCart, Users } from 'lucide-react'
 
 const navItems = [
-  { label: 'Eventos', path: '/', icon: Calendar },
+  { label: 'Inicio', path: '/', icon: Zap },
   { label: 'Pedidos', path: '/pedidos', icon: ShoppingCart },
   { label: 'Clientes', path: '/clientes', icon: Users },
 ]

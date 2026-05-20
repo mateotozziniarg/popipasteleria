@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Menu, X, Calendar, ShoppingCart, Package, FlaskConical, Users, ChefHat, Plus, LogOut } from 'lucide-react'
+import { Menu, X, Zap, Calendar, ShoppingCart, Package, FlaskConical, Users, ChefHat, Plus, LogOut } from 'lucide-react'
 import { clearToken } from '../api/token'
 
 const navItems = [
-  { label: 'Eventos', path: '/', icon: Calendar },
+  { label: 'Inicio', path: '/', icon: Zap },
+  { label: 'Eventos', path: '/eventos', icon: Calendar },
   { label: 'Pedidos', path: '/pedidos', icon: ShoppingCart },
   { label: 'Clientes', path: '/clientes', icon: Users },
   { label: 'Productos', path: '/productos', icon: Package },

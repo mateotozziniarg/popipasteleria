@@ -4,6 +4,7 @@ import ProtectedRoute from './components/ProtectedRoute'
 import LoginPage from './pages/LoginPage'
 import NotFoundPage from './pages/NotFoundPage'
 import BottomNav from './components/BottomNav'
+import WorkspacePage from './pages/WorkspacePage'
 import EventosPage from './pages/EventosPage'
 import EventoPage from './pages/EventoPage'
 import PedidosPage from './pages/PedidosPage'
@@ -25,7 +26,8 @@ export default function App() {
                 <BottomNav />
               <div className="pl-0 lg:pl-64 pb-20 sm:pb-0">
                   <Routes>
-                    <Route path="/" element={<EventosPage />} />
+                    <Route path="/" element={<WorkspacePage />} />
+                    <Route path="/eventos" element={<EventosPage />} />
                     <Route path="/eventos/:id" element={<EventoPage />} />
                     <Route path="/pedidos" element={<PedidosPage />} />
                     <Route path="/productos" element={<ProductosPage />} />
