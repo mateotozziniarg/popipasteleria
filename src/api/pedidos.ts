@@ -21,6 +21,7 @@ export interface Pedido {
   estadoEntrega: EstadoEntrega
   estadoPago: EstadoPago
   notas: string | null
+  montoSeña: string | null
   createdAt: string
   productos: PedidoProductoEnPedido[]
 }
@@ -33,6 +34,7 @@ export interface PedidoInput {
   estadoEntrega?: EstadoEntrega
   estadoPago?: EstadoPago
   notas?: string
+  montoSeña?: number | null
 }
 
 export interface PedidoConEvento extends Pedido {

@@ -12,16 +12,16 @@ router.get('/', async (req: Request, res: Response) => {
       include: { productos: { include: { producto: true } } },
     })
     res.json(pedidos)
-  } catch (error) {
+  } catch {
     res.status(500).json({ error: 'Error al obtener pedidos' })
   }
 })
 
 router.post('/', async (req: Request, res: Response) => {
   const eventoId = parseInt(req.params.eventoId as string)
-  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas } = req.body
-  if (!nombreCliente || !descripcion || precioTotal === undefined) {
-    res.status(400).json({ error: 'nombreCliente, descripcion y precioTotal son requeridos' })
+  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña } = req.body
+  if (!nombreCliente || precioTotal === undefined) {
+    res.status(400).json({ error: 'nombreCliente y precioTotal son requeridos' })
     return
   }
   try {
@@ -35,6 +35,7 @@ router.post('/', async (req: Request, res: Response) => {
         ...(estadoEntrega && { estadoEntrega }),
         ...(estadoPago && { estadoPago }),
         notas,
+        ...(montoSeña !== undefined && montoSeña !== null && { montoSeña }),
       },
     })
     res.status(201).json(pedido)
@@ -49,7 +50,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 router.put('/:pedidoId', async (req: Request, res: Response) => {
   const id = parseInt(req.params.pedidoId as string)
-  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas } = req.body
+  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña } = req.body
   try {
     const pedido = await prisma.pedido.update({
       where: { id },
@@ -61,6 +62,7 @@ router.put('/:pedidoId', async (req: Request, res: Response) => {
         ...(estadoEntrega !== undefined && { estadoEntrega }),
         ...(estadoPago !== undefined && { estadoPago }),
         ...(notas !== undefined && { notas }),
+        ...(montoSeña !== undefined && { montoSeña: montoSeña === null ? null : montoSeña }),
       },
     })
     res.json(pedido)

@@ -103,7 +103,7 @@ export default function EventosPage() {
     n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 
   return (
-    <div className="max-w-3xl mx-auto px-4 pt-16 pb-8">
+    <div className="max-w-3xl mx-auto px-4 pt-20 pb-8">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center">

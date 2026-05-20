@@ -30,6 +30,7 @@ interface PedidoFormState {
   estadoEntrega: EstadoEntrega
   estadoPago: EstadoPago
   notas: string
+  montoSeña: string
   items: ItemForm[]
 }
 
@@ -41,6 +42,7 @@ const emptyForm: PedidoFormState = {
   estadoEntrega: 'pendiente',
   estadoPago: 'sin_seña',
   notas: '',
+  montoSeña: '',
   items: [],
 }
 
@@ -55,7 +57,7 @@ const badgePago = (e: EstadoPago) =>
     ? 'bg-emerald-50 text-emerald-700'
     : e === 'señado'
     ? 'bg-[#CFE6F7] text-[#1F2937]'
-    : 'bg-[#E5EAF1] text-[#6B7280]'
+    : 'bg-rose-50 text-rose-600'
 
 const formatMonto = (n: number) => n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 const formatFecha = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -141,7 +143,7 @@ function BuscadorProductos({ productos, itemsActuales, onAgregar, onCrearYAgrega
   )
 }
 
-// ── Mini-form para crear producto nuevo inline ─────────────────────
+// ── Mini-form para crear producto nuevo inline (sin <form> anidado) ──
 interface MiniCrearProductoProps {
   nombre: string
   onConfirmar: (producto: Producto) => void
@@ -152,8 +154,7 @@ function MiniCrearProducto({ nombre, onConfirmar, onCancelar }: MiniCrearProduct
   const [precio, setPrecio] = useState('')
   const [saving, setSaving] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleCrear() {
     if (!precio) return
     setSaving(true)
     try {
@@ -167,7 +168,7 @@ function MiniCrearProducto({ nombre, onConfirmar, onCancelar }: MiniCrearProduct
   return (
     <div className="bg-[#F7FAFC] border border-[#CFE6F7] rounded-xl p-3 mt-2">
       <p className="text-sm font-medium text-[#1F2937] mb-2.5">Crear producto "{nombre}"</p>
-      <form onSubmit={handleSubmit} className="flex gap-2 items-end">
+      <div className="flex gap-2 items-end">
         <div className="flex-1">
           <label className="block text-xs text-[#6B7280] mb-1">Precio por defecto</label>
           <input
@@ -175,16 +176,22 @@ function MiniCrearProducto({ nombre, onConfirmar, onCancelar }: MiniCrearProduct
             className="w-full border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
             value={precio}
             onChange={e => setPrecio(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleCrear() } }}
             placeholder="0"
           />
         </div>
-        <button type="submit" disabled={saving || !precio} className="bg-[#1F2937] text-white text-xs px-3 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors">
+        <button
+          type="button"
+          disabled={saving || !precio}
+          onClick={handleCrear}
+          className="bg-[#1F2937] text-white text-xs px-3 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors"
+        >
           {saving ? '...' : 'Crear'}
         </button>
         <button type="button" onClick={onCancelar} className="text-xs text-[#6B7280] hover:text-[#1F2937] px-2 py-2 transition-colors">
           Cancelar
         </button>
-      </form>
+      </div>
     </div>
   )
 }
@@ -254,7 +261,7 @@ function BuscadorMateriaPrima({ materias, gastosActuales, onAgregar, onCrearYAgr
   )
 }
 
-// ── Mini-form para crear materia prima inline ──────────────────────
+// ── Mini-form para crear materia prima inline (sin <form> anidado) ──
 interface MiniCrearMpProps {
   nombre: string
   onConfirmar: (mp: MateriaPrima) => void
@@ -265,8 +272,7 @@ function MiniCrearMateriaPrima({ nombre, onConfirmar, onCancelar }: MiniCrearMpP
   const [precio, setPrecio] = useState('')
   const [saving, setSaving] = useState(false)
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleCrear() {
     if (!precio) return
     setSaving(true)
     try {
@@ -280,7 +286,7 @@ function MiniCrearMateriaPrima({ nombre, onConfirmar, onCancelar }: MiniCrearMpP
   return (
     <div className="bg-[#F7FAFC] border border-[#CFE6F7] rounded-xl p-3 mt-2">
       <p className="text-sm font-medium text-[#1F2937] mb-2.5">Crear materia prima "{nombre}"</p>
-      <form onSubmit={handleSubmit} className="flex gap-2 items-end">
+      <div className="flex gap-2 items-end">
         <div className="flex-1">
           <label className="block text-xs text-[#6B7280] mb-1">Precio por defecto</label>
           <input
@@ -288,16 +294,22 @@ function MiniCrearMateriaPrima({ nombre, onConfirmar, onCancelar }: MiniCrearMpP
             className="w-full border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
             value={precio}
             onChange={e => setPrecio(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleCrear() } }}
             placeholder="0"
           />
         </div>
-        <button type="submit" disabled={saving || !precio} className="bg-[#1F2937] text-white text-xs px-3 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors">
+        <button
+          type="button"
+          disabled={saving || !precio}
+          onClick={handleCrear}
+          className="bg-[#1F2937] text-white text-xs px-3 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors"
+        >
           {saving ? '...' : 'Crear'}
         </button>
         <button type="button" onClick={onCancelar} className="text-xs text-[#6B7280] hover:text-[#1F2937] px-2 py-2 transition-colors">
           Cancelar
         </button>
-      </form>
+      </div>
     </div>
   )
 }
@@ -360,10 +372,7 @@ function GastoRow({ gasto, eventoId, onDelete, onUpdate }: GastoRowProps) {
         onBlur={save}
         placeholder="Notas..."
       />
-      <button
-        onClick={onDelete}
-        className="text-red-400 hover:text-red-600 transition-colors"
-      >
+      <button onClick={onDelete} className="text-red-400 hover:text-red-600 transition-colors">
         <Trash2 size={13} strokeWidth={2} />
       </button>
     </div>
@@ -431,6 +440,7 @@ export default function EventoPage() {
       estadoEntrega: p.estadoEntrega,
       estadoPago: p.estadoPago,
       notas: p.notas ?? '',
+      montoSeña: p.montoSeña ?? '',
       items: p.productos.map(pp => ({
         productoId: pp.productoId,
         nombre: pp.producto.nombre,
@@ -498,6 +508,7 @@ export default function EventoPage() {
       estadoEntrega: form.estadoEntrega,
       estadoPago: form.estadoPago,
       notas: form.notas || undefined,
+      montoSeña: form.estadoPago === 'señado' && form.montoSeña ? parseFloat(form.montoSeña) : null,
     }
     try {
       if (editTarget) {
@@ -551,18 +562,24 @@ export default function EventoPage() {
   })
 
   const totalEsperado = pedidos.reduce((s, p) => s + parseFloat(p.precioTotal), 0)
-  const totalCobrado = pedidos.filter(p => p.estadoPago === 'pagado').reduce((s, p) => s + parseFloat(p.precioTotal), 0)
+  const totalCobrado = pedidos
+    .filter(p => p.estadoPago === 'pagado')
+    .reduce((s, p) => s + parseFloat(p.precioTotal), 0)
+  const totalSenas = pedidos
+    .filter(p => p.estadoPago === 'señado' && p.montoSeña)
+    .reduce((s, p) => s + parseFloat(p.montoSeña!), 0)
+  const totalRecibido = totalCobrado + totalSenas
   const entregados = pedidos.filter(p => p.estadoEntrega === 'entregado').length
   const pagados = pedidos.filter(p => p.estadoPago === 'pagado').length
   const totalGastos = gastos.reduce((s, g) => s + g.subtotal, 0)
-  const gananciaNeta = totalCobrado - totalGastos
+  const gananciaNeta = totalRecibido - totalGastos
   const gananciaEsperada = totalEsperado - totalGastos
 
   if (loading) return <LoadingSpinner fullscreen />
   if (!evento) return <p className="p-6 text-sm text-red-500">Evento no encontrado.</p>
 
   return (
-    <div className="max-w-3xl mx-auto px-4 pt-16 pb-8">
+    <div className="max-w-3xl mx-auto px-4 pt-20 pb-8">
       <button
         onClick={() => navigate('/')}
         className="flex items-center gap-1.5 text-sm text-[#6B7280] hover:text-[#1F2937] mb-5 transition-colors"
@@ -609,10 +626,10 @@ export default function EventoPage() {
         <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
           <div className="flex items-center gap-1.5 mb-2">
             <CreditCard size={13} color="#10b981" strokeWidth={2} />
-            <p className="text-xs text-[#6B7280]">Cobrado</p>
+            <p className="text-xs text-[#6B7280]">Recibido</p>
           </div>
-          <p className="text-lg font-semibold text-emerald-600">{formatMonto(totalCobrado)}</p>
-          <p className="text-xs text-[#6B7280] mt-0.5">{pagados} pagados</p>
+          <p className="text-lg font-semibold text-emerald-600">{formatMonto(totalRecibido)}</p>
+          <p className="text-xs text-[#6B7280] mt-0.5">{pagados} pagados{totalSenas > 0 ? ` + ${formatMonto(totalSenas)} señas` : ''}</p>
         </div>
       </div>
 
@@ -637,7 +654,7 @@ export default function EventoPage() {
           <p className={`text-lg font-semibold ${gananciaNeta >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
             {formatMonto(gananciaNeta)}
           </p>
-          <p className="text-xs text-[#6B7280] mt-0.5">cobrado − gastos</p>
+          <p className="text-xs text-[#6B7280] mt-0.5">recibido − gastos</p>
         </div>
         <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
           <div className="flex items-center gap-1.5 mb-2">
@@ -739,53 +756,64 @@ export default function EventoPage() {
         </div>
       ) : (
         <div className="flex flex-col gap-2.5">
-          {pedidosOrdenados.map((p) => (
-            <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl px-5 py-4 hover:border-[#9CC6EA] transition-colors">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="font-semibold text-[#1F2937]">{p.nombreCliente}</p>
-                  {p.telefono && <p className="text-xs text-[#6B7280] mt-0.5">{p.telefono}</p>}
-                  {p.productos.length > 0 ? (
-                    <p className="text-sm text-[#6B7280] mt-1.5">
-                      {p.productos.map(pp => `${pp.producto.nombre} × ${pp.cantidad}`).join(' — ')}
-                    </p>
-                  ) : p.descripcion ? (
-                    <p className="text-sm text-[#6B7280] mt-1.5">{p.descripcion}</p>
-                  ) : null}
-                  {p.notas && <p className="text-xs text-[#6B7280] mt-1 italic">{p.notas}</p>}
+          {pedidosOrdenados.map((p) => {
+            const precio = parseFloat(p.precioTotal)
+            const sena = p.montoSeña ? parseFloat(p.montoSeña) : null
+            const resta = sena !== null ? precio - sena : null
+            return (
+              <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl px-5 py-4 hover:border-[#9CC6EA] transition-colors">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-semibold text-[#1F2937]">{p.nombreCliente}</p>
+                    {p.telefono && <p className="text-xs text-[#6B7280] mt-0.5">{p.telefono}</p>}
+                    {p.productos.length > 0 ? (
+                      <p className="text-sm text-[#6B7280] mt-1.5">
+                        {p.productos.map(pp => `${pp.producto.nombre} × ${pp.cantidad}`).join(' — ')}
+                      </p>
+                    ) : p.descripcion ? (
+                      <p className="text-sm text-[#6B7280] mt-1.5">{p.descripcion}</p>
+                    ) : null}
+                    {p.notas && <p className="text-xs text-[#6B7280] mt-1 italic">{p.notas}</p>}
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="font-semibold text-[#1F2937]">{formatMonto(precio)}</p>
+                    {sena !== null && resta !== null && (
+                      <div className="mt-0.5">
+                        <p className="text-xs text-[#6B7280]">Seña: {formatMonto(sena)}</p>
+                        <p className="text-xs font-medium text-amber-600">Resta: {formatMonto(resta)}</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                <div className="text-right shrink-0">
-                  <p className="font-semibold text-[#1F2937]">{formatMonto(parseFloat(p.precioTotal))}</p>
+                <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#E5EAF1]">
+                  <div className="flex gap-1.5">
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap ${badgeEntrega(p.estadoEntrega)}`}>
+                      {etiquetaEntrega[p.estadoEntrega]}
+                    </span>
+                    <span className={`text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap ${badgePago(p.estadoPago)}`}>
+                      {etiquetaPago[p.estadoPago]}
+                    </span>
+                  </div>
+                  <div className="flex gap-1">
+                    <button
+                      onClick={() => openEdit(p)}
+                      className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#1F2937] transition-colors px-2 py-1 rounded-lg hover:bg-[#F7FAFC]"
+                    >
+                      <Pencil size={11} strokeWidth={2} />
+                      Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(p.id)}
+                      className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
+                    >
+                      <Trash2 size={11} strokeWidth={2} />
+                      Eliminar
+                    </button>
+                  </div>
                 </div>
               </div>
-              <div className="flex items-center justify-between mt-3 pt-3 border-t border-[#E5EAF1]">
-                <div className="flex gap-1.5">
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgeEntrega(p.estadoEntrega)}`}>
-                    {etiquetaEntrega[p.estadoEntrega]}
-                  </span>
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgePago(p.estadoPago)}`}>
-                    {etiquetaPago[p.estadoPago]}
-                  </span>
-                </div>
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => openEdit(p)}
-                    className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#1F2937] transition-colors px-2 py-1 rounded-lg hover:bg-[#F7FAFC]"
-                  >
-                    <Pencil size={11} strokeWidth={2} />
-                    Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(p.id)}
-                    className="flex items-center gap-1 text-xs text-red-400 hover:text-red-600 transition-colors px-2 py-1 rounded-lg hover:bg-red-50"
-                  >
-                    <Trash2 size={11} strokeWidth={2} />
-                    Eliminar
-                  </button>
-                </div>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 
@@ -905,7 +933,7 @@ export default function EventoPage() {
                 <select
                   className={inputClass}
                   value={form.estadoPago}
-                  onChange={e => setForm(f => ({ ...f, estadoPago: e.target.value as EstadoPago }))}
+                  onChange={e => setForm(f => ({ ...f, estadoPago: e.target.value as EstadoPago, montoSeña: '' }))}
                 >
                   <option value="sin_seña">Sin seña</option>
                   <option value="señado">Señado</option>
@@ -913,6 +941,24 @@ export default function EventoPage() {
                 </select>
               </div>
             </div>
+
+            {form.estadoPago === 'señado' && (
+              <div>
+                <label className={labelClass}>Monto de seña</label>
+                <input
+                  type="number" min="0" step="0.01"
+                  className={inputClass}
+                  value={form.montoSeña}
+                  onChange={e => setForm(f => ({ ...f, montoSeña: e.target.value }))}
+                  placeholder="0"
+                />
+                {form.montoSeña && form.precioTotal && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    Resta: {formatMonto(parseFloat(form.precioTotal) - parseFloat(form.montoSeña))}
+                  </p>
+                )}
+              </div>
+            )}
 
             <div>
               <label className={labelClass}>

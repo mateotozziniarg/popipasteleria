@@ -18,7 +18,7 @@ const badgePago = (e: EstadoPago) =>
     ? 'bg-emerald-50 text-emerald-700'
     : e === 'señado'
     ? 'bg-[#CFE6F7] text-[#1F2937]'
-    : 'bg-[#E5EAF1] text-[#6B7280]'
+    : 'bg-rose-50 text-rose-600'
 
 const formatMonto = (n: number) =>
   n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
@@ -78,7 +78,7 @@ export default function PedidosPage() {
   }))
 
   return (
-    <div className="max-w-5xl mx-auto px-4 pt-16 pb-8">
+    <div className="max-w-5xl mx-auto px-4 pt-20 pb-8">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center">
@@ -156,7 +156,7 @@ export default function PedidosPage() {
             </select>
           </div>
           <div className="col-span-2 sm:col-span-1">
-            <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Fecha evento</label>
+            <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Fecha del pedido</label>
             <div className="flex gap-1 items-center">
               <input
                 type="date"
@@ -214,12 +214,12 @@ export default function PedidosPage() {
                         {formatMonto(parseFloat(p.precioTotal))}
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgeEntrega(p.estadoEntrega)}`}>
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap ${badgeEntrega(p.estadoEntrega)}`}>
                           {etiquetaEntrega[p.estadoEntrega]}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgePago(p.estadoPago)}`}>
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap ${badgePago(p.estadoPago)}`}>
                           {etiquetaPago[p.estadoPago]}
                         </span>
                       </td>
