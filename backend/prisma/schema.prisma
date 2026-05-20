@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Evento {
+  id          Int           @id @default(autoincrement())
+  nombre      String
+  fecha       DateTime
+  descripcion String?
+  createdAt   DateTime      @default(now())
+  pedidos     Pedido[]
+  gastos      EventoGasto[]
+}
+
+model MateriaPrima {
+  id            Int           @id @default(autoincrement())
+  nombre        String
+  descripcion   String?
+  precioDefault Decimal       @db.Decimal(10, 2)
+  createdAt     DateTime      @default(now())
+  gastos        EventoGasto[]
+}
+
+model EventoGasto {
+  id             Int          @id @default(autoincrement())
+  eventoId       Int
+  evento         Evento       @relation(fields: [eventoId], references: [id])
+  materiaPrimaId Int
+  materiaPrima   MateriaPrima @relation(fields: [materiaPrimaId], references: [id])
+  cantidad       Decimal      @db.Decimal(10, 2)
+  precioUnitario Decimal      @db.Decimal(10, 2)
+  notas          String?
+  createdAt      DateTime     @default(now())
+}
+
+model Cliente {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  telefono  String?
+  direccion String?
+  notas     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  pedidos   Pedido[]
+}
+
+model Pedido {
+  id             Int              @id @default(autoincrement())
+  eventoId       Int?
+  evento         Evento?          @relation(fields: [eventoId], references: [id])
+  clienteId      Int?
+  cliente        Cliente?         @relation(fields: [clienteId], references: [id])
+  nombreCliente  String
+  telefono       String?
+  descripcion    String?
+  precioTotal    Decimal          @db.Decimal(10, 2)
+  estadoEntrega  EstadoEntrega    @default(pendiente)
+  estadoPago     EstadoPago       @default(sin_seña)
+  notas          String?
+  montoSeña      Decimal?         @db.Decimal(10, 2)
+  createdAt      DateTime         @default(now())
+  productos      PedidoProducto[]
+}
+
+model Producto {
+  id            Int              @id @default(autoincrement())
+  nombre        String
+  descripcion   String?
+  precioDefault Decimal          @db.Decimal(10, 2)
+  createdAt     DateTime         @default(now())
+  pedidos       PedidoProducto[]
+}
+
+model PedidoProducto {
+  id             Int      @id @default(autoincrement())
+  pedidoId       Int
+  pedido         Pedido   @relation(fields: [pedidoId], references: [id])
+  productoId     Int
+  producto       Producto @relation(fields: [productoId], references: [id])
+  cantidad       Int
+  precioUnitario Decimal  @db.Decimal(10, 2)
+}
+
+enum EstadoEntrega {
+  pendiente
+  entregado
+}
+
+enum EstadoPago {
+  sin_seña
+  señado
+  pagado
+}
+
+model Usuario {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  nombre       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
