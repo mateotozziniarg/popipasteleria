@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { X, Download, Edit2 } from 'lucide-react'
+import { X, Edit2, Share2 } from 'lucide-react'
 import html2canvas from 'html2canvas'
 import { PedidoConEvento } from '../api/pedidos'
 
@@ -17,25 +17,35 @@ const fmtFecha = (iso: string) =>
 
 export default function PedidoDetailModal({ pedido, onClose, onEdit }: Props) {
   const cardRef = useRef<HTMLDivElement>(null)
-  const [downloading, setDownloading] = useState(false)
+  const [sharing, setSharing] = useState(false)
 
   if (!pedido) return null
 
-  async function handleDownload() {
+  async function handleShare() {
     if (!cardRef.current) return
-    setDownloading(true)
+    setSharing(true)
     try {
       const canvas = await html2canvas(cardRef.current, {
         scale: 2,
         backgroundColor: '#ffffff',
         useCORS: true,
       })
-      const link = document.createElement('a')
-      link.download = `pedido-${pedido!.nombreCliente.replace(/\s+/g, '-').toLowerCase()}.png`
-      link.href = canvas.toDataURL('image/png')
-      link.click()
+      const fileName = `pedido-${pedido!.nombreCliente.replace(/\s+/g, '-').toLowerCase()}.png`
+      const blob = await new Promise<Blob>(resolve => canvas.toBlob(b => resolve(b!), 'image/png'))
+      const file = new File([blob], fileName, { type: 'image/png' })
+
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: `Pedido de ${pedido!.nombreCliente}` })
+      } else {
+        // Fallback: descarga directa
+        const link = document.createElement('a')
+        link.download = fileName
+        link.href = URL.createObjectURL(blob)
+        link.click()
+        URL.revokeObjectURL(link.href)
+      }
     } finally {
-      setDownloading(false)
+      setSharing(false)
     }
   }
 
@@ -175,12 +185,12 @@ export default function PedidoDetailModal({ pedido, onClose, onEdit }: Props) {
           </button>
           <button
             type="button"
-            onClick={handleDownload}
-            disabled={downloading}
+            onClick={handleShare}
+            disabled={sharing}
             className="flex items-center gap-1.5 text-sm font-semibold bg-[#1F2937] text-white px-4 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors"
           >
-            <Download size={14} strokeWidth={2} />
-            {downloading ? 'Generando...' : 'Descargar imagen'}
+            <Share2 size={14} strokeWidth={2} />
+            {sharing ? 'Generando...' : 'Compartir'}
           </button>
         </div>
       </div>
