@@ -4,7 +4,6 @@ import { Pedido, PedidoInput, EstadoEntrega, EstadoPago, createPedidoStandalone,
 import { Producto, getProductos, createProducto, addPedidoProducto, deletePedidoProducto } from '../api/productos'
 import { Cliente, getClientes, createCliente } from '../api/clientes'
 import { Evento, getEventos } from '../api/eventos'
-import Modal from './Modal'
 import LoadingSpinner from './LoadingSpinner'
 
 interface ItemForm {
@@ -44,10 +43,10 @@ const emptyForm = (eventoIdDefault: number | null): FormState => ({
   items: [],
 })
 
-const inputClass = 'w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors'
+const inputClass = 'w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white'
 const labelClass = 'block text-sm font-medium text-[#1F2937] mb-1.5'
 const btnPrimary = 'bg-[#1F2937] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors flex items-center gap-2'
-const btnGhost = 'text-sm text-[#6B7280] hover:text-[#1F2937] transition-colors'
+const btnGhost = 'text-sm text-[#6B7280] hover:text-[#1F2937] transition-colors px-3 py-2.5'
 
 const formatMonto = (n: number) =>
   n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
@@ -56,7 +55,7 @@ function calcularTotal(items: ItemForm[]) {
   return items.reduce((s, i) => s + i.cantidad * (parseFloat(i.precioUnitario) || 0), 0)
 }
 
-// ── Buscador de productos ────────────────────────────────────────
+// ── Buscador de productos ─────────────────────────────────────────
 function BuscadorProductos({
   productos, itemsActuales, onAgregar, onCrearYAgregar,
 }: {
@@ -82,14 +81,14 @@ function BuscadorProductos({
   return (
     <div ref={ref} className="relative">
       <input
-        className={inputClass}
-        placeholder="Buscar producto..."
+        className="w-full border-0 bg-transparent text-sm text-[#1F2937] placeholder-[#9CC6EA] focus:outline-none"
+        placeholder="+ Agregar producto..."
         value={query}
         onChange={e => { setQuery(e.target.value); setOpen(true) }}
         onFocus={() => setOpen(true)}
       />
       {open && (filtrados.length > 0 || mostrarCrear) && (
-        <div className="absolute z-10 mt-1 w-full bg-white border border-[#E5EAF1] rounded-xl shadow-lg max-h-48 overflow-y-auto">
+        <div className="absolute z-20 mt-1 left-0 right-0 bg-white border border-[#E5EAF1] rounded-xl shadow-lg max-h-48 overflow-y-auto">
           {filtrados.map(p => (
             <button key={p.id} type="button"
               onClick={() => { onAgregar({ productoId: p.id, nombre: p.nombre, cantidad: 1, precioUnitario: p.precioDefault }); setQuery(''); setOpen(false) }}
@@ -113,7 +112,7 @@ function BuscadorProductos({
   )
 }
 
-// ── Mini-form crear producto inline ──────────────────────────────
+// ── Mini-form crear producto inline ────────────────────────────────
 function MiniCrearProducto({ nombre, onConfirmar, onCancelar }: { nombre: string; onConfirmar: (p: Producto) => void; onCancelar: () => void }) {
   const [precio, setPrecio] = useState('')
   const [saving, setSaving] = useState(false)
@@ -147,7 +146,7 @@ function MiniCrearProducto({ nombre, onConfirmar, onCancelar }: { nombre: string
   )
 }
 
-// ── Buscador de clientes ─────────────────────────────────────────
+// ── Buscador de clientes ──────────────────────────────────────────
 function BuscadorCliente({
   clientes, seleccionado, onSeleccionar, onDeseleccionar, onCrearYSeleccionar,
 }: {
@@ -193,7 +192,7 @@ function BuscadorCliente({
         value={query} onChange={e => { setQuery(e.target.value); setOpen(true) }} onFocus={() => setOpen(true)}
       />
       {open && (filtrados.length > 0 || mostrarCrear) && (
-        <div className="absolute z-10 mt-1 w-full bg-white border border-[#E5EAF1] rounded-xl shadow-lg max-h-48 overflow-y-auto">
+        <div className="absolute z-20 mt-1 w-full bg-white border border-[#E5EAF1] rounded-xl shadow-lg max-h-48 overflow-y-auto">
           {filtrados.map(c => (
             <button key={c.id} type="button"
               onClick={() => { onSeleccionar(c); setQuery(''); setOpen(false) }}
@@ -217,7 +216,7 @@ function BuscadorCliente({
   )
 }
 
-// ── Mini-form crear cliente inline ───────────────────────────────
+// ── Mini-form crear cliente inline ────────────────────────────────
 function MiniCrearCliente({ nombreInicial, onConfirmar, onCancelar }: { nombreInicial: string; onConfirmar: (c: Cliente) => void; onCancelar: () => void }) {
   const [nombre, setNombre] = useState(nombreInicial)
   const [telefono, setTelefono] = useState('')
@@ -227,9 +226,8 @@ function MiniCrearCliente({ nombreInicial, onConfirmar, onCancelar }: { nombreIn
   async function handleCrear() {
     if (!nombre) return
     setSaving(true)
-    try {
-      onConfirmar(await createCliente({ nombre, telefono: telefono || undefined, direccion: direccion || undefined }))
-    } finally { setSaving(false) }
+    try { onConfirmar(await createCliente({ nombre, telefono: telefono || undefined, direccion: direccion || undefined })) }
+    finally { setSaving(false) }
   }
 
   return (
@@ -249,7 +247,7 @@ function MiniCrearCliente({ nombreInicial, onConfirmar, onCancelar }: { nombreIn
   )
 }
 
-// ── Modal principal ──────────────────────────────────────────────
+// ── Modal principal ───────────────────────────────────────────────
 interface Props {
   isOpen: boolean
   onClose: () => void
@@ -329,6 +327,10 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
     })
   }
 
+  function resetToAuto() {
+    setForm(f => ({ ...f, precioTotal: String(calcularTotal(f.items)), precioManual: false }))
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     const nombreFinal = form.clienteRef ? form.clienteRef.nombre : form.nombreCliente
@@ -365,171 +367,258 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
 
   if (!isOpen) return null
 
+  const totalCalculado = calcularTotal(form.items)
+  const mostrarManual = form.precioManual && form.items.length > 0
+
   return (
-    <Modal title={editTarget ? 'Editar pedido' : 'Nuevo pedido'} onClose={onClose}>
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg md:max-w-[860px] max-h-[90vh] flex flex-col border border-[#E5EAF1]">
 
-        {/* Evento */}
-        <div>
-          <label className={labelClass}>
-            Evento <span className="text-[#6B7280] font-normal">(opcional)</span>
-          </label>
-          <select
-            className={inputClass}
-            value={form.eventoId ?? ''}
-            onChange={e => setForm(f => ({ ...f, eventoId: e.target.value ? parseInt(e.target.value) : null }))}
-          >
-            <option value="">Sin evento</option>
-            {eventos.map(ev => <option key={ev.id} value={ev.id}>{ev.nombre}</option>)}
-          </select>
-        </div>
-
-        {/* Cliente */}
-        <div>
-          <label className={labelClass}>Cliente</label>
-          <BuscadorCliente
-            clientes={clientes}
-            seleccionado={form.clienteRef}
-            onSeleccionar={c => setForm(f => ({ ...f, clienteId: c.id, clienteRef: { id: c.id, nombre: c.nombre, telefono: c.telefono }, nombreCliente: c.nombre }))}
-            onDeseleccionar={() => setForm(f => ({ ...f, clienteId: null, clienteRef: null, nombreCliente: '' }))}
-            onCrearYSeleccionar={nombre => setCrearClienteNombre(nombre)}
-          />
-          {crearClienteNombre && (
-            <MiniCrearCliente
-              nombreInicial={crearClienteNombre}
-              onConfirmar={c => {
-                setClientes(prev => [...prev, c].sort((a, b) => a.nombre.localeCompare(b.nombre)))
-                setForm(f => ({ ...f, clienteId: c.id, clienteRef: { id: c.id, nombre: c.nombre, telefono: c.telefono }, nombreCliente: c.nombre }))
-                setCrearClienteNombre(null)
-              }}
-              onCancelar={() => setCrearClienteNombre(null)}
-            />
-          )}
-        </div>
-
-        {/* Productos */}
-        <div>
-          <label className={labelClass}>Productos</label>
-          {form.items.length > 0 && (
-            <div className="flex flex-col gap-2 mb-3">
-              {form.items.map((item, idx) => (
-                <div key={item.productoId} className="flex items-center gap-2 bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl px-3 py-2">
-                  <span className="text-sm text-[#1F2937] flex-1 truncate">{item.nombre}</span>
-                  <input type="number" min="1"
-                    className="w-14 border border-[#E5EAF1] rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
-                    value={item.cantidad} onChange={e => actualizarItem(idx, 'cantidad', e.target.value)}
-                  />
-                  <span className="text-[#6B7280] text-xs">×</span>
-                  <input type="number" min="0" step="0.01"
-                    className="w-24 border border-[#E5EAF1] rounded-lg px-2 py-1.5 text-sm text-right focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
-                    value={item.precioUnitario} onChange={e => actualizarItem(idx, 'precioUnitario', e.target.value)}
-                  />
-                  <button type="button" onClick={() => quitarItem(idx)} className="text-[#6B7280] hover:text-red-500 transition-colors ml-1">
-                    <X size={14} strokeWidth={2} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          <BuscadorProductos
-            productos={productos}
-            itemsActuales={form.items}
-            onAgregar={agregarItem}
-            onCrearYAgregar={nombre => setCrearNombre(nombre)}
-          />
-          {crearNombre && (
-            <MiniCrearProducto
-              nombre={crearNombre}
-              onConfirmar={p => {
-                setProductos(prev => [...prev, p].sort((a, b) => a.nombre.localeCompare(b.nombre)))
-                agregarItem({ productoId: p.id, nombre: p.nombre, cantidad: 1, precioUnitario: p.precioDefault })
-                setCrearNombre(null)
-              }}
-              onCancelar={() => setCrearNombre(null)}
-            />
-          )}
-        </div>
-
-        {/* Precio total */}
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="text-sm font-medium text-[#1F2937]">Precio total</label>
-            {form.precioManual && form.items.length > 0 && (
-              <button type="button"
-                onClick={() => setForm(f => ({ ...f, precioTotal: String(calcularTotal(f.items)), precioManual: false }))}
-                className="flex items-center gap-1 text-xs text-[#9CC6EA] hover:text-[#1F2937] transition-colors"
-              >
-                <RefreshCw size={11} strokeWidth={2} /> Usar suma ({formatMonto(calcularTotal(form.items))})
-              </button>
-            )}
-          </div>
-          <input type="number" min="0" step="0.01" placeholder="0" className={inputClass}
-            value={form.precioTotal} onChange={e => setForm(f => ({ ...f, precioTotal: e.target.value, precioManual: true }))}
-          />
-          {!form.precioManual && form.items.length > 0 && (
-            <p className="text-xs text-[#6B7280] mt-1">Calculado automáticamente desde los productos</p>
-          )}
-        </div>
-
-        {/* Estados */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <label className={labelClass}>Estado entrega</label>
-            <select className={inputClass} value={form.estadoEntrega}
-              onChange={e => setForm(f => ({ ...f, estadoEntrega: e.target.value as EstadoEntrega }))}>
-              <option value="pendiente">Pendiente</option>
-              <option value="entregado">Entregado</option>
-            </select>
-          </div>
-          <div>
-            <label className={labelClass}>Estado pago</label>
-            <select className={inputClass} value={form.estadoPago}
-              onChange={e => setForm(f => ({ ...f, estadoPago: e.target.value as EstadoPago, montoSeña: '' }))}>
-              <option value="sin_seña">Sin seña</option>
-              <option value="señado">Señado</option>
-              <option value="pagado">Pagado</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Monto seña */}
-        {form.estadoPago === 'señado' && (
-          <div>
-            <label className={labelClass}>Monto de seña</label>
-            <input type="number" min="0" step="0.01" placeholder="0" className={inputClass}
-              value={form.montoSeña} onChange={e => setForm(f => ({ ...f, montoSeña: e.target.value }))}
-            />
-            {form.montoSeña && form.precioTotal && (
-              <p className="text-xs text-amber-600 mt-1">
-                Resta: {formatMonto(parseFloat(form.precioTotal) - parseFloat(form.montoSeña))}
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* Notas */}
-        <div>
-          <label className={labelClass}>
-            Notas <span className="text-[#6B7280] font-normal">(opcional)</span>
-          </label>
-          <textarea className={`${inputClass} resize-none`} rows={2}
-            value={form.notas} onChange={e => setForm(f => ({ ...f, notas: e.target.value }))}
-            placeholder="Sin gluten, entrega a domicilio, etc."
-          />
-        </div>
-
-        {error && (
-          <p className="text-red-500 text-sm flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" /> {error}
-          </p>
-        )}
-        <div className="flex gap-3 justify-end pt-1">
-          <button type="button" onClick={onClose} className={btnGhost}>Cancelar</button>
-          <button type="submit" disabled={saving} className={btnPrimary}>
-            {saving ? <><LoadingSpinner inline /><span>Guardando...</span></> : editTarget ? 'Guardar cambios' : 'Crear pedido'}
+        {/* Header */}
+        <div className="flex-none flex items-center justify-between px-5 md:px-6 py-4 border-b-2 border-[#9CC6EA]">
+          <h2 className="font-semibold text-[#1F2937] text-base">
+            {editTarget ? 'Editar pedido' : 'Nuevo pedido'}
+          </h2>
+          <button type="button" onClick={onClose}
+            className="flex items-center justify-center w-7 h-7 rounded-lg text-[#6B7280] hover:text-[#1F2937] hover:bg-[#F7FAFC] transition-colors">
+            <X size={15} strokeWidth={2} />
           </button>
         </div>
-      </form>
-    </Modal>
+
+        {/* Form = scrollable body + footer */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
+
+          {/* Scrollable body */}
+          <div className="flex-1 overflow-y-auto px-5 md:px-6 py-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 md:gap-8">
+
+              {/* ── Columna izquierda: Quién y cuándo ── */}
+              <div className="flex flex-col gap-4">
+
+                {/* Cliente */}
+                <div>
+                  <label className={labelClass}>Cliente</label>
+                  <BuscadorCliente
+                    clientes={clientes}
+                    seleccionado={form.clienteRef}
+                    onSeleccionar={c => setForm(f => ({ ...f, clienteId: c.id, clienteRef: { id: c.id, nombre: c.nombre, telefono: c.telefono }, nombreCliente: c.nombre }))}
+                    onDeseleccionar={() => setForm(f => ({ ...f, clienteId: null, clienteRef: null, nombreCliente: '' }))}
+                    onCrearYSeleccionar={nombre => setCrearClienteNombre(nombre)}
+                  />
+                  {crearClienteNombre && (
+                    <MiniCrearCliente
+                      nombreInicial={crearClienteNombre}
+                      onConfirmar={c => {
+                        setClientes(prev => [...prev, c].sort((a, b) => a.nombre.localeCompare(b.nombre)))
+                        setForm(f => ({ ...f, clienteId: c.id, clienteRef: { id: c.id, nombre: c.nombre, telefono: c.telefono }, nombreCliente: c.nombre }))
+                        setCrearClienteNombre(null)
+                      }}
+                      onCancelar={() => setCrearClienteNombre(null)}
+                    />
+                  )}
+                </div>
+
+                {/* Evento */}
+                <div>
+                  <label className={labelClass}>
+                    Evento <span className="text-[#6B7280] font-normal">(opcional)</span>
+                  </label>
+                  <select className={inputClass}
+                    value={form.eventoId ?? ''}
+                    onChange={e => setForm(f => ({ ...f, eventoId: e.target.value ? parseInt(e.target.value) : null }))}>
+                    <option value="">Sin evento</option>
+                    {eventos.map(ev => <option key={ev.id} value={ev.id}>{ev.nombre}</option>)}
+                  </select>
+                </div>
+
+                {/* Estados */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className={labelClass}>Entrega</label>
+                    <select className={inputClass} value={form.estadoEntrega}
+                      onChange={e => setForm(f => ({ ...f, estadoEntrega: e.target.value as EstadoEntrega }))}>
+                      <option value="pendiente">Pendiente</option>
+                      <option value="entregado">Entregado</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={labelClass}>Pago</label>
+                    <select className={inputClass} value={form.estadoPago}
+                      onChange={e => setForm(f => ({ ...f, estadoPago: e.target.value as EstadoPago, montoSeña: '' }))}>
+                      <option value="sin_seña">Sin seña</option>
+                      <option value="señado">Señado</option>
+                      <option value="pagado">Pagado</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Monto seña */}
+                {form.estadoPago === 'señado' && (
+                  <div>
+                    <label className={labelClass}>Monto de seña</label>
+                    <input type="number" min="0" step="0.01" placeholder="0" className={inputClass}
+                      value={form.montoSeña} onChange={e => setForm(f => ({ ...f, montoSeña: e.target.value }))}
+                    />
+                    {form.montoSeña && form.precioTotal && (
+                      <p className="text-xs text-amber-600 mt-1">
+                        Resta: {formatMonto(parseFloat(form.precioTotal) - parseFloat(form.montoSeña))}
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Notas */}
+                <div>
+                  <label className={labelClass}>
+                    Notas <span className="text-[#6B7280] font-normal">(opcional)</span>
+                  </label>
+                  <textarea className={`${inputClass} resize-none`} rows={3}
+                    value={form.notas} onChange={e => setForm(f => ({ ...f, notas: e.target.value }))}
+                    placeholder="Sin gluten, entrega a domicilio, etc."
+                  />
+                </div>
+              </div>
+
+              {/* ── Columna derecha: Qué y cuánto ── */}
+              <div className="flex flex-col gap-4 mt-6 md:mt-0">
+
+                {/* Tabla de productos */}
+                <div>
+                  <label className={labelClass}>Productos</label>
+                  <div className="border border-[#E5EAF1] rounded-xl overflow-visible">
+                    {form.items.length > 0 && (
+                      <div className="overflow-x-auto">
+                        <table className="w-full">
+                          <thead>
+                            <tr className="bg-[#F7FAFC] border-b border-[#E5EAF1] text-xs text-[#6B7280] font-medium">
+                              <th className="text-left px-3 py-2">Producto</th>
+                              <th className="text-center px-2 py-2 w-16">Cant.</th>
+                              <th className="text-right px-2 py-2 w-28">Precio u.</th>
+                              <th className="text-right px-3 py-2 w-24 hidden sm:table-cell">Subtotal</th>
+                              <th className="w-8 px-2 py-2" />
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-[#F7FAFC]">
+                            {form.items.map((item, idx) => (
+                              <tr key={item.productoId} className="group">
+                                <td className="px-3 py-2 text-sm text-[#1F2937] max-w-[120px]">
+                                  <span className="block truncate" title={item.nombre}>{item.nombre}</span>
+                                </td>
+                                <td className="px-2 py-1.5">
+                                  <input type="number" min="1"
+                                    className="w-full text-center border border-[#E5EAF1] rounded-lg px-1.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
+                                    value={item.cantidad}
+                                    onChange={e => actualizarItem(idx, 'cantidad', e.target.value)}
+                                  />
+                                </td>
+                                <td className="px-2 py-1.5">
+                                  <input type="number" min="0" step="0.01"
+                                    className="w-full text-right border border-[#E5EAF1] rounded-lg px-1.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
+                                    value={item.precioUnitario}
+                                    onChange={e => actualizarItem(idx, 'precioUnitario', e.target.value)}
+                                  />
+                                </td>
+                                <td className="px-3 py-2 text-right text-sm font-medium text-[#1F2937] whitespace-nowrap hidden sm:table-cell">
+                                  {formatMonto(item.cantidad * (parseFloat(item.precioUnitario) || 0))}
+                                </td>
+                                <td className="px-2 py-2 text-center">
+                                  <button type="button" onClick={() => quitarItem(idx)}
+                                    className="text-[#E5EAF1] hover:text-red-400 transition-colors">
+                                    <X size={14} strokeWidth={2} />
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    )}
+
+                    {/* Fila de búsqueda */}
+                    <div className={`px-3 py-2.5 ${form.items.length > 0 ? 'border-t border-[#E5EAF1]' : ''}`}>
+                      <BuscadorProductos
+                        productos={productos}
+                        itemsActuales={form.items}
+                        onAgregar={agregarItem}
+                        onCrearYAgregar={nombre => setCrearNombre(nombre)}
+                      />
+                    </div>
+                  </div>
+
+                  {crearNombre && (
+                    <MiniCrearProducto
+                      nombre={crearNombre}
+                      onConfirmar={p => {
+                        setProductos(prev => [...prev, p].sort((a, b) => a.nombre.localeCompare(b.nombre)))
+                        agregarItem({ productoId: p.id, nombre: p.nombre, cantidad: 1, precioUnitario: p.precioDefault })
+                        setCrearNombre(null)
+                      }}
+                      onCancelar={() => setCrearNombre(null)}
+                    />
+                  )}
+                </div>
+
+                {/* Total */}
+                <div className="border-t border-[#E5EAF1] pt-4">
+                  {form.items.length > 0 && (
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-xs text-[#6B7280]">Total calculado</span>
+                      <span className="text-sm font-semibold text-[#1F2937]">{formatMonto(totalCalculado)}</span>
+                    </div>
+                  )}
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label className="text-sm font-medium text-[#1F2937]">Precio total</label>
+                      {mostrarManual && (
+                        <button type="button" onClick={resetToAuto}
+                          className="flex items-center gap-1 text-xs text-[#9CC6EA] hover:text-[#1F2937] transition-colors">
+                          <RefreshCw size={11} strokeWidth={2} />
+                          Usar calculado
+                        </button>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input type="number" min="0" step="0.01" placeholder="0"
+                        className={`${inputClass} ${mostrarManual ? 'border-amber-300 focus:ring-amber-300' : ''}`}
+                        value={form.precioTotal}
+                        onChange={e => setForm(f => ({ ...f, precioTotal: e.target.value, precioManual: true }))}
+                      />
+                      {mostrarManual && (
+                        <span className="shrink-0 text-xs font-medium text-amber-500 bg-amber-50 px-2 py-1 rounded-lg whitespace-nowrap">
+                          Editado
+                        </span>
+                      )}
+                    </div>
+                    {!form.precioManual && form.items.length > 0 && (
+                      <p className="text-xs text-[#6B7280] mt-1">Calculado automáticamente desde los productos</p>
+                    )}
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="flex-none px-5 md:px-6 py-4 border-t border-[#E5EAF1]">
+            {error && (
+              <p className="text-red-500 text-sm flex items-center gap-1.5 mb-3">
+                <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" /> {error}
+              </p>
+            )}
+            <div className="flex items-center justify-between">
+              <button type="button" onClick={onClose} className={btnGhost}>Cancelar</button>
+              <button type="submit" disabled={saving} className={btnPrimary}>
+                {saving
+                  ? <><LoadingSpinner inline /><span>Guardando...</span></>
+                  : editTarget ? 'Guardar cambios' : 'Crear pedido'
+                }
+              </button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
   )
 }
