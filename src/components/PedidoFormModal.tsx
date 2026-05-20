@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Plus, X, RefreshCw } from 'lucide-react'
-import { Pedido, PedidoInput, EstadoEntrega, EstadoPago, createPedidoStandalone, updatePedido } from '../api/pedidos'
+import { Plus, X, RefreshCw, AlertTriangle } from 'lucide-react'
+import { Pedido, PedidoConEvento, PedidoInput, EstadoEntrega, EstadoPago, createPedidoStandalone, updatePedido } from '../api/pedidos'
 import { Producto, getProductos, createProducto, addPedidoProducto, deletePedidoProducto } from '../api/productos'
 import { Cliente, getClientes, createCliente } from '../api/clientes'
 import { Evento, getEventos } from '../api/eventos'
@@ -251,7 +251,7 @@ function MiniCrearCliente({ nombreInicial, onConfirmar, onCancelar }: { nombreIn
 interface Props {
   isOpen: boolean
   onClose: () => void
-  onSaved: () => void
+  onSaved: (pedido?: PedidoConEvento) => void
   editTarget?: Pedido | null
   eventoIdDefault?: number | null
 }
@@ -265,6 +265,7 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
   const [error, setError] = useState('')
   const [crearNombre, setCrearNombre] = useState<string | null>(null)
   const [crearClienteNombre, setCrearClienteNombre] = useState<string | null>(null)
+  const [pagoAlertDismissed, setPagoAlertDismissed] = useState(false)
 
   useEffect(() => {
     if (!isOpen) return
@@ -307,6 +308,7 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
     setError('')
     setCrearNombre(null)
     setCrearClienteNombre(null)
+    setPagoAlertDismissed(false)
   }, [isOpen, editTarget])
 
   function agregarItem(item: ItemForm) {
@@ -356,11 +358,24 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
         await updatePedido(editTarget.id, payload)
         await Promise.all(editTarget.productos.map(pp => deletePedidoProducto(editTarget.id, pp.productoId).catch(() => {})))
         await Promise.all(form.items.map(it => addPedidoProducto(editTarget.id, { productoId: it.productoId, cantidad: it.cantidad, precioUnitario: parseFloat(it.precioUnitario) })))
+        onSaved()
       } else {
         const nuevo = await createPedidoStandalone(payload)
         await Promise.all(form.items.map(it => addPedidoProducto(nuevo.id, { productoId: it.productoId, cantidad: it.cantidad, precioUnitario: parseFloat(it.precioUnitario) })))
+        const pedidoParaModal: PedidoConEvento = {
+          ...nuevo,
+          productos: form.items.map((item, idx) => ({
+            id: idx,
+            productoId: item.productoId,
+            cantidad: item.cantidad,
+            precioUnitario: item.precioUnitario,
+            producto: { id: item.productoId, nombre: item.nombre, descripcion: null, precioDefault: item.precioUnitario },
+          })),
+          evento: form.eventoId ? (eventos.find(e => e.id === form.eventoId) ?? null) : null,
+          cliente: form.clienteRef ?? null,
+        }
+        onSaved(pedidoParaModal)
       }
-      onSaved()
     } catch {
       setError('Error al guardar. Intentá de nuevo.')
     } finally {
@@ -601,6 +616,41 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
               </div>
             </div>
           </div>
+
+          {/* Alerta: pedido pagado con total modificado */}
+          {editTarget && editTarget.estadoPago === 'pagado' && !pagoAlertDismissed &&
+           Math.abs(parseFloat(form.precioTotal || '0') - parseFloat(editTarget.precioTotal)) > 0.01 && (
+            <div className="mx-5 md:mx-6 mb-0 mt-0 py-3 border-t border-amber-200">
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-3.5 flex flex-col gap-3">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle size={15} className="shrink-0 mt-0.5 text-amber-600" strokeWidth={2} />
+                  <div>
+                    <p className="text-sm font-semibold text-amber-800">Total modificado en pedido pagado</p>
+                    <p className="text-xs text-amber-700 mt-0.5">
+                      Estaba pagado por {formatMonto(parseFloat(editTarget.precioTotal))}. El nuevo total es {formatMonto(parseFloat(form.precioTotal || '0'))}.
+                    </p>
+                  </div>
+                </div>
+                <div className="flex gap-2 flex-wrap">
+                  <button type="button"
+                    onClick={() => {
+                      setForm(f => ({ ...f, estadoPago: 'señado', montoSeña: editTarget.precioTotal }))
+                      setPagoAlertDismissed(true)
+                    }}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg bg-amber-600 text-white hover:bg-amber-700 transition-colors"
+                  >
+                    Mover a señado · seña {formatMonto(parseFloat(editTarget.precioTotal))}
+                  </button>
+                  <button type="button"
+                    onClick={() => setPagoAlertDismissed(true)}
+                    className="text-xs font-medium px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-700 hover:bg-amber-50 transition-colors"
+                  >
+                    Mantener pagado
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Footer */}
           <div className="flex-none px-5 md:px-6 py-4 border-t border-[#E5EAF1]">

@@ -3,9 +3,10 @@ import { useSearchParams } from 'react-router-dom'
 import {
   ShoppingCart, LayoutList, BarChart2, CheckCircle2, Clock, CreditCard,
   TrendingDown, TrendingUp, DollarSign, SlidersHorizontal, FlaskConical, Plus, Search, Eye, Pencil,
-  LayoutGrid, ChevronDown, ChevronUp
+  LayoutGrid, ChevronDown, ChevronUp, Banknote, PackageCheck, X
 } from 'lucide-react'
-import { PedidoConEvento, FiltrosPedidos, EstadoEntrega, EstadoPago, getPedidosGlobal } from '../api/pedidos'
+import { toast } from 'sonner'
+import { PedidoConEvento, FiltrosPedidos, EstadoEntrega, EstadoPago, getPedidosGlobal, updatePedido } from '../api/pedidos'
 import { Evento, getEventos } from '../api/eventos'
 import { getGastosTotal } from '../api/materiasPrimas'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -50,6 +51,8 @@ export default function PedidosPage() {
   const [editTarget, setEditTarget] = useState<PedidoConEvento | null>(null)
   const [viewTarget, setViewTarget] = useState<PedidoConEvento | null>(null)
   const [filtrosOpen, setFiltrosOpen] = useState(false)
+  const [cobrandoId, setCobrandoId] = useState<number | null>(null)
+  const [cobrarMonto, setCobrarMonto] = useState('')
 
   useEffect(() => {
     if (searchParams.get('nuevo') === '1') {
@@ -105,6 +108,39 @@ export default function PedidosPage() {
   const gananciaEsperada = totalMonto - totalGastosGlobal
   const sinEventoCantidad = pedidos.filter(p => !p.eventoId).length
   const sinEventoMonto = pedidos.filter(p => !p.eventoId).reduce((s, p) => s + parseFloat(p.precioTotal), 0)
+
+  async function handleMarcarEntregado(p: PedidoConEvento) {
+    try {
+      await updatePedido(p.id, { estadoEntrega: 'entregado' })
+      toast.success('Pedido marcado como entregado')
+      load()
+    } catch {
+      toast.error('Error al actualizar')
+    }
+  }
+
+  async function handleCobrar(p: PedidoConEvento, tipo: 'parcial' | 'total') {
+    try {
+      if (tipo === 'total') {
+        await updatePedido(p.id, { estadoPago: 'pagado', montoSeña: null })
+        toast.success('Pedido marcado como pagado')
+      } else {
+        const monto = parseFloat(cobrarMonto)
+        if (!monto || monto <= 0) return
+        const seniaAnterior = p.montoSeña ? parseFloat(p.montoSeña) : 0
+        const nuevaSenia = seniaAnterior + monto
+        const total = parseFloat(p.precioTotal)
+        const nuevoEstado: EstadoPago = nuevaSenia >= total ? 'pagado' : 'señado'
+        await updatePedido(p.id, { estadoPago: nuevoEstado, montoSeña: nuevaSenia })
+        toast.success(nuevoEstado === 'pagado' ? 'Pagado en su totalidad' : `Seña de ${formatMonto(monto)} registrada`)
+      }
+      setCobrandoId(null)
+      setCobrarMonto('')
+      load()
+    } catch {
+      toast.error('Error al registrar el pago')
+    }
+  }
 
   const porEstadoPago = (['sin_seña', 'señado', 'pagado'] as EstadoPago[]).map(estado => ({
     estado,
@@ -245,22 +281,30 @@ export default function PedidosPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
             {pedidos.map(p => (
               <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl p-4 flex flex-col gap-3">
+                {/* Header */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0">
                     <p className="font-semibold text-[#1F2937] truncate">{p.nombreCliente}</p>
                     {p.telefono && <p className="text-xs text-[#6B7280] mt-0.5">{p.telefono}</p>}
+                    {p.evento && <p className="text-xs text-[#9CC6EA] mt-0.5 font-medium">{p.evento.nombre}</p>}
                   </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-xs text-[#6B7280]">{formatFecha(p.createdAt)}</p>
-                    {p.evento && (
-                      <p className="text-xs text-[#9CC6EA] mt-0.5 font-medium">{p.evento.nombre}</p>
-                    )}
+                  <div className="flex items-center gap-1 shrink-0">
+                    <p className="text-xs text-[#6B7280] mr-1">{formatFecha(p.createdAt)}</p>
+                    <button onClick={() => { setEditTarget(p); setModalOpen(true) }}
+                      className="p-1.5 rounded-lg text-[#9CC6EA] hover:text-[#1F2937] hover:bg-[#F7FAFC] transition-colors" title="Editar">
+                      <Pencil size={13} strokeWidth={2} />
+                    </button>
                   </div>
                 </div>
-                {p.descripcion && (
-                  <p className="text-sm text-[#6B7280] italic truncate">"{p.descripcion}"</p>
-                )}
+
+                {/* Info */}
+                {p.descripcion && <p className="text-sm text-[#6B7280] italic truncate">"{p.descripcion}"</p>}
                 <p className="text-2xl font-bold text-[#1F2937]">{formatMonto(parseFloat(p.precioTotal))}</p>
+                {p.montoSeña && p.estadoPago === 'señado' && (
+                  <p className="text-xs text-[#6B7280] -mt-2">
+                    Seña: {formatMonto(parseFloat(p.montoSeña))} · Resta: {formatMonto(parseFloat(p.precioTotal) - parseFloat(p.montoSeña))}
+                  </p>
+                )}
                 <div className="flex gap-2 flex-wrap">
                   <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgeEntrega(p.estadoEntrega)}`}>
                     {etiquetaEntrega[p.estadoEntrega]}
@@ -269,21 +313,63 @@ export default function PedidosPage() {
                     {etiquetaPago[p.estadoPago]}
                   </span>
                 </div>
-                <div className="flex gap-2 mt-auto pt-1">
-                  <button
-                    onClick={() => setViewTarget(p)}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium bg-[#F7FAFC] border border-[#E5EAF1] text-[#1F2937] rounded-xl hover:bg-[#E5EAF1] transition-colors"
-                  >
+
+                {/* Cobrar inline */}
+                {cobrandoId === p.id && (
+                  <div className="bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl p-3 flex flex-col gap-2">
+                    <div className="flex items-center justify-between">
+                      <p className="text-xs font-semibold text-[#1F2937]">Registrar pago</p>
+                      <button onClick={() => { setCobrandoId(null); setCobrarMonto('') }}
+                        className="text-[#6B7280] hover:text-[#1F2937] transition-colors">
+                        <X size={13} strokeWidth={2} />
+                      </button>
+                    </div>
+                    <input
+                      type="number" min="0" step="0.01" autoFocus
+                      placeholder="Monto a cobrar..."
+                      value={cobrarMonto}
+                      onChange={e => setCobrarMonto(e.target.value)}
+                      className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        disabled={!cobrarMonto || parseFloat(cobrarMonto) <= 0}
+                        onClick={() => handleCobrar(p, 'parcial')}
+                        className="flex-1 py-2.5 text-sm font-medium bg-[#CFE6F7] text-[#1F2937] rounded-xl hover:bg-[#9CC6EA] disabled:opacity-40 transition-colors"
+                      >
+                        Como seña
+                      </button>
+                      <button
+                        onClick={() => handleCobrar(p, 'total')}
+                        className="flex-1 py-2.5 text-sm font-medium bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] transition-colors"
+                      >
+                        Pago total
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Botones de acción */}
+                <div className="flex gap-2 mt-auto">
+                  <button onClick={() => setViewTarget(p)}
+                    className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium bg-[#F7FAFC] border border-[#E5EAF1] text-[#1F2937] rounded-xl hover:bg-[#E5EAF1] transition-colors">
                     <Eye size={16} strokeWidth={2} />
                     Ver
                   </button>
-                  <button
-                    onClick={() => { setEditTarget(p); setModalOpen(true) }}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] transition-colors"
-                  >
-                    <Pencil size={16} strokeWidth={2} />
-                    Editar
-                  </button>
+                  {p.estadoPago !== 'pagado' && cobrandoId !== p.id && (
+                    <button onClick={() => { setCobrandoId(p.id); setCobrarMonto('') }}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium bg-[#ecfdf5] text-[#047857] rounded-xl hover:bg-[#d1fae5] transition-colors">
+                      <Banknote size={16} strokeWidth={2} />
+                      Cobrar
+                    </button>
+                  )}
+                  {p.estadoEntrega !== 'entregado' && (
+                    <button onClick={() => handleMarcarEntregado(p)}
+                      className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium bg-[#fffbeb] text-[#b45309] rounded-xl hover:bg-[#fef3c7] transition-colors">
+                      <PackageCheck size={16} strokeWidth={2} />
+                      Entregar
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -468,7 +554,12 @@ export default function PedidosPage() {
       <PedidoFormModal
         isOpen={modalOpen}
         onClose={() => { setModalOpen(false); setEditTarget(null) }}
-        onSaved={() => { setModalOpen(false); setEditTarget(null); load() }}
+        onSaved={(pedido) => {
+          setModalOpen(false)
+          setEditTarget(null)
+          load()
+          if (pedido) setViewTarget(pedido)
+        }}
         editTarget={editTarget}
       />
 
