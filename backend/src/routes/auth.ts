@@ -8,27 +8,37 @@ const router = Router()
 const prisma = new PrismaClient()
 
 router.post('/login', async (req: Request, res: Response): Promise<void> => {
-  const { email, password } = req.body   // "email" field reused as username from the frontend
-  if (!email || !password) {
-    res.status(400).json({ error: 'Usuario y contraseña requeridos' })
-    return
+  try {
+    const { email, password } = req.body
+    if (!email || !password) {
+      res.status(400).json({ error: 'Usuario y contraseña requeridos' })
+      return
+    }
+
+    if (!process.env.JWT_SECRET) {
+      res.status(500).json({ error: 'Configuración del servidor incompleta (JWT_SECRET no definido)' })
+      return
+    }
+
+    const usuario = await prisma.usuario.findUnique({ where: { username: String(email) } })
+    const valid = usuario ? await bcrypt.compare(String(password), usuario.passwordHash) : false
+
+    if (!valid) {
+      res.status(401).json({ error: 'Credenciales inválidas' })
+      return
+    }
+
+    const token = jwt.sign(
+      { userId: usuario!.id, username: usuario!.username },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
+    )
+
+    res.json({ token, user: { id: usuario!.id, username: usuario!.username, nombre: usuario!.nombre } })
+  } catch (err) {
+    console.error('Login error:', err)
+    res.status(500).json({ error: 'Error interno del servidor' })
   }
-
-  const usuario = await prisma.usuario.findUnique({ where: { username: String(email) } })
-  const valid = usuario ? await bcrypt.compare(String(password), usuario.passwordHash) : false
-
-  if (!valid) {
-    res.status(401).json({ error: 'Credenciales inválidas' })
-    return
-  }
-
-  const token = jwt.sign(
-    { userId: usuario!.id, username: usuario!.username },
-    process.env.JWT_SECRET!,
-    { expiresIn: process.env.JWT_EXPIRES_IN || '7d' } as jwt.SignOptions
-  )
-
-  res.json({ token, user: { id: usuario!.id, username: usuario!.username, nombre: usuario!.nombre } })
 })
 
 router.post('/logout', (_req, res) => {
