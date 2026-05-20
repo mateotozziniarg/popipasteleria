@@ -21,6 +21,14 @@ export default function PedidoDetailModal({ pedido, onClose, onEdit }: Props) {
 
   if (!pedido) return null
 
+  function fallbackDownload(blob: Blob, fileName: string) {
+    const link = document.createElement('a')
+    link.download = fileName
+    link.href = URL.createObjectURL(blob)
+    link.click()
+    URL.revokeObjectURL(link.href)
+  }
+
   async function handleShare() {
     if (!cardRef.current) return
     setSharing(true)
@@ -34,15 +42,18 @@ export default function PedidoDetailModal({ pedido, onClose, onEdit }: Props) {
       const blob = await new Promise<Blob>(resolve => canvas.toBlob(b => resolve(b!), 'image/png'))
       const file = new File([blob], fileName, { type: 'image/png' })
 
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({ files: [file], title: `Pedido de ${pedido!.nombreCliente}` })
+      const canShare = navigator.canShare?.({ files: [file] })
+      if (canShare) {
+        try {
+          await navigator.share({ files: [file], title: `Pedido de ${pedido!.nombreCliente}` })
+        } catch (err) {
+          // AbortError = usuario canceló el share → no hacer nada
+          if (err instanceof DOMException && err.name === 'AbortError') return
+          // Cualquier otro error → fallback descarga
+          fallbackDownload(blob, fileName)
+        }
       } else {
-        // Fallback: descarga directa
-        const link = document.createElement('a')
-        link.download = fileName
-        link.href = URL.createObjectURL(blob)
-        link.click()
-        URL.revokeObjectURL(link.href)
+        fallbackDownload(blob, fileName)
       }
     } finally {
       setSharing(false)
@@ -137,23 +148,25 @@ export default function PedidoDetailModal({ pedido, onClose, onEdit }: Props) {
             </div>
 
             {/* Estados */}
-            <div className="flex gap-2 mt-4 flex-wrap">
-              <span
-                className="text-xs px-2.5 py-1 rounded-full font-medium"
-                style={pedido.estadoEntrega === 'entregado'
+            <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap' }}>
+              <span style={{
+                fontSize: '11px', fontWeight: 600, padding: '4px 10px',
+                borderRadius: '9999px', display: 'inline-block', lineHeight: '1.4',
+                ...(pedido.estadoEntrega === 'entregado'
                   ? { backgroundColor: '#ecfdf5', color: '#047857' }
-                  : { backgroundColor: '#fffbeb', color: '#b45309' }}
-              >
+                  : { backgroundColor: '#fffbeb', color: '#b45309' })
+              }}>
                 {pedido.estadoEntrega === 'entregado' ? 'Entregado' : 'Pendiente entrega'}
               </span>
-              <span
-                className="text-xs px-2.5 py-1 rounded-full font-medium"
-                style={pedido.estadoPago === 'pagado'
+              <span style={{
+                fontSize: '11px', fontWeight: 600, padding: '4px 10px',
+                borderRadius: '9999px', display: 'inline-block', lineHeight: '1.4',
+                ...(pedido.estadoPago === 'pagado'
                   ? { backgroundColor: '#ecfdf5', color: '#047857' }
                   : pedido.estadoPago === 'señado'
                   ? { backgroundColor: '#CFE6F7', color: '#1F2937' }
-                  : { backgroundColor: '#fff1f2', color: '#e11d48' }}
-              >
+                  : { backgroundColor: '#fff1f2', color: '#e11d48' })
+              }}>
                 {pedido.estadoPago === 'pagado' ? 'Pagado' : pedido.estadoPago === 'señado' ? 'Señado' : 'Sin seña'}
               </span>
             </div>
