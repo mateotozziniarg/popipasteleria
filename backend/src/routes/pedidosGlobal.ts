@@ -26,6 +26,7 @@ router.get('/', async (req: Request, res: Response) => {
       include: {
         evento: { select: { id: true, nombre: true, fecha: true } },
         cliente: { select: { id: true, nombre: true, telefono: true } },
+        productos: { include: { producto: true } },
       },
       orderBy: { createdAt: 'desc' },
     })
