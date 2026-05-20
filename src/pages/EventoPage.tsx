@@ -46,31 +46,51 @@ interface BuscadorMpProps {
 function BuscadorMateriaPrima({ materias, gastosActuales, onAgregar, onCrearYAgregar }: BuscadorMpProps) {
   const [query, setQuery] = useState('')
   const [open, setOpen] = useState(false)
+  const [active, setActive] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     function handler(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setOpen(false)
+        if (!query) setActive(false)
+      }
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [])
+  }, [query])
 
-  const inputClass = 'w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors'
   const idsActuales = new Set(gastosActuales.map(g => g.materiaPrimaId))
   const filtradas = materias.filter(m => !idsActuales.has(m.id) && m.nombre.toLowerCase().includes(query.toLowerCase()))
   const mostrarCrear = query.trim().length > 0 && !materias.some(m => m.nombre.toLowerCase() === query.toLowerCase())
 
+  if (!active) {
+    return (
+      <button
+        type="button"
+        onClick={() => { setActive(true); setTimeout(() => inputRef.current?.focus(), 0) }}
+        className="w-full flex items-center justify-center gap-2 py-2.5 text-sm font-medium text-[#9CC6EA] border-2 border-dashed border-[#9CC6EA] rounded-xl hover:bg-[#F7FAFC] hover:text-[#6BAFD4] transition-colors"
+      >
+        <Plus size={16} strokeWidth={2.5} />
+        Agregar materia prima
+      </button>
+    )
+  }
+
   return (
     <div ref={ref} className="relative">
-      <input className={inputClass} placeholder="Buscar materia prima..."
+      <input
+        ref={inputRef}
+        className="w-full border-2 border-[#9CC6EA] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] placeholder-[#9CC6EA] focus:outline-none transition-colors"
+        placeholder="Buscar materia prima..."
         value={query} onChange={e => { setQuery(e.target.value); setOpen(true) }} onFocus={() => setOpen(true)}
       />
       {open && (filtradas.length > 0 || mostrarCrear) && (
         <div className="absolute z-10 mt-1 w-full bg-white border border-[#E5EAF1] rounded-xl shadow-lg max-h-48 overflow-y-auto">
           {filtradas.map(m => (
             <button key={m.id} type="button"
-              onClick={() => { onAgregar(m); setQuery(''); setOpen(false) }}
+              onClick={() => { onAgregar(m); setQuery(''); setOpen(false); setActive(false) }}
               className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#F7FAFC] flex justify-between items-center transition-colors"
             >
               <span className="text-[#1F2937]">{m.nombre}</span>
@@ -79,7 +99,7 @@ function BuscadorMateriaPrima({ materias, gastosActuales, onAgregar, onCrearYAgr
           ))}
           {mostrarCrear && (
             <button type="button"
-              onClick={() => { onCrearYAgregar(query.trim()); setQuery(''); setOpen(false) }}
+              onClick={() => { onCrearYAgregar(query.trim()); setQuery(''); setOpen(false); setActive(false) }}
               className="w-full text-left px-3 py-2.5 text-sm text-[#9CC6EA] hover:bg-[#F7FAFC] border-t border-[#E5EAF1] flex items-center gap-1.5 transition-colors"
             >
               <Plus size={13} strokeWidth={2.5} /> Crear "{query.trim()}"
@@ -157,30 +177,30 @@ function GastoRow({ gasto, eventoId, onDelete, onUpdate }: GastoRowProps) {
 
   return (
     <tr className="border-b border-[#E5EAF1] hover:bg-[#FAFBFC] transition-colors group">
-      <td className="px-4 py-3">
+      <td className="px-3 py-3">
         <span className="text-sm font-medium text-[#1F2937]">{gasto.materiaPrima.nombre}</span>
       </td>
-      <td className="px-4 py-3">
+      <td className="px-3 py-3">
         <input type="number" min="0" step="0.01" title="Cantidad"
-          className={`w-16 text-center ${cellInput}`}
+          className={`w-14 text-center ${cellInput}`}
           value={cantidad} onChange={e => setCantidad(e.target.value)} onBlur={save}
         />
       </td>
-      <td className="px-4 py-3">
+      <td className="px-3 py-3">
         <input type="number" min="0" step="0.01" title="Precio unitario"
-          className={`w-28 text-right ${cellInput}`}
+          className={`w-24 text-right ${cellInput}`}
           value={precio} onChange={e => setPrecio(e.target.value)} onBlur={save}
         />
       </td>
-      <td className="px-4 py-3 text-right">
+      <td className="px-3 py-3 text-right">
         <span className="text-sm font-bold text-[#1F2937] whitespace-nowrap">{formatMonto(subtotal)}</span>
       </td>
-      <td className="px-4 py-3">
-        <input className={`w-full min-w-24 text-xs ${cellInput}`}
+      <td className="px-3 py-3">
+        <input className={`w-full text-xs ${cellInput}`}
           value={notas} onChange={e => setNotas(e.target.value)} onBlur={save} placeholder="Notas..."
         />
       </td>
-      <td className="px-4 py-3 text-xs text-[#6B7280] whitespace-nowrap">
+      <td className="px-3 py-3 text-xs text-[#6B7280] whitespace-nowrap hidden sm:table-cell">
         {formatFecha(gasto.createdAt)}
       </td>
       <td className="px-4 py-3">
@@ -360,13 +380,13 @@ export default function EventoPage() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-[#E5EAF1] bg-[#F7FAFC]">
-                <th className="text-left text-xs font-medium text-[#6B7280] px-4 py-3">Materia prima</th>
-                <th className="text-center text-xs font-medium text-[#6B7280] px-4 py-3">Cantidad</th>
-                <th className="text-right text-xs font-medium text-[#6B7280] px-4 py-3">Precio unit.</th>
-                <th className="text-right text-xs font-medium text-[#6B7280] px-4 py-3">Total</th>
-                <th className="text-left text-xs font-medium text-[#6B7280] px-4 py-3">Notas</th>
-                <th className="text-left text-xs font-medium text-[#6B7280] px-4 py-3">Fecha</th>
-                <th className="px-4 py-3" />
+                <th className="text-left text-xs font-medium text-[#6B7280] px-3 py-3">Materia prima</th>
+                <th className="text-center text-xs font-medium text-[#6B7280] px-3 py-3">Cantidad</th>
+                <th className="text-right text-xs font-medium text-[#6B7280] px-3 py-3">Precio unit.</th>
+                <th className="text-right text-xs font-medium text-[#6B7280] px-3 py-3">Total</th>
+                <th className="text-left text-xs font-medium text-[#6B7280] px-3 py-3">Notas</th>
+                <th className="text-left text-xs font-medium text-[#6B7280] px-3 py-3 hidden sm:table-cell">Fecha</th>
+                <th className="px-3 py-3" />
               </tr>
             </thead>
             <tbody>
