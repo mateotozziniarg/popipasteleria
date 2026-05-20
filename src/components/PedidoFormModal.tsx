@@ -278,6 +278,14 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
   useEffect(() => {
     if (!isOpen) return
     if (editTarget) {
+      const items = editTarget.productos.map(pp => ({
+        productoId: pp.productoId,
+        nombre: pp.producto.nombre,
+        cantidad: pp.cantidad,
+        precioUnitario: pp.precioUnitario,
+      }))
+      const calculado = calcularTotal(items)
+      const guardado = parseFloat(editTarget.precioTotal)
       setForm({
         eventoId: editTarget.eventoId,
         clienteId: editTarget.clienteId,
@@ -286,17 +294,12 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
           : null,
         nombreCliente: editTarget.nombreCliente,
         precioTotal: editTarget.precioTotal,
-        precioManual: true,
+        precioManual: Math.abs(calculado - guardado) > 0.01,
         estadoEntrega: editTarget.estadoEntrega,
         estadoPago: editTarget.estadoPago,
         notas: editTarget.notas ?? '',
         montoSeña: editTarget.montoSeña ?? '',
-        items: editTarget.productos.map(pp => ({
-          productoId: pp.productoId,
-          nombre: pp.producto.nombre,
-          cantidad: pp.cantidad,
-          precioUnitario: pp.precioUnitario,
-        })),
+        items,
       })
     } else {
       setForm(emptyForm(eventoIdDefault))
