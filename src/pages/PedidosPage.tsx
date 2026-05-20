@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import {
   ShoppingCart, LayoutList, BarChart2, CheckCircle2, Clock, CreditCard,
   TrendingDown, TrendingUp, DollarSign, SlidersHorizontal, FlaskConical, Plus, Search, Eye, Pencil,
-  LayoutGrid, ChevronDown, ChevronUp, Banknote, PackageCheck, X
+  LayoutGrid, ChevronDown, ChevronUp, Banknote, PackageCheck
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { PedidoConEvento, FiltrosPedidos, EstadoEntrega, EstadoPago, getPedidosGlobal, updatePedido } from '../api/pedidos'
@@ -317,7 +317,18 @@ export default function PedidosPage() {
                 </div>
 
                 {/* Info */}
-                {p.descripcion && <p className="text-sm text-[#6B7280] italic truncate">"{p.descripcion}"</p>}
+                {p.productos.length > 0 ? (
+                  <ul className="flex flex-col gap-0.5">
+                    {p.productos.map(pp => (
+                      <li key={pp.id} className="text-xs text-[#6B7280] flex items-baseline gap-1.5">
+                        <span className="font-semibold text-[#1F2937] shrink-0">{pp.cantidad}×</span>
+                        <span className="truncate">{pp.producto.nombre}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : p.descripcion ? (
+                  <p className="text-xs text-[#6B7280] italic truncate">"{p.descripcion}"</p>
+                ) : null}
                 <p className="text-2xl font-bold text-[#1F2937]">{formatMonto(parseFloat(p.precioTotal))}</p>
                 {p.montoSeña && p.estadoPago === 'señado' && (
                   <p className="text-xs text-[#6B7280] -mt-2">
@@ -335,30 +346,15 @@ export default function PedidosPage() {
 
                 {/* Cobrar inline */}
                 {cobrandoId === p.id && (
-                  <div className="bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl p-3 flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <p className="text-xs font-semibold text-[#1F2937]">¿Cuánto cobró?</p>
-                      <button onClick={() => { setCobrandoId(null); setCobrarMonto('') }}
-                        className="text-[#6B7280] hover:text-[#1F2937] transition-colors">
-                        <X size={13} strokeWidth={2} />
-                      </button>
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        type="number" min="0" step="0.01" autoFocus
-                        placeholder="Monto..."
-                        value={cobrarMonto}
-                        onChange={e => setCobrarMonto(e.target.value)}
-                        className="flex-1 border border-[#E5EAF1] rounded-xl px-3 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
-                      />
-                      <button
-                        disabled={!cobrarMonto || parseFloat(cobrarMonto) <= 0}
-                        onClick={() => handleCobrar(p)}
-                        className="px-4 py-2 text-sm font-medium bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors whitespace-nowrap"
-                      >
-                        Registrar
-                      </button>
-                    </div>
+                  <div className="bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl p-3 flex flex-col gap-2.5">
+                    <p className="text-xs font-semibold text-[#1F2937]">¿Cuánto cobró?</p>
+                    <input
+                      type="number" min="0" step="0.01" autoFocus
+                      placeholder="Monto..."
+                      value={cobrarMonto}
+                      onChange={e => setCobrarMonto(e.target.value)}
+                      className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
+                    />
                     {cobrarMonto && parseFloat(cobrarMonto) > 0 && (() => {
                       const pagado = (p.montoSeña ? parseFloat(p.montoSeña) : 0) + parseFloat(cobrarMonto)
                       const total = parseFloat(p.precioTotal)
@@ -370,6 +366,23 @@ export default function PedidosPage() {
                         </p>
                       )
                     })()}
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => { setCobrandoId(null); setCobrarMonto('') }}
+                        className="flex-1 py-2.5 text-sm text-[#6B7280] hover:text-[#1F2937] bg-white border border-[#E5EAF1] rounded-xl hover:bg-[#F7FAFC] transition-colors"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!cobrarMonto || parseFloat(cobrarMonto) <= 0}
+                        onClick={() => handleCobrar(p)}
+                        className="flex-1 py-2.5 text-sm font-semibold bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors"
+                      >
+                        Guardar
+                      </button>
+                    </div>
                   </div>
                 )}
 
