@@ -9,6 +9,7 @@ import pedidoProductosRouter from './routes/pedidoProductos'
 import materiasPrimasRouter from './routes/materiasPrimas'
 import eventoGastosRouter from './routes/eventoGastos'
 import gastosGlobalRouter from './routes/gastosGlobal'
+import clientesRouter from './routes/clientes'
 
 const app = express()
 const port = process.env.PORT || 3001
@@ -32,6 +33,7 @@ app.use('/pedidos', pedidosGlobalRouter)
 app.use('/productos', productosRouter)
 app.use('/materias-primas', materiasPrimasRouter)
 app.use('/gastos', gastosGlobalRouter)
+app.use('/clientes', clientesRouter)
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`)

@@ -12,6 +12,7 @@ import {
   getMateriasPrimas, createMateriaPrima,
   getEventoGastos, createEventoGasto, updateEventoGasto, deleteEventoGasto
 } from '../api/materiasPrimas'
+import { Cliente, getClientes, createCliente } from '../api/clientes'
 import Modal from '../components/Modal'
 import LoadingSpinner from '../components/LoadingSpinner'
 
@@ -22,9 +23,12 @@ interface ItemForm {
   precioUnitario: string
 }
 
+type ClienteRef = { id: number; nombre: string; telefono: string | null }
+
 interface PedidoFormState {
+  clienteId: number | null
+  clienteRef: ClienteRef | null
   nombreCliente: string
-  telefono: string
   precioTotal: string
   precioManual: boolean
   estadoEntrega: EstadoEntrega
@@ -35,8 +39,9 @@ interface PedidoFormState {
 }
 
 const emptyForm: PedidoFormState = {
+  clienteId: null,
+  clienteRef: null,
   nombreCliente: '',
-  telefono: '',
   precioTotal: '',
   precioManual: false,
   estadoEntrega: 'pendiente',
@@ -314,6 +319,155 @@ function MiniCrearMateriaPrima({ nombre, onConfirmar, onCancelar }: MiniCrearMpP
   )
 }
 
+// ── Buscador de clientes ──────────────────────────────────────────
+interface BuscadorClienteProps {
+  clientes: Cliente[]
+  seleccionado: ClienteRef | null
+  onSeleccionar: (c: Cliente) => void
+  onDeseleccionar: () => void
+  onCrearYSeleccionar: (nombre: string) => void
+}
+
+function BuscadorCliente({ clientes, seleccionado, onSeleccionar, onDeseleccionar, onCrearYSeleccionar }: BuscadorClienteProps) {
+  const [query, setQuery] = useState('')
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handler(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  if (seleccionado) {
+    return (
+      <div className="flex items-center gap-2 border border-[#CFE6F7] rounded-xl px-3 py-2.5 bg-[#F7FAFC]">
+        <span className="text-sm font-medium text-[#1F2937] flex-1">{seleccionado.nombre}</span>
+        {seleccionado.telefono && (
+          <a href={`tel:${seleccionado.telefono}`} className="text-xs text-[#6B7280] hover:text-[#1F2937] transition-colors" onClick={e => e.stopPropagation()}>
+            {seleccionado.telefono}
+          </a>
+        )}
+        <button type="button" onClick={onDeseleccionar} className="text-[#6B7280] hover:text-[#1F2937] transition-colors shrink-0">
+          <X size={14} strokeWidth={2} />
+        </button>
+      </div>
+    )
+  }
+
+  const q = query.toLowerCase()
+  const filtrados = clientes.filter(
+    c => c.nombre.toLowerCase().includes(q) || (c.telefono && c.telefono.includes(query))
+  )
+  const mostrarCrear = query.trim().length > 0 && !clientes.some(c => c.nombre.toLowerCase() === q)
+
+  return (
+    <div ref={ref} className="relative">
+      <input
+        className={inputClass}
+        placeholder="Buscar cliente por nombre o teléfono..."
+        value={query}
+        onChange={e => { setQuery(e.target.value); setOpen(true) }}
+        onFocus={() => setOpen(true)}
+      />
+      {open && (filtrados.length > 0 || mostrarCrear) && (
+        <div className="absolute z-10 mt-1 w-full bg-white border border-[#E5EAF1] rounded-xl shadow-lg max-h-48 overflow-y-auto">
+          {filtrados.map(c => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => { onSeleccionar(c); setQuery(''); setOpen(false) }}
+              className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#F7FAFC] flex justify-between items-center transition-colors"
+            >
+              <span className="text-[#1F2937]">{c.nombre}</span>
+              {c.telefono && <span className="text-[#6B7280] text-xs">{c.telefono}</span>}
+            </button>
+          ))}
+          {mostrarCrear && (
+            <button
+              type="button"
+              onClick={() => { onCrearYSeleccionar(query.trim()); setQuery(''); setOpen(false) }}
+              className="w-full text-left px-3 py-2.5 text-sm text-[#9CC6EA] hover:bg-[#F7FAFC] border-t border-[#E5EAF1] flex items-center gap-1.5 transition-colors"
+            >
+              <Plus size={13} strokeWidth={2.5} />
+              Crear "{query.trim()}"
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Mini-form para crear cliente inline (sin <form> anidado) ────────
+interface MiniCrearClienteProps {
+  nombreInicial: string
+  onConfirmar: (c: Cliente) => void
+  onCancelar: () => void
+}
+
+function MiniCrearCliente({ nombreInicial, onConfirmar, onCancelar }: MiniCrearClienteProps) {
+  const [nombre, setNombre] = useState(nombreInicial)
+  const [telefono, setTelefono] = useState('')
+  const [direccion, setDireccion] = useState('')
+  const [saving, setSaving] = useState(false)
+
+  async function handleCrear() {
+    if (!nombre) return
+    setSaving(true)
+    try {
+      const c = await createCliente({
+        nombre,
+        telefono: telefono || undefined,
+        direccion: direccion || undefined,
+      })
+      onConfirmar(c)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div className="bg-[#F7FAFC] border border-[#CFE6F7] rounded-xl p-3 mt-2 flex flex-col gap-2">
+      <p className="text-sm font-medium text-[#1F2937]">Nuevo cliente</p>
+      <input
+        autoFocus
+        className="w-full border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
+        placeholder="Nombre *"
+        value={nombre}
+        onChange={e => setNombre(e.target.value)}
+      />
+      <input
+        className="w-full border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
+        placeholder="Teléfono (opcional)"
+        value={telefono}
+        onChange={e => setTelefono(e.target.value)}
+      />
+      <input
+        className="w-full border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
+        placeholder="Dirección (opcional)"
+        value={direccion}
+        onChange={e => setDireccion(e.target.value)}
+      />
+      <div className="flex gap-2 justify-end">
+        <button type="button" onClick={onCancelar} className="text-xs text-[#6B7280] hover:text-[#1F2937] px-2 py-2 transition-colors">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          disabled={saving || !nombre}
+          onClick={handleCrear}
+          className="bg-[#1F2937] text-white text-xs px-3 py-2 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors"
+        >
+          {saving ? '...' : 'Crear'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 // ── Fila de gasto (inline editable) ───────────────────────────────
 interface GastoRowProps {
   gasto: EventoGasto
@@ -390,6 +544,7 @@ export default function EventoPage() {
   const [productos, setProductos] = useState<Producto[]>([])
   const [gastos, setGastos] = useState<EventoGasto[]>([])
   const [materias, setMaterias] = useState<MateriaPrima[]>([])
+  const [clientes, setClientes] = useState<Cliente[]>([])
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Pedido | null>(null)
@@ -397,6 +552,7 @@ export default function EventoPage() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [crearNombre, setCrearNombre] = useState<string | null>(null)
+  const [crearClienteNombre, setCrearClienteNombre] = useState<string | null>(null)
   const [gastosOpen, setGastosOpen] = useState(true)
   const [crearMpNombre, setCrearMpNombre] = useState<string | null>(null)
   const [addingGasto, setAddingGasto] = useState(false)
@@ -404,18 +560,20 @@ export default function EventoPage() {
   async function load() {
     setLoading(true)
     try {
-      const [evs, peds, prods, gsts, mats] = await Promise.all([
+      const [evs, peds, prods, gsts, mats, cls] = await Promise.all([
         getEventos(),
         getPedidos(eventoId),
         getProductos(),
         getEventoGastos(eventoId),
         getMateriasPrimas(),
+        getClientes(),
       ])
       setEvento(evs.find(e => e.id === eventoId) ?? null)
       setPedidos(peds)
       setProductos(prods)
       setGastos(gsts)
       setMaterias(mats)
+      setClientes(cls)
     } finally {
       setLoading(false)
     }
@@ -433,8 +591,11 @@ export default function EventoPage() {
   function openEdit(p: Pedido) {
     setEditTarget(p)
     setForm({
+      clienteId: p.clienteId,
+      clienteRef: p.clienteId && p.cliente
+        ? { id: p.cliente.id, nombre: p.cliente.nombre, telefono: p.cliente.telefono }
+        : null,
       nombreCliente: p.nombreCliente,
-      telefono: p.telefono ?? '',
       precioTotal: p.precioTotal,
       precioManual: true,
       estadoEntrega: p.estadoEntrega,
@@ -495,15 +656,17 @@ export default function EventoPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.nombreCliente || !form.precioTotal) {
+    const nombreFinal = form.clienteRef ? form.clienteRef.nombre : form.nombreCliente
+    if (!nombreFinal || !form.precioTotal) {
       setError('Cliente y precio total son requeridos')
       return
     }
     setSaving(true)
     setError('')
     const payload: PedidoInput = {
-      nombreCliente: form.nombreCliente,
-      telefono: form.telefono || undefined,
+      nombreCliente: nombreFinal,
+      telefono: form.clienteRef ? form.clienteRef.telefono || undefined : undefined,
+      clienteId: form.clienteId,
       precioTotal: parseFloat(form.precioTotal),
       estadoEntrega: form.estadoEntrega,
       estadoPago: form.estadoPago,
@@ -765,7 +928,15 @@ export default function EventoPage() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-semibold text-[#1F2937]">{p.nombreCliente}</p>
-                    {p.telefono && <p className="text-xs text-[#6B7280] mt-0.5">{p.telefono}</p>}
+                    {(p.cliente?.telefono || p.telefono) && (
+                      <a
+                        href={`tel:${p.cliente?.telefono ?? p.telefono}`}
+                        className="text-xs text-[#6B7280] hover:text-[#1F2937] mt-0.5 block transition-colors"
+                        onClick={e => e.stopPropagation()}
+                      >
+                        {p.cliente?.telefono ?? p.telefono}
+                      </a>
+                    )}
                     {p.productos.length > 0 ? (
                       <p className="text-sm text-[#6B7280] mt-1.5">
                         {p.productos.map(pp => `${pp.producto.nombre} × ${pp.cantidad}`).join(' — ')}
@@ -821,27 +992,41 @@ export default function EventoPage() {
       {modalOpen && (
         <Modal title={editTarget ? 'Editar pedido' : 'Nuevo pedido'} onClose={() => setModalOpen(false)}>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2">
-                <label className={labelClass}>Cliente</label>
-                <input
-                  className={inputClass}
-                  value={form.nombreCliente}
-                  onChange={e => setForm(f => ({ ...f, nombreCliente: e.target.value }))}
-                  placeholder="Nombre del cliente"
+            <div>
+              <label className={labelClass}>Cliente</label>
+              <BuscadorCliente
+                clientes={clientes}
+                seleccionado={form.clienteRef}
+                onSeleccionar={c => setForm(f => ({
+                  ...f,
+                  clienteId: c.id,
+                  clienteRef: { id: c.id, nombre: c.nombre, telefono: c.telefono },
+                  nombreCliente: c.nombre,
+                }))}
+                onDeseleccionar={() => setForm(f => ({
+                  ...f,
+                  clienteId: null,
+                  clienteRef: null,
+                  nombreCliente: '',
+                }))}
+                onCrearYSeleccionar={nombre => setCrearClienteNombre(nombre)}
+              />
+              {crearClienteNombre && (
+                <MiniCrearCliente
+                  nombreInicial={crearClienteNombre}
+                  onConfirmar={c => {
+                    setClientes(prev => [...prev, c].sort((a, b) => a.nombre.localeCompare(b.nombre)))
+                    setForm(f => ({
+                      ...f,
+                      clienteId: c.id,
+                      clienteRef: { id: c.id, nombre: c.nombre, telefono: c.telefono },
+                      nombreCliente: c.nombre,
+                    }))
+                    setCrearClienteNombre(null)
+                  }}
+                  onCancelar={() => setCrearClienteNombre(null)}
                 />
-              </div>
-              <div className="col-span-2 sm:col-span-1">
-                <label className={labelClass}>
-                  Teléfono <span className="text-[#6B7280] font-normal">(opcional)</span>
-                </label>
-                <input
-                  className={inputClass}
-                  value={form.telefono}
-                  onChange={e => setForm(f => ({ ...f, telefono: e.target.value }))}
-                  placeholder="11 1234-5678"
-                />
-              </div>
+              )}
             </div>
 
             <div>

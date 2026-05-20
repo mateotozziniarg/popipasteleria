@@ -9,7 +9,10 @@ router.get('/', async (req: Request, res: Response) => {
     const pedidos = await prisma.pedido.findMany({
       where: { eventoId },
       orderBy: { createdAt: 'asc' },
-      include: { productos: { include: { producto: true } } },
+      include: {
+        productos: { include: { producto: true } },
+        cliente: { select: { id: true, nombre: true, telefono: true } },
+      },
     })
     res.json(pedidos)
   } catch {
@@ -19,7 +22,7 @@ router.get('/', async (req: Request, res: Response) => {
 
 router.post('/', async (req: Request, res: Response) => {
   const eventoId = parseInt(req.params.eventoId as string)
-  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña } = req.body
+  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña, clienteId } = req.body
   if (!nombreCliente || precioTotal === undefined) {
     res.status(400).json({ error: 'nombreCliente y precioTotal son requeridos' })
     return
@@ -36,6 +39,7 @@ router.post('/', async (req: Request, res: Response) => {
         ...(estadoPago && { estadoPago }),
         notas,
         ...(montoSeña !== undefined && montoSeña !== null && { montoSeña }),
+        ...(clienteId !== undefined && clienteId !== null && { clienteId }),
       },
     })
     res.status(201).json(pedido)
@@ -50,7 +54,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 router.put('/:pedidoId', async (req: Request, res: Response) => {
   const id = parseInt(req.params.pedidoId as string)
-  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña } = req.body
+  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña, clienteId } = req.body
   try {
     const pedido = await prisma.pedido.update({
       where: { id },
@@ -63,6 +67,7 @@ router.put('/:pedidoId', async (req: Request, res: Response) => {
         ...(estadoPago !== undefined && { estadoPago }),
         ...(notas !== undefined && { notas }),
         ...(montoSeña !== undefined && { montoSeña: montoSeña === null ? null : montoSeña }),
+        ...(clienteId !== undefined && { clienteId: clienteId === null ? null : clienteId }),
       },
     })
     res.json(pedido)

@@ -14,6 +14,8 @@ export interface PedidoProductoEnPedido {
 export interface Pedido {
   id: number
   eventoId: number
+  clienteId: number | null
+  cliente: { id: number; nombre: string; telefono: string | null } | null
   nombreCliente: string
   telefono: string | null
   descripcion: string | null
@@ -35,10 +37,12 @@ export interface PedidoInput {
   estadoPago?: EstadoPago
   notas?: string
   montoSeña?: number | null
+  clienteId?: number | null
 }
 
 export interface PedidoConEvento extends Pedido {
   evento: { id: number; nombre: string; fecha: string }
+  cliente: { id: number; nombre: string; telefono: string | null } | null
 }
 
 export interface FiltrosPedidos {

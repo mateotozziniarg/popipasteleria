@@ -5,6 +5,7 @@ import EventoPage from './pages/EventoPage'
 import PedidosPage from './pages/PedidosPage'
 import ProductosPage from './pages/ProductosPage'
 import MateriasPrimasPage from './pages/MateriasPrimasPage'
+import ClientesPage from './pages/ClientesPage'
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
             <Route path="/pedidos" element={<PedidosPage />} />
             <Route path="/productos" element={<ProductosPage />} />
             <Route path="/materias-primas" element={<MateriasPrimasPage />} />
+            <Route path="/clientes" element={<ClientesPage />} />
           </Routes>
         </div>
       </div>

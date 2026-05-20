@@ -21,7 +21,10 @@ router.get('/', async (req: Request, res: Response) => {
             }
           : {}),
       },
-      include: { evento: { select: { id: true, nombre: true, fecha: true } } },
+      include: {
+        evento: { select: { id: true, nombre: true, fecha: true } },
+        cliente: { select: { id: true, nombre: true, telefono: true } },
+      },
       orderBy: [{ evento: { fecha: 'asc' } }, { createdAt: 'asc' }],
     })
     res.json(pedidos)
@@ -32,7 +35,7 @@ router.get('/', async (req: Request, res: Response) => {
 
 router.put('/:id', async (req: Request, res: Response) => {
   const id = parseInt(req.params.id as string)
-  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña } = req.body
+  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña, clienteId } = req.body
   try {
     const pedido = await prisma.pedido.update({
       where: { id },
@@ -45,6 +48,7 @@ router.put('/:id', async (req: Request, res: Response) => {
         ...(estadoPago !== undefined && { estadoPago }),
         ...(notas !== undefined && { notas }),
         ...(montoSeña !== undefined && { montoSeña: montoSeña === null ? null : montoSeña }),
+        ...(clienteId !== undefined && { clienteId: clienteId === null ? null : clienteId }),
       },
     })
     res.json(pedido)

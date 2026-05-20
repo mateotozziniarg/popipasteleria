@@ -1,0 +1,12 @@
+CREATE TABLE "Cliente" (
+  "id" SERIAL PRIMARY KEY,
+  "nombre" TEXT NOT NULL,
+  "telefono" TEXT,
+  "direccion" TEXT,
+  "notas" TEXT,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE "Pedido" ADD COLUMN "clienteId" INTEGER;
+ALTER TABLE "Pedido" ADD CONSTRAINT "Pedido_clienteId_fkey" FOREIGN KEY ("clienteId") REFERENCES "Cliente"("id") ON DELETE SET NULL ON UPDATE CASCADE;
