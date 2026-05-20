@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 import {
   ArrowLeft, Plus, Pencil, Trash2, ShoppingCart, Truck, DollarSign, CreditCard,
-  ChevronDown, ChevronRight, FlaskConical, TrendingUp, TrendingDown, Calendar
+  FlaskConical, TrendingUp, TrendingDown, Calendar
 } from 'lucide-react'
 import { Evento, getEventos } from '../api/eventos'
 import { Pedido, EstadoEntrega, EstadoPago, getPedidos, deletePedido } from '../api/pedidos'
@@ -145,35 +146,49 @@ function GastoRow({ gasto, eventoId, onDelete, onUpdate }: GastoRowProps) {
         notas: notas || undefined,
       })
       onUpdate(updated)
-    } catch { /* silent */ }
+      toast.success('Guardado')
+    } catch {
+      toast.error('Error al guardar')
+    }
   }
 
   const subtotal = (parseFloat(cantidad) || 0) * (parseFloat(precio) || 0)
+  const cellInput = 'border border-[#E5EAF1] rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white'
 
   return (
-    <div className="flex flex-wrap items-center gap-2 bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl px-3 py-2.5">
-      <span className="text-sm font-medium text-[#1F2937] flex-1 min-w-24">{gasto.materiaPrima.nombre}</span>
-      <div className="flex items-center gap-2">
+    <tr className="border-b border-[#E5EAF1] hover:bg-[#FAFBFC] transition-colors group">
+      <td className="px-4 py-3">
+        <span className="text-sm font-medium text-[#1F2937]">{gasto.materiaPrima.nombre}</span>
+      </td>
+      <td className="px-4 py-3">
         <input type="number" min="0" step="0.01" title="Cantidad"
-          className={`w-16 text-center ${inputInline}`}
+          className={`w-16 text-center ${cellInput}`}
           value={cantidad} onChange={e => setCantidad(e.target.value)} onBlur={save}
         />
-        <span className="text-[#6B7280] text-xs">×</span>
+      </td>
+      <td className="px-4 py-3">
         <input type="number" min="0" step="0.01" title="Precio unitario"
-          className={`w-24 text-right ${inputInline}`}
+          className={`w-28 text-right ${cellInput}`}
           value={precio} onChange={e => setPrecio(e.target.value)} onBlur={save}
         />
-        <span className="text-sm font-semibold text-[#1F2937] w-24 text-right whitespace-nowrap">
-          {formatMonto(subtotal)}
-        </span>
-      </div>
-      <input className={`flex-1 min-w-28 text-xs ${inputInline}`} value={notas}
-        onChange={e => setNotas(e.target.value)} onBlur={save} placeholder="Notas..."
-      />
-      <button onClick={onDelete} className="text-red-400 hover:text-red-600 transition-colors">
-        <Trash2 size={13} strokeWidth={2} />
-      </button>
-    </div>
+      </td>
+      <td className="px-4 py-3 text-right">
+        <span className="text-sm font-bold text-[#1F2937] whitespace-nowrap">{formatMonto(subtotal)}</span>
+      </td>
+      <td className="px-4 py-3">
+        <input className={`w-full min-w-24 text-xs ${cellInput}`}
+          value={notas} onChange={e => setNotas(e.target.value)} onBlur={save} placeholder="Notas..."
+        />
+      </td>
+      <td className="px-4 py-3 text-xs text-[#6B7280] whitespace-nowrap">
+        {formatFecha(gasto.createdAt)}
+      </td>
+      <td className="px-4 py-3">
+        <button onClick={onDelete} className="text-[#9CC6EA] hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100">
+          <Trash2 size={14} strokeWidth={2} />
+        </button>
+      </td>
+    </tr>
   )
 }
 
@@ -190,7 +205,6 @@ export default function EventoPage() {
   const [loading, setLoading] = useState(true)
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<Pedido | null>(null)
-  const [gastosOpen, setGastosOpen] = useState(true)
   const [crearMpNombre, setCrearMpNombre] = useState<string | null>(null)
   const [addingGasto, setAddingGasto] = useState(false)
   const [confirmPedidoId, setConfirmPedidoId] = useState<number | null>(null)
@@ -328,48 +342,73 @@ export default function EventoPage() {
         </div>
       </div>
 
-      <hr className="border-t border-[#E5EAF1] mb-5" />
-
       {/* Sección gastos */}
-      <div className="mb-5">
-        <button onClick={() => setGastosOpen(o => !o)} className="flex items-center gap-2 w-full text-left mb-3">
-          {gastosOpen ? <ChevronDown size={15} color="#9CC6EA" strokeWidth={2} /> : <ChevronRight size={15} color="#9CC6EA" strokeWidth={2} />}
-          <FlaskConical size={15} color="#9CC6EA" strokeWidth={2} />
-          <span className="font-semibold text-[#1F2937]">Gastos del evento</span>
-          {totalGastos > 0 && <span className="ml-auto text-sm font-semibold text-[#1F2937]">{formatMonto(totalGastos)}</span>}
-        </button>
+      <div className="bg-white border border-[#E5EAF1] rounded-2xl mb-6">
+        {/* Header */}
+        <div className="flex items-center gap-2.5 px-5 py-4 border-b border-[#E5EAF1]">
+          <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center shrink-0">
+            <FlaskConical size={15} color="#1F2937" strokeWidth={2} />
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-[#1F2937]">Gastos del evento</h3>
+            <p className="text-xs text-[#6B7280]">Registrá todos los gastos asociados a este evento.</p>
+          </div>
+        </div>
 
-        {gastosOpen && (
-          <div className="flex flex-col gap-2">
-            {gastos.map(g => (
-              <GastoRow key={g.id} gasto={g} eventoId={eventoId}
-                onDelete={() => setConfirmGastoId(g.id)}
-                onUpdate={updated => setGastos(prev => prev.map(x => x.id === updated.id ? updated : x))}
-              />
-            ))}
-            {gastos.length === 0 && <p className="text-sm text-[#6B7280] py-2">No hay gastos registrados para este evento.</p>}
-            {gastos.length > 0 && (
-              <div className="flex justify-end pt-1 border-t border-[#E5EAF1]">
-                <span className="text-sm font-semibold text-[#1F2937]">Total: {formatMonto(totalGastos)}</span>
-              </div>
-            )}
-            <div className="mt-2">
-              <BuscadorMateriaPrima materias={materias} gastosActuales={gastos}
-                onAgregar={handleAgregarGasto} onCrearYAgregar={nombre => setCrearMpNombre(nombre)}
-              />
-              {addingGasto && <p className="text-xs text-[#6B7280] mt-1">Agregando...</p>}
-              {crearMpNombre && (
-                <MiniCrearMateriaPrima nombre={crearMpNombre}
-                  onConfirmar={mp => { setMaterias(prev => [...prev, mp].sort((a, b) => a.nombre.localeCompare(b.nombre))); handleAgregarGasto(mp); setCrearMpNombre(null) }}
-                  onCancelar={() => setCrearMpNombre(null)}
+        {/* Tabla */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-[#E5EAF1] bg-[#F7FAFC]">
+                <th className="text-left text-xs font-medium text-[#6B7280] px-4 py-3">Materia prima</th>
+                <th className="text-center text-xs font-medium text-[#6B7280] px-4 py-3">Cantidad</th>
+                <th className="text-right text-xs font-medium text-[#6B7280] px-4 py-3">Precio unit.</th>
+                <th className="text-right text-xs font-medium text-[#6B7280] px-4 py-3">Total</th>
+                <th className="text-left text-xs font-medium text-[#6B7280] px-4 py-3">Notas</th>
+                <th className="text-left text-xs font-medium text-[#6B7280] px-4 py-3">Fecha</th>
+                <th className="px-4 py-3" />
+              </tr>
+            </thead>
+            <tbody>
+              {gastos.map(g => (
+                <GastoRow key={g.id} gasto={g} eventoId={eventoId}
+                  onDelete={() => setConfirmGastoId(g.id)}
+                  onUpdate={updated => setGastos(prev => prev.map(x => x.id === updated.id ? updated : x))}
                 />
-              )}
-            </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+
+        {gastos.length === 0 && (
+          <p className="text-sm text-[#6B7280] text-center px-5 py-8">No hay gastos registrados para este evento.</p>
+        )}
+
+        {/* Agregar */}
+        <div className="border-t border-dashed border-[#9CC6EA] px-4 py-3">
+          {crearMpNombre ? (
+            <MiniCrearMateriaPrima nombre={crearMpNombre}
+              onConfirmar={mp => { setMaterias(prev => [...prev, mp].sort((a, b) => a.nombre.localeCompare(b.nombre))); handleAgregarGasto(mp); setCrearMpNombre(null) }}
+              onCancelar={() => setCrearMpNombre(null)}
+            />
+          ) : (
+            <BuscadorMateriaPrima materias={materias} gastosActuales={gastos}
+              onAgregar={handleAgregarGasto} onCrearYAgregar={nombre => setCrearMpNombre(nombre)}
+            />
+          )}
+          {addingGasto && <p className="text-xs text-[#6B7280] mt-1">Agregando...</p>}
+        </div>
+
+        {/* Footer total */}
+        {gastos.length > 0 && (
+          <div className="flex items-center justify-end gap-3 px-5 py-3 border-t border-[#E5EAF1]">
+            <span className="text-sm text-[#6B7280]">Total de gastos</span>
+            <span className="text-base font-bold text-[#1F2937]">{formatMonto(totalGastos)}</span>
           </div>
         )}
       </div>
 
-      <hr className="border-t border-[#E5EAF1] mb-5" />
+
 
       {/* Encabezado pedidos */}
       <div className="flex items-center justify-between mb-4">
