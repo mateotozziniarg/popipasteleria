@@ -38,17 +38,17 @@ export default function LoginPage() {
   return (
     <div
       className="min-h-screen flex items-center justify-center px-4 bg-center bg-cover"
-      style={{ backgroundImage: 'url(/login-mobile.jpg)' }}
+      style={{ backgroundImage: 'url(/login-mobile.png)' }}
     >
       {/* Desktop background */}
       <style>{`
         @media (min-width: 768px) {
-          .login-bg { background-image: url(/login-desktop.jpg) !important; }
+          .login-bg { background-image: url(/login-desktop.png) !important; }
         }
       `}</style>
       <div
         className="login-bg absolute inset-0 bg-center bg-cover -z-10"
-        style={{ backgroundImage: 'url(/login-mobile.jpg)' }}
+        style={{ backgroundImage: 'url(/login-mobile.png)' }}
       />
 
       <div className="w-full max-w-sm relative">
