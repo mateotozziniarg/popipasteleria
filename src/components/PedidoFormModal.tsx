@@ -463,7 +463,7 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
                     <label className={labelClass}>Pago</label>
                     <select className={inputClass} value={form.estadoPago}
                       onChange={e => setForm(f => ({ ...f, estadoPago: e.target.value as EstadoPago, montoSeña: '' }))}>
-                      <option value="sin_seña">Sin seña</option>
+                      <option value="sin_seña">Pendiente</option>
                       <option value="señado">Señado</option>
                       <option value="pagado">Pagado</option>
                     </select>

@@ -9,7 +9,7 @@ import PedidoFormModal from '../components/PedidoFormModal'
 
 // ── helpers ────────────────────────────────────────────────────────
 
-const etiquetaPago: Record<EstadoPago, string> = { sin_seña: 'Sin seña', señado: 'Señado', pagado: 'Pagado' }
+const etiquetaPago: Record<EstadoPago, string> = { sin_seña: 'Pendiente', señado: 'Señado', pagado: 'Pagado' }
 
 const badgePago = (e: EstadoPago) =>
   e === 'pagado' ? 'bg-emerald-50 text-emerald-700'

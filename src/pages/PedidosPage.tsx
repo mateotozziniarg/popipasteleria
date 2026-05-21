@@ -18,7 +18,7 @@ import EmptyState from '../components/EmptyState'
 type Modo = 'tabla' | 'cards' | 'dashboard'
 
 const etiquetaEntrega: Record<EstadoEntrega, string> = { pendiente: 'Pendiente', entregado: 'Entregado' }
-const etiquetaPago: Record<EstadoPago, string> = { sin_seña: 'Sin seña', señado: 'Señado', pagado: 'Pagado' }
+const etiquetaPago: Record<EstadoPago, string> = { sin_seña: 'Pendiente', señado: 'Señado', pagado: 'Pagado' }
 
 const badgeEntrega = (e: EstadoEntrega) =>
   e === 'entregado' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
@@ -276,7 +276,7 @@ export default function PedidosPage() {
                 <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Pago</label>
                 <select className={inputClass} value={filtros.estadoPago ?? ''} onChange={e => setFiltro('estadoPago', e.target.value as EstadoPago || undefined)}>
                   <option value="">Todos</option>
-                  <option value="sin_seña">Sin seña</option>
+                  <option value="sin_seña">Pendiente</option>
                   <option value="señado">Señado</option>
                   <option value="pagado">Pagado</option>
                 </select>

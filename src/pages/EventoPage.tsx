@@ -17,7 +17,7 @@ import PedidoFormModal from '../components/PedidoFormModal'
 import ConfirmModal from '../components/ConfirmModal'
 
 const etiquetaEntrega: Record<EstadoEntrega, string> = { pendiente: 'Pendiente', entregado: 'Entregado' }
-const etiquetaPago: Record<EstadoPago, string> = { sin_seña: 'Sin seña', señado: 'Señado', pagado: 'Pagado' }
+const etiquetaPago: Record<EstadoPago, string> = { sin_seña: 'Pendiente', señado: 'Señado', pagado: 'Pagado' }
 
 const badgeEntrega = (e: EstadoEntrega) =>
   e === 'entregado' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
