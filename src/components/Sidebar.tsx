@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Menu, X, Zap, Calendar, ShoppingCart, Package, FlaskConical, Users, ChefHat, Plus, LogOut } from 'lucide-react'
+import { Menu, X, Zap, Calendar, ShoppingCart, Package, FlaskConical, Users, ChefHat, Plus, LogOut, Thermometer, Droplets } from 'lucide-react'
 import { clearToken } from '../api/token'
 
 const navItems = [
@@ -12,12 +12,36 @@ const navItems = [
   { label: 'Materias primas', path: '/materias-primas', icon: FlaskConical },
 ]
 
+interface Clima {
+  temperatura: number
+  humedad: number
+}
+
+async function fetchClima(): Promise<Clima> {
+  const url = 'https://api.open-meteo.com/v1/forecast?latitude=-34.6037&longitude=-58.3816&current=temperature_2m,relative_humidity_2m&timezone=America%2FArgentina%2FBuenos_Aires'
+  const res = await fetch(url)
+  const data = await res.json()
+  return {
+    temperatura: Math.round(data.current.temperature_2m),
+    humedad: data.current.relative_humidity_2m,
+  }
+}
+
 export default function Sidebar() {
   const [open, setOpen] = useState(false)
+  const [clima, setClima] = useState<Clima | null>(null)
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const ref = useRef<HTMLDivElement>(null)
   const btnRef = useRef<HTMLButtonElement>(null)
+
+  useEffect(() => {
+    fetchClima().then(setClima).catch(() => {})
+    const interval = setInterval(() => {
+      fetchClima().then(setClima).catch(() => {})
+    }, 15 * 60 * 1000)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -59,12 +83,29 @@ export default function Sidebar() {
             : <Menu size={18} color="#1F2937" strokeWidth={2} />
           }
         </button>
-        <div className="flex items-center gap-2">
+
+        <div className="flex items-center gap-2 shrink-0">
           <div className="w-6 h-6 rounded-md bg-[#CFE6F7] flex items-center justify-center">
             <ChefHat size={13} color="#1F2937" strokeWidth={2} />
           </div>
-          <span className="text-sm font-semibold text-[#1F2937]">Popipastelería</span>
+          <span className="text-sm font-semibold text-[#1F2937] hidden sm:inline">Popipastelería</span>
         </div>
+
+        {/* Clima Buenos Aires */}
+        {clima && (
+          <div className="flex items-center gap-3 ml-2 px-3 py-1.5 rounded-lg bg-[#F7FAFC] border border-[#E5EAF1]">
+            <div className="flex items-center gap-1">
+              <Thermometer size={13} className="text-rose-400 shrink-0" strokeWidth={2} />
+              <span className="text-xs font-semibold text-[#1F2937]">{clima.temperatura}°</span>
+            </div>
+            <div className="w-px h-3 bg-[#E5EAF1]" />
+            <div className="flex items-center gap-1">
+              <Droplets size={13} className="text-[#9CC6EA] shrink-0" strokeWidth={2} />
+              <span className="text-xs font-semibold text-[#1F2937]">{clima.humedad}%</span>
+            </div>
+          </div>
+        )}
+
         <button
           onClick={() => { navigate('/pedidos?nuevo=1'); setOpen(false) }}
           className="ml-auto flex items-center gap-1.5 text-xs font-medium text-[#1F2937] bg-[#CFE6F7] hover:bg-[#9CC6EA] px-3 py-1.5 rounded-lg transition-colors shrink-0"
