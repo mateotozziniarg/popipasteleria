@@ -240,8 +240,11 @@ export default function ClientesPage() {
                 className={inputClass}
                 value={form.telefono}
                 onChange={e => setForm(f => ({ ...f, telefono: e.target.value }))}
-                placeholder="11 1234-5678"
+                placeholder="11 2345-6789"
               />
+              <p className="text-xs text-[#6B7280] mt-1.5 leading-relaxed">
+                Sin el 0 ni código de país — ej: <span className="font-mono font-medium text-[#1F2937]">11 2345-6789</span> o <span className="font-mono font-medium text-[#1F2937]">351 456-7890</span>. El +54 9 se agrega solo al abrir WhatsApp.
+              </p>
             </div>
             <div>
               <label className={labelClass}>

@@ -183,9 +183,9 @@ export default function WorkspacePage() {
                         </div>
                         {tel && (
                           <a href={toWhatsAppUrl(tel)} target="_blank" rel="noopener noreferrer"
-                            className="p-1.5 rounded-lg text-[#25D366] hover:bg-emerald-50 transition-colors shrink-0"
+                            className="p-2 rounded-xl text-[#25D366] hover:bg-emerald-50 transition-colors shrink-0"
                             title={`WhatsApp ${tel}`}>
-                            <WhatsAppIcon size={16} />
+                            <WhatsAppIcon size={22} />
                           </a>
                         )}
                       </div>
@@ -261,9 +261,9 @@ export default function WorkspacePage() {
                         </div>
                         {tel && (
                           <a href={toWhatsAppUrl(tel)} target="_blank" rel="noopener noreferrer"
-                            className="p-1.5 rounded-lg text-[#25D366] hover:bg-emerald-50 transition-colors shrink-0"
+                            className="p-2 rounded-xl text-[#25D366] hover:bg-emerald-50 transition-colors shrink-0"
                             title={`WhatsApp ${tel}`}>
-                            <WhatsAppIcon size={16} />
+                            <WhatsAppIcon size={22} />
                           </a>
                         )}
                       </div>
