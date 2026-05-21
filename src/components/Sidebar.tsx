@@ -51,7 +51,7 @@ export default function Sidebar() {
         <button
           ref={btnRef}
           onClick={() => setOpen(o => !o)}
-          className="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg hover:bg-[#F7FAFC] transition-colors shrink-0"
+          className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-[#F7FAFC] transition-colors shrink-0"
           aria-label="Menú"
         >
           {open
@@ -74,11 +74,11 @@ export default function Sidebar() {
         </button>
       </header>
 
-      {open && <div className="fixed inset-0 z-40 bg-black/20 sm:bg-transparent lg:hidden" />}
+      {open && <div className="fixed inset-0 z-40 bg-black/20" />}
 
       <div
         ref={ref}
-        className={`fixed top-14 left-0 z-40 h-[calc(100%-3.5rem)] w-64 bg-white border-r border-[#E5EAF1] shadow-lg lg:shadow-none transform transition-transform duration-200 lg:translate-x-0 ${
+        className={`fixed top-14 left-0 z-40 h-[calc(100%-3.5rem)] w-64 bg-white border-r border-[#E5EAF1] shadow-lg transform transition-transform duration-200 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
