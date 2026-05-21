@@ -95,7 +95,10 @@ router.put('/:id', async (req: Request, res: Response) => {
 router.delete('/:id', async (req: Request, res: Response) => {
   const id = parseInt(req.params.id as string)
   try {
-    await prisma.pedido.delete({ where: { id } })
+    await prisma.$transaction([
+      prisma.pedidoProducto.deleteMany({ where: { pedidoId: id } }),
+      prisma.pedido.delete({ where: { id } }),
+    ])
     res.status(204).send()
   } catch (error: any) {
     if (error?.code === 'P2025') {

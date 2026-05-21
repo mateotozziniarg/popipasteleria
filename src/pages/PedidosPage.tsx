@@ -3,10 +3,10 @@ import { useSearchParams } from 'react-router-dom'
 import {
   ShoppingCart, LayoutList, BarChart2, CheckCircle2, Clock, CreditCard,
   TrendingDown, TrendingUp, DollarSign, SlidersHorizontal, FlaskConical, Plus, Search, Eye, Pencil,
-  LayoutGrid, ChevronDown, ChevronUp, Banknote, PackageCheck
+  LayoutGrid, ChevronDown, ChevronUp, Banknote, PackageCheck, Trash2
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { PedidoConEvento, FiltrosPedidos, EstadoEntrega, EstadoPago, getPedidosGlobal, updatePedido } from '../api/pedidos'
+import { PedidoConEvento, FiltrosPedidos, EstadoEntrega, EstadoPago, getPedidosGlobal, updatePedido, deletePedido } from '../api/pedidos'
 import { Evento, getEventos } from '../api/eventos'
 import { getGastosTotal } from '../api/materiasPrimas'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -57,6 +57,8 @@ export default function PedidosPage() {
   const [confirmEntregarTarget, setConfirmEntregarTarget] = useState<PedidoConEvento | null>(null)
   const [confirmPagarTarget, setConfirmPagarTarget] = useState<PedidoConEvento | null>(null)
   const [confirmando, setConfirmando] = useState(false)
+  const [deleteTarget, setDeleteTarget] = useState<PedidoConEvento | null>(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (searchParams.get('nuevo') === '1') {
@@ -158,6 +160,21 @@ export default function PedidosPage() {
       load()
     } catch {
       toast.error('Error al registrar el pago')
+    }
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      await deletePedido(deleteTarget.id)
+      toast.success('Pedido eliminado')
+      setDeleteTarget(null)
+      load()
+    } catch {
+      toast.error('Error al eliminar el pedido')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -312,6 +329,10 @@ export default function PedidosPage() {
                     <button onClick={() => { setEditTarget(p); setModalOpen(true) }}
                       className="p-1.5 rounded-lg text-[#9CC6EA] hover:text-[#1F2937] hover:bg-[#F7FAFC] transition-colors" title="Editar">
                       <Pencil size={13} strokeWidth={2} />
+                    </button>
+                    <button onClick={() => setDeleteTarget(p)}
+                      className="p-1.5 rounded-lg text-[#9CC6EA] hover:text-red-500 hover:bg-red-50 transition-colors" title="Eliminar">
+                      <Trash2 size={13} strokeWidth={2} />
                     </button>
                   </div>
                 </div>
@@ -498,6 +519,13 @@ export default function PedidosPage() {
                           >
                             <Pencil size={15} strokeWidth={2} />
                           </button>
+                          <button
+                            onClick={() => setDeleteTarget(p)}
+                            className="p-1.5 rounded-lg text-[#9CC6EA] hover:text-red-500 hover:bg-red-50 transition-colors"
+                            title="Eliminar"
+                          >
+                            <Trash2 size={15} strokeWidth={2} />
+                          </button>
                         </div>
                       </td>
                     </tr>
@@ -635,6 +663,17 @@ export default function PedidosPage() {
         onConfirmar={handleConfirmarPagado}
         onCancelar={() => setConfirmPagarTarget(null)}
         loading={confirmando}
+      />
+
+      <ConfirmModal
+        isOpen={deleteTarget !== null}
+        variant="danger"
+        titulo={`¿Eliminar pedido de "${deleteTarget?.nombreCliente}"?`}
+        descripcion="Esta acción no se puede deshacer."
+        labelConfirmar="Eliminar"
+        onConfirmar={handleDelete}
+        onCancelar={() => setDeleteTarget(null)}
+        loading={deleting}
       />
     </div>
   )
