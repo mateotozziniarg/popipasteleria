@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 interface Props {
@@ -14,6 +15,20 @@ interface Props {
 export default function ConfirmModal({
   isOpen, titulo, descripcion, labelConfirmar = 'Confirmar', onConfirmar, onCancelar, loading = false, variant = 'danger'
 }: Props) {
+  useEffect(() => {
+    if (!isOpen) return
+    document.body.style.overflow = 'hidden'
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Enter' && !loading) { e.preventDefault(); onConfirmar() }
+      if (e.key === 'Escape') { e.preventDefault(); onCancelar() }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = ''
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [isOpen, loading, onConfirmar, onCancelar])
+
   if (!isOpen) return null
 
   const isDanger = variant === 'danger'

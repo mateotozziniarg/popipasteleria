@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { useEffect, ReactNode } from 'react'
 import { X } from 'lucide-react'
 
 interface Props {
@@ -8,6 +8,18 @@ interface Props {
 }
 
 export default function Modal({ title, onClose, children }: Props) {
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') { e.preventDefault(); onClose() }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = ''
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [onClose])
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-[#E5EAF1]">

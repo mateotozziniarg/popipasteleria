@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { X, Edit2, Share2 } from 'lucide-react'
 import html2canvas from 'html2canvas'
 import { PedidoConEvento } from '../api/pedidos'
@@ -18,6 +18,19 @@ const fmtFecha = (iso: string) =>
 export default function PedidoDetailModal({ pedido, onClose, onEdit }: Props) {
   const cardRef = useRef<HTMLDivElement>(null)
   const [sharing, setSharing] = useState(false)
+
+  useEffect(() => {
+    if (!pedido) return
+    document.body.style.overflow = 'hidden'
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') { e.preventDefault(); onClose() }
+    }
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = ''
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [pedido, onClose])
 
   if (!pedido) return null
 

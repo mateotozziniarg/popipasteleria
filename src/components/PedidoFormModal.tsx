@@ -269,6 +269,12 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
 
   useEffect(() => {
     if (!isOpen) return
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.overflow = '' }
+  }, [isOpen])
+
+  useEffect(() => {
+    if (!isOpen) return
     Promise.all([getProductos(), getClientes(), getEventos()]).then(([prods, cls, evs]) => {
       setProductos(prods)
       setClientes(cls)
