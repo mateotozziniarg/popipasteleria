@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import {
   ShoppingCart, LayoutList, BarChart2, CheckCircle2, Clock, CreditCard,
   TrendingDown, TrendingUp, DollarSign, SlidersHorizontal, FlaskConical, Plus, Search, Eye, Pencil,
-  LayoutGrid, ChevronDown, ChevronUp, Banknote, PackageCheck, Trash2
+  LayoutGrid, ChevronDown, ChevronUp, Banknote, PackageCheck, Trash2, StickyNote
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { PedidoConEvento, FiltrosPedidos, EstadoEntrega, EstadoPago, getPedidosGlobal, updatePedido, deletePedido } from '../api/pedidos'
@@ -375,6 +375,12 @@ export default function PedidosPage() {
                 ) : p.descripcion ? (
                   <p className="text-xs text-[#6B7280] italic truncate">"{p.descripcion}"</p>
                 ) : null}
+                {p.notas && (
+                  <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 flex gap-2 items-start">
+                    <StickyNote size={12} className="text-amber-400 shrink-0 mt-0.5" strokeWidth={2} />
+                    <p className="text-xs text-amber-900 leading-relaxed">{p.notas}</p>
+                  </div>
+                )}
                 <p className="text-2xl font-bold text-[#1F2937]">{formatMonto(parseFloat(p.precioTotal))}</p>
                 {p.montoSeña && p.estadoPago === 'señado' && (
                   <p className="text-xs text-[#6B7280] -mt-2">
