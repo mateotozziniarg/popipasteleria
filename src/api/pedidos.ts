@@ -24,6 +24,7 @@ export interface Pedido {
   estadoPago: EstadoPago
   notas: string | null
   montoSeña: string | null
+  fechaEntrega: string | null
   createdAt: string
   productos: PedidoProductoEnPedido[]
 }
@@ -39,6 +40,7 @@ export interface PedidoInput {
   montoSeña?: number | null
   clienteId?: number | null
   eventoId?: number | null
+  fechaEntrega?: string | null
 }
 
 export interface PedidoConEvento extends Pedido {
@@ -54,6 +56,9 @@ export interface FiltrosPedidos {
   search?: string
   fechaDesde?: string
   fechaHasta?: string
+  filtroPor?: 'creacion' | 'entrega'
+  ordenarPor?: 'fechaEntrega'
+  sinFecha?: boolean
 }
 
 export const getPedidos = (eventoId: number) =>
@@ -68,6 +73,9 @@ export const getPedidosGlobal = (filtros: FiltrosPedidos = {}) => {
   if (filtros.search) params.search = filtros.search
   if (filtros.fechaDesde) params.fechaDesde = filtros.fechaDesde
   if (filtros.fechaHasta) params.fechaHasta = filtros.fechaHasta
+  if (filtros.filtroPor) params.filtroPor = filtros.filtroPor
+  if (filtros.ordenarPor) params.ordenarPor = filtros.ordenarPor
+  if (filtros.sinFecha) params.sinFecha = 'true'
   return client.get<PedidoConEvento[]>('/pedidos', { params }).then(r => r.data)
 }
 

@@ -26,6 +26,7 @@ interface FormState {
   estadoPago: EstadoPago
   notas: string
   montoSeña: string
+  fechaEntrega: string
   items: ItemForm[]
 }
 
@@ -40,6 +41,7 @@ const emptyForm = (eventoIdDefault: number | null): FormState => ({
   estadoPago: 'sin_seña',
   notas: '',
   montoSeña: '',
+  fechaEntrega: '',
   items: [],
 })
 
@@ -306,6 +308,7 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
         estadoPago: editTarget.estadoPago,
         notas: editTarget.notas ?? '',
         montoSeña: editTarget.montoSeña ?? '',
+        fechaEntrega: editTarget.fechaEntrega ? editTarget.fechaEntrega.substring(0, 10) : '',
         items,
       })
     } else {
@@ -358,6 +361,7 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
       estadoPago: form.estadoPago,
       notas: form.notas || undefined,
       montoSeña: form.estadoPago === 'señado' && form.montoSeña ? parseFloat(form.montoSeña) : null,
+      fechaEntrega: form.fechaEntrega ? `${form.fechaEntrega}T12:00:00.000Z` : null,
     }
     try {
       if (editTarget) {
@@ -453,6 +457,19 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
                     <option value="">Sin evento</option>
                     {eventos.map(ev => <option key={ev.id} value={ev.id}>{ev.nombre}</option>)}
                   </select>
+                </div>
+
+                {/* Fecha de entrega */}
+                <div>
+                  <label className={labelClass}>
+                    Fecha de entrega <span className="text-[#6B7280] font-normal">(opcional)</span>
+                  </label>
+                  <input
+                    type="date"
+                    className={inputClass}
+                    value={form.fechaEntrega}
+                    onChange={e => setForm(f => ({ ...f, fechaEntrega: e.target.value }))}
+                  />
                 </div>
 
                 {/* Estados */}

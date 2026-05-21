@@ -63,6 +63,7 @@ model Pedido {
   estadoPago     EstadoPago       @default(sin_seña)
   notas          String?
   montoSeña      Decimal?         @db.Decimal(10, 2)
+  fechaEntrega   DateTime?
   createdAt      DateTime         @default(now())
   productos      PedidoProducto[]
 }

@@ -3,7 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import {
   ShoppingCart, LayoutList, BarChart2, CheckCircle2, Clock, CreditCard,
   TrendingDown, TrendingUp, DollarSign, SlidersHorizontal, FlaskConical, Plus, Search, Eye, Pencil,
-  LayoutGrid, ChevronDown, ChevronUp, Banknote, PackageCheck, Trash2, StickyNote
+  LayoutGrid, ChevronDown, ChevronUp, Banknote, PackageCheck, Trash2, StickyNote, Calendar
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { PedidoConEvento, FiltrosPedidos, EstadoEntrega, EstadoPago, getPedidosGlobal, updatePedido, deletePedido } from '../api/pedidos'
@@ -36,6 +36,16 @@ const formatMonto = (n: number) =>
 const formatFecha = (iso: string) =>
   new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
 
+const formatFechaCorta = (iso: string) =>
+  new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
+
+function getTodayStr() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+const esFechaHoy = (iso: string) => iso.substring(0, 10) === getTodayStr()
+const esFechaPasada = (iso: string) => iso.substring(0, 10) < getTodayStr()
+
 function toWhatsAppUrl(tel: string) {
   let digits = tel.replace(/\D/g, '')
   if (digits.startsWith('54')) return `https://wa.me/${digits}`
@@ -61,6 +71,7 @@ export default function PedidosPage() {
   const [eventos, setEventos] = useState<Evento[]>([])
   const [loading, setLoading] = useState(true)
   const [filtros, setFiltros] = useState<FiltrosPedidos>({})
+  const [filtroPor, setFiltroPor] = useState<'creacion' | 'entrega'>('creacion')
   const [eventoSelect, setEventoSelect] = useState('')
   const [totalGastosGlobal, setTotalGastosGlobal] = useState(0)
   const [modalOpen, setModalOpen] = useState(false)
@@ -86,8 +97,12 @@ export default function PedidosPage() {
     setLoading(true)
     try {
       const gastosFilter = { eventoId: filtros.eventoId, fechaDesde: filtros.fechaDesde, fechaHasta: filtros.fechaHasta }
+      const filtrosConPor: FiltrosPedidos = {
+        ...filtros,
+        ...(filtros.fechaDesde || filtros.fechaHasta ? { filtroPor } : {}),
+      }
       const [peds, evs, totalGastos] = await Promise.all([
-        getPedidosGlobal(filtros),
+        getPedidosGlobal(filtrosConPor),
         getEventos(),
         getGastosTotal(gastosFilter),
       ])
@@ -99,7 +114,7 @@ export default function PedidosPage() {
     }
   }
 
-  useEffect(() => { load() }, [JSON.stringify(filtros)])
+  useEffect(() => { load() }, [JSON.stringify(filtros), filtroPor])
 
   function setFiltro<K extends keyof FiltrosPedidos>(key: K, value: FiltrosPedidos[K]) {
     setFiltros(f => ({ ...f, [key]: value || undefined }))
@@ -296,7 +311,25 @@ export default function PedidosPage() {
                 </div>
               </div>
               <div>
-                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Fecha del pedido</label>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="text-xs font-medium text-[#6B7280]">Fecha</label>
+                  <div className="flex gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setFiltroPor('creacion')}
+                      className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${filtroPor === 'creacion' ? 'bg-[#CFE6F7] text-[#1F2937] font-medium' : 'text-[#6B7280] hover:text-[#1F2937]'}`}
+                    >
+                      Pedido
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setFiltroPor('entrega')}
+                      className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${filtroPor === 'entrega' ? 'bg-amber-100 text-amber-800 font-medium' : 'text-[#6B7280] hover:text-[#1F2937]'}`}
+                    >
+                      Entrega
+                    </button>
+                  </div>
+                </div>
                 <div className="flex gap-2 items-center">
                   <input type="date"
                     className="flex-1 border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
@@ -348,6 +381,17 @@ export default function PedidosPage() {
                     </div>
                     {p.telefono && <p className="text-xs text-[#6B7280] mt-0.5">{p.telefono}</p>}
                     {p.evento && <p className="text-xs text-[#9CC6EA] mt-0.5 font-medium">{p.evento.nombre}</p>}
+                    {p.fechaEntrega && (
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <Calendar size={10} className={`shrink-0 ${esFechaPasada(p.fechaEntrega) && p.estadoEntrega === 'pendiente' ? 'text-red-400' : 'text-[#9CC6EA]'}`} strokeWidth={2} />
+                        <span className={`text-xs font-medium ${esFechaPasada(p.fechaEntrega) && p.estadoEntrega === 'pendiente' ? 'text-red-500' : 'text-[#6B7280]'}`}>
+                          Entrega: {formatFechaCorta(p.fechaEntrega)}
+                        </span>
+                        {esFechaHoy(p.fechaEntrega) && (
+                          <span className="text-[9px] font-semibold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full leading-none">Hoy</span>
+                        )}
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-1 shrink-0">
                     <p className="text-xs text-[#6B7280] mr-1">{formatFecha(p.createdAt)}</p>

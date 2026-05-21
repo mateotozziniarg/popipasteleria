@@ -31,6 +31,13 @@ const badgePago = (e: EstadoPago) =>
 
 const formatMonto = (n: number) => n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 const formatFecha = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
+const formatFechaCorta = (iso: string) => new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
+
+function getTodayStr() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+const esFechaPasada = (iso: string) => iso.substring(0, 10) < getTodayStr()
 
 const inputInline = 'border border-[#E5EAF1] rounded-lg px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors'
 const btnPrimary = 'bg-[#1F2937] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors flex items-center gap-2'
@@ -462,6 +469,11 @@ export default function EventoPage() {
                         onClick={e => e.stopPropagation()}>
                         {p.cliente?.telefono ?? p.telefono}
                       </a>
+                    )}
+                    {p.fechaEntrega && (
+                      <p className={`text-xs mt-0.5 font-medium ${esFechaPasada(p.fechaEntrega) && p.estadoEntrega === 'pendiente' ? 'text-red-500' : 'text-[#6B7280]'}`}>
+                        Entrega: {formatFechaCorta(p.fechaEntrega)}
+                      </p>
                     )}
                     {p.productos.length > 0 ? (
                       <p className="text-sm text-[#6B7280] mt-1.5">{p.productos.map(pp => `${pp.producto.nombre} × ${pp.cantidad}`).join(' — ')}</p>

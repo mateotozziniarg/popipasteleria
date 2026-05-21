@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Zap, Banknote, PackageCheck, CheckCircle2, StickyNote } from 'lucide-react'
+import { Zap, Banknote, PackageCheck, CheckCircle2, StickyNote, Calendar } from 'lucide-react'
 import { toast } from 'sonner'
 import { PedidoConEvento, EstadoPago, getPedidosGlobal, updatePedido } from '../api/pedidos'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -21,6 +21,16 @@ const badgeEntrega = (e: 'pendiente' | 'entregado') =>
 
 const formatMonto = (n: number) =>
   n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
+
+const formatFechaCorta = (iso: string) =>
+  new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
+
+function getTodayStr() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+const esHoy = (iso: string) => iso.substring(0, 10) === getTodayStr()
+const esPasada = (iso: string) => iso.substring(0, 10) < getTodayStr()
 
 function toWhatsAppUrl(tel: string) {
   let digits = tel.replace(/\D/g, '')
@@ -110,7 +120,14 @@ export default function WorkspacePage() {
     }
   }
 
-  const pendientesEntrega = pedidos.filter(p => p.estadoEntrega === 'pendiente')
+  const pendientesEntrega = pedidos
+    .filter(p => p.estadoEntrega === 'pendiente')
+    .sort((a, b) => {
+      if (a.fechaEntrega && b.fechaEntrega) return a.fechaEntrega.localeCompare(b.fechaEntrega)
+      if (a.fechaEntrega && !b.fechaEntrega) return -1
+      if (!a.fechaEntrega && b.fechaEntrega) return 1
+      return 0
+    })
   const pendientesCobro = pedidos.filter(p => p.estadoPago !== 'pagado')
   const allClear = !loading && pendientesEntrega.length === 0 && pendientesCobro.length === 0
 
@@ -177,9 +194,23 @@ export default function WorkspacePage() {
                     <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl p-3 flex flex-col gap-2">
                       {/* Header */}
                       <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <p className="font-semibold text-[#1F2937] text-sm truncate">{p.nombreCliente}</p>
                           {p.evento && <p className="text-xs text-[#9CC6EA] font-medium truncate">{p.evento.nombre}</p>}
+                          {p.fechaEntrega && (
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <Calendar size={11} className={`shrink-0 ${esPasada(p.fechaEntrega) ? 'text-red-400' : 'text-[#9CC6EA]'}`} strokeWidth={2} />
+                              <span className={`text-xs font-medium ${esPasada(p.fechaEntrega) ? 'text-red-500' : 'text-[#6B7280]'}`}>
+                                {formatFechaCorta(p.fechaEntrega)}
+                              </span>
+                              {esHoy(p.fechaEntrega) && (
+                                <span className="text-[9px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full leading-none">Hoy</span>
+                              )}
+                              {esPasada(p.fechaEntrega) && (
+                                <span className="text-[9px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full leading-none">Vencido</span>
+                              )}
+                            </div>
+                          )}
                         </div>
                         {tel && (
                           <a href={toWhatsAppUrl(tel)} target="_blank" rel="noopener noreferrer"
@@ -261,9 +292,23 @@ export default function WorkspacePage() {
                     <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl p-3 flex flex-col gap-2">
                       {/* Header */}
                       <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
+                        <div className="min-w-0 flex-1">
                           <p className="font-semibold text-[#1F2937] text-sm truncate">{p.nombreCliente}</p>
                           {p.evento && <p className="text-xs text-[#9CC6EA] font-medium truncate">{p.evento.nombre}</p>}
+                          {p.fechaEntrega && (
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <Calendar size={11} className={`shrink-0 ${esPasada(p.fechaEntrega) ? 'text-red-400' : 'text-[#9CC6EA]'}`} strokeWidth={2} />
+                              <span className={`text-xs font-medium ${esPasada(p.fechaEntrega) ? 'text-red-500' : 'text-[#6B7280]'}`}>
+                                {formatFechaCorta(p.fechaEntrega)}
+                              </span>
+                              {esHoy(p.fechaEntrega) && (
+                                <span className="text-[9px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full leading-none">Hoy</span>
+                              )}
+                              {esPasada(p.fechaEntrega) && (
+                                <span className="text-[9px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full leading-none">Vencido</span>
+                              )}
+                            </div>
+                          )}
                         </div>
                         {tel && (
                           <a href={toWhatsAppUrl(tel)} target="_blank" rel="noopener noreferrer"

@@ -4,7 +4,22 @@ import prisma from '../lib/prisma'
 const router = Router()
 
 router.get('/', async (req: Request, res: Response) => {
-  const { eventoId, sinEvento, estadoEntrega, estadoPago, fechaDesde, fechaHasta, search } = req.query
+  const { eventoId, sinEvento, estadoEntrega, estadoPago, fechaDesde, fechaHasta, filtroPor, ordenarPor, sinFecha, search } = req.query
+
+  let dateFilter = {}
+  if (fechaDesde || fechaHasta) {
+    const field = filtroPor === 'entrega' ? 'fechaEntrega' : 'createdAt'
+    dateFilter = {
+      [field]: {
+        ...(fechaDesde ? { gte: new Date(fechaDesde as string) } : {}),
+        ...(fechaHasta ? { lte: new Date(new Date(fechaHasta as string).setHours(23, 59, 59, 999)) } : {}),
+      },
+    }
+  }
+
+  const orderBy: any = ordenarPor === 'fechaEntrega'
+    ? [{ fechaEntrega: { sort: 'asc', nulls: 'last' } }, { createdAt: 'desc' }]
+    : { createdAt: 'desc' }
 
   try {
     const pedidos = await prisma.pedido.findMany({
@@ -13,22 +28,16 @@ router.get('/', async (req: Request, res: Response) => {
         ...(sinEvento === 'true' ? { eventoId: null } : {}),
         ...(estadoEntrega ? { estadoEntrega: estadoEntrega as any } : {}),
         ...(estadoPago ? { estadoPago: estadoPago as any } : {}),
+        ...(sinFecha === 'true' ? { fechaEntrega: null } : {}),
         ...(search ? { nombreCliente: { contains: search as string, mode: 'insensitive' } } : {}),
-        ...(fechaDesde || fechaHasta
-          ? {
-              createdAt: {
-                ...(fechaDesde ? { gte: new Date(fechaDesde as string) } : {}),
-                ...(fechaHasta ? { lte: new Date(fechaHasta as string) } : {}),
-              },
-            }
-          : {}),
+        ...dateFilter,
       },
       include: {
         evento: { select: { id: true, nombre: true, fecha: true } },
         cliente: { select: { id: true, nombre: true, telefono: true } },
         productos: { include: { producto: true } },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy,
     })
     res.json(pedidos)
   } catch {
@@ -37,7 +46,7 @@ router.get('/', async (req: Request, res: Response) => {
 })
 
 router.post('/', async (req: Request, res: Response) => {
-  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña, clienteId, eventoId } = req.body
+  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña, clienteId, eventoId, fechaEntrega } = req.body
   if (!nombreCliente || precioTotal === undefined) {
     res.status(400).json({ error: 'nombreCliente y precioTotal son requeridos' })
     return
@@ -55,6 +64,7 @@ router.post('/', async (req: Request, res: Response) => {
         notas,
         ...(montoSeña !== undefined && montoSeña !== null && { montoSeña }),
         ...(clienteId !== undefined && clienteId !== null && { clienteId }),
+        ...(fechaEntrega ? { fechaEntrega: new Date(fechaEntrega) } : {}),
       },
     })
     res.status(201).json(pedido)
@@ -65,7 +75,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 router.put('/:id', async (req: Request, res: Response) => {
   const id = parseInt(req.params.id as string)
-  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña, clienteId, eventoId } = req.body
+  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña, clienteId, eventoId, fechaEntrega } = req.body
   try {
     const pedido = await prisma.pedido.update({
       where: { id },
@@ -80,6 +90,7 @@ router.put('/:id', async (req: Request, res: Response) => {
         ...(montoSeña !== undefined && { montoSeña: montoSeña === null ? null : montoSeña }),
         ...(clienteId !== undefined && { clienteId: clienteId === null ? null : clienteId }),
         ...(eventoId !== undefined && { eventoId: eventoId === null ? null : Number(eventoId) }),
+        ...(fechaEntrega !== undefined && { fechaEntrega: fechaEntrega === null ? null : new Date(fechaEntrega) }),
       },
     })
     res.json(pedido)
