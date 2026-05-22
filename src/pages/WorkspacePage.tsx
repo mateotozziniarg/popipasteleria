@@ -193,15 +193,11 @@ export default function WorkspacePage() {
   }, [activeTab, periodo, customDesde, customHasta])
 
   useEffect(() => {
-    if (pedidos.length === 0) return
-    const tomorrow = getTomorrowStr()
-    const hayPedidosMañana = pedidos.some(p => p.fechaEntrega?.substring(0, 10) === tomorrow)
-    if (!hayPedidosMañana) { setClimaMañana(null); return }
     fetchClimaMañana().then(data => {
       if (data && (data.maxRocio > 15 || data.maxHumedad > 70)) setClimaMañana(data)
       else setClimaMañana(null)
     }).catch(() => {})
-  }, [pedidos])
+  }, [])
 
   async function handleConfirmarEntregado() {
     if (!confirmEntregarTarget) return
