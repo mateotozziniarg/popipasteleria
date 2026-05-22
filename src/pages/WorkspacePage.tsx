@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Zap, Banknote, PackageCheck, CheckCircle2, StickyNote, Calendar, BarChart2, Receipt, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+import { Zap, Banknote, PackageCheck, CheckCircle2, StickyNote, Calendar, BarChart2, Receipt, ArrowUpRight, ArrowDownRight, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { PedidoConEvento, EstadoPago, getPedidosGlobal, updatePedido } from '../api/pedidos'
 import { getResumenFinanciero, getGastos, Gasto, ResumenFinanciero } from '../api/gastos'
@@ -66,6 +66,35 @@ function pctChange(curr: number, prev: number): number | null {
   return ((curr - prev) / Math.abs(prev)) * 100
 }
 
+function getTomorrowStr() {
+  const d = new Date()
+  d.setDate(d.getDate() + 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+async function fetchClimaMañana(): Promise<{ maxHumedad: number; maxRocio: number } | null> {
+  const url = 'https://api.open-meteo.com/v1/forecast?latitude=-34.6037&longitude=-58.3816&hourly=relative_humidity_2m,dew_point_2m&forecast_days=2&timezone=America%2FArgentina%2FBuenos_Aires'
+  const res = await fetch(url)
+  const data = await res.json()
+  const tomorrow = getTomorrowStr()
+  const times: string[] = data.hourly.time
+  const humedades: number[] = data.hourly.relative_humidity_2m
+  const rocios: number[] = data.hourly.dew_point_2m
+  const idxs = times
+    .map((t, i) => ({ t, i }))
+    .filter(({ t }) => {
+      if (!t.startsWith(tomorrow)) return false
+      const h = parseInt(t.slice(11, 13))
+      return h >= 8 && h <= 20
+    })
+    .map(({ i }) => i)
+  if (idxs.length === 0) return null
+  return {
+    maxHumedad: Math.max(...idxs.map(i => humedades[i])),
+    maxRocio: Math.round(Math.max(...idxs.map(i => rocios[i]))),
+  }
+}
+
 function toWhatsAppUrl(tel: string) {
   let digits = tel.replace(/\D/g, '')
   if (digits.startsWith('54')) return `https://wa.me/${digits}`
@@ -113,6 +142,7 @@ export default function WorkspacePage() {
   const [confirmEntregarTarget, setConfirmEntregarTarget] = useState<PedidoConEvento | null>(null)
   const [confirmPagarTarget, setConfirmPagarTarget] = useState<PedidoConEvento | null>(null)
   const [confirmando, setConfirmando] = useState(false)
+  const [climaMañana, setClimaMañana] = useState<{ maxHumedad: number; maxRocio: number } | null>(null)
 
   // ── Finanzas tab state ──
   const [periodo, setPeriodo] = useState<Periodo>('mes')
@@ -161,6 +191,17 @@ export default function WorkspacePage() {
     const { desde, hasta } = getPeriodoRange(periodo)
     loadFinanzas(desde, hasta)
   }, [activeTab, periodo, customDesde, customHasta])
+
+  useEffect(() => {
+    if (pedidos.length === 0) return
+    const tomorrow = getTomorrowStr()
+    const hayPedidosMañana = pedidos.some(p => p.fechaEntrega?.substring(0, 10) === tomorrow)
+    if (!hayPedidosMañana) { setClimaMañana(null); return }
+    fetchClimaMañana().then(data => {
+      if (data && (data.maxRocio > 15 || data.maxHumedad > 70)) setClimaMañana(data)
+      else setClimaMañana(null)
+    }).catch(() => {})
+  }, [pedidos])
 
   async function handleConfirmarEntregado() {
     if (!confirmEntregarTarget) return
@@ -295,6 +336,18 @@ export default function WorkspacePage() {
               </div>
             )}
           </div>
+
+          {climaMañana && (
+            <div className="mb-5 flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
+              <AlertTriangle size={16} className="text-amber-500 shrink-0 mt-0.5" strokeWidth={2} />
+              <div>
+                <p className="text-sm font-semibold text-amber-900">Mañana condiciones difíciles para templar</p>
+                <p className="text-xs text-amber-700 mt-0.5">
+                  Punto de rocío máx. {climaMañana.maxRocio}°C · Humedad máx. {climaMañana.maxHumedad}% · Cuidado con chocolate, merengues y macarons.
+                </p>
+              </div>
+            </div>
+          )}
 
           {loading ? (
             <LoadingSpinner />
