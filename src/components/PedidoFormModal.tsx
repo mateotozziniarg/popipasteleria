@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Plus, X, RefreshCw, AlertTriangle } from 'lucide-react'
-import { Pedido, PedidoConEvento, PedidoInput, EstadoEntrega, EstadoPago, createPedidoStandalone, updatePedido } from '../api/pedidos'
+import { Pedido, PedidoConEvento, PedidoInput, EstadoEntrega, EstadoPago, ModalidadEntrega, createPedidoStandalone, updatePedido } from '../api/pedidos'
 import { Producto, getProductos, createProducto, addPedidoProducto, deletePedidoProducto } from '../api/productos'
 import { Cliente, getClientes, createCliente } from '../api/clientes'
 import { Evento, getEventos } from '../api/eventos'
@@ -27,6 +27,7 @@ interface FormState {
   notas: string
   montoSeña: string
   fechaEntrega: string
+  modalidadEntrega: ModalidadEntrega | null
   items: ItemForm[]
 }
 
@@ -42,6 +43,7 @@ const emptyForm = (eventoIdDefault: number | null): FormState => ({
   notas: '',
   montoSeña: '',
   fechaEntrega: '',
+  modalidadEntrega: null,
   items: [],
 })
 
@@ -309,6 +311,7 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
         notas: editTarget.notas ?? '',
         montoSeña: editTarget.montoSeña ?? '',
         fechaEntrega: editTarget.fechaEntrega ? editTarget.fechaEntrega.substring(0, 10) : '',
+        modalidadEntrega: editTarget.modalidadEntrega ?? null,
         items,
       })
     } else {
@@ -362,6 +365,7 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
       notas: form.notas || undefined,
       montoSeña: form.estadoPago === 'señado' && form.montoSeña ? parseFloat(form.montoSeña) : null,
       fechaEntrega: form.fechaEntrega ? `${form.fechaEntrega}T12:00:00.000Z` : null,
+      modalidadEntrega: form.modalidadEntrega,
     }
     try {
       if (editTarget) {
@@ -470,6 +474,37 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
                     value={form.fechaEntrega}
                     onChange={e => setForm(f => ({ ...f, fechaEntrega: e.target.value }))}
                   />
+                </div>
+
+                {/* Modalidad de entrega */}
+                <div>
+                  <label className={labelClass}>
+                    Modalidad <span className="text-[#6B7280] font-normal">(opcional)</span>
+                  </label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, modalidadEntrega: f.modalidadEntrega === 'ENVIO' ? null : 'ENVIO' }))}
+                      className={`flex-1 py-2.5 text-sm font-medium rounded-xl border transition-colors ${
+                        form.modalidadEntrega === 'ENVIO'
+                          ? 'bg-[#CFE6F7] border-[#9CC6EA] text-[#1F2937]'
+                          : 'bg-white border-[#E5EAF1] text-[#6B7280] hover:bg-[#F7FAFC]'
+                      }`}
+                    >
+                      Envío
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, modalidadEntrega: f.modalidadEntrega === 'RETIRA' ? null : 'RETIRA' }))}
+                      className={`flex-1 py-2.5 text-sm font-medium rounded-xl border transition-colors ${
+                        form.modalidadEntrega === 'RETIRA'
+                          ? 'bg-[#F3F4F6] border-[#9CA3AF] text-[#1F2937]'
+                          : 'bg-white border-[#E5EAF1] text-[#6B7280] hover:bg-[#F7FAFC]'
+                      }`}
+                    >
+                      Retira
+                    </button>
+                  </div>
                 </div>
 
                 {/* Estados */}

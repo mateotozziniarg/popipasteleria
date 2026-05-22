@@ -4,7 +4,7 @@ import prisma from '../lib/prisma'
 const router = Router()
 
 router.get('/', async (req: Request, res: Response) => {
-  const { eventoId, sinEvento, estadoEntrega, estadoPago, fechaDesde, fechaHasta, filtroPor, ordenarPor, sinFecha, search } = req.query
+  const { eventoId, sinEvento, estadoEntrega, estadoPago, modalidadEntrega, fechaDesde, fechaHasta, filtroPor, ordenarPor, sinFecha, search } = req.query
 
   let dateFilter = {}
   if (fechaDesde || fechaHasta) {
@@ -28,6 +28,7 @@ router.get('/', async (req: Request, res: Response) => {
         ...(sinEvento === 'true' ? { eventoId: null } : {}),
         ...(estadoEntrega ? { estadoEntrega: estadoEntrega as any } : {}),
         ...(estadoPago ? { estadoPago: estadoPago as any } : {}),
+        ...(modalidadEntrega ? { modalidadEntrega: modalidadEntrega as any } : {}),
         ...(sinFecha === 'true' ? { fechaEntrega: null } : {}),
         ...(search ? { nombreCliente: { contains: search as string, mode: 'insensitive' } } : {}),
         ...dateFilter,
@@ -46,7 +47,7 @@ router.get('/', async (req: Request, res: Response) => {
 })
 
 router.post('/', async (req: Request, res: Response) => {
-  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña, clienteId, eventoId, fechaEntrega } = req.body
+  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña, clienteId, eventoId, fechaEntrega, modalidadEntrega } = req.body
   if (!nombreCliente || precioTotal === undefined) {
     res.status(400).json({ error: 'nombreCliente y precioTotal son requeridos' })
     return
@@ -65,6 +66,7 @@ router.post('/', async (req: Request, res: Response) => {
         ...(montoSeña !== undefined && montoSeña !== null && { montoSeña }),
         ...(clienteId !== undefined && clienteId !== null && { clienteId }),
         ...(fechaEntrega ? { fechaEntrega: new Date(fechaEntrega) } : {}),
+        ...(modalidadEntrega ? { modalidadEntrega } : {}),
       },
     })
     res.status(201).json(pedido)
@@ -75,7 +77,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 router.put('/:id', async (req: Request, res: Response) => {
   const id = parseInt(req.params.id as string)
-  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña, clienteId, eventoId, fechaEntrega } = req.body
+  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña, clienteId, eventoId, fechaEntrega, modalidadEntrega } = req.body
   try {
     const pedido = await prisma.pedido.update({
       where: { id },
@@ -91,6 +93,7 @@ router.put('/:id', async (req: Request, res: Response) => {
         ...(clienteId !== undefined && { clienteId: clienteId === null ? null : clienteId }),
         ...(eventoId !== undefined && { eventoId: eventoId === null ? null : Number(eventoId) }),
         ...(fechaEntrega !== undefined && { fechaEntrega: fechaEntrega === null ? null : new Date(fechaEntrega) }),
+        ...(modalidadEntrega !== undefined && { modalidadEntrega: modalidadEntrega === null ? null : modalidadEntrega }),
       },
     })
     res.json(pedido)

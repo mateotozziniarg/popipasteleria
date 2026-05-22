@@ -5,9 +5,13 @@ const router = Router({ mergeParams: true })
 
 router.get('/', async (req: Request, res: Response) => {
   const eventoId = parseInt(req.params.eventoId as string)
+  const { modalidadEntrega } = req.query
   try {
     const pedidos = await prisma.pedido.findMany({
-      where: { eventoId },
+      where: {
+        eventoId,
+        ...(modalidadEntrega ? { modalidadEntrega: modalidadEntrega as any } : {}),
+      },
       orderBy: { createdAt: 'asc' },
       include: {
         productos: { include: { producto: true } },
@@ -22,7 +26,7 @@ router.get('/', async (req: Request, res: Response) => {
 
 router.post('/', async (req: Request, res: Response) => {
   const eventoId = parseInt(req.params.eventoId as string)
-  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña, clienteId, fechaEntrega } = req.body
+  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña, clienteId, fechaEntrega, modalidadEntrega } = req.body
   if (!nombreCliente || precioTotal === undefined) {
     res.status(400).json({ error: 'nombreCliente y precioTotal son requeridos' })
     return
@@ -41,6 +45,7 @@ router.post('/', async (req: Request, res: Response) => {
         ...(montoSeña !== undefined && montoSeña !== null && { montoSeña }),
         ...(clienteId !== undefined && clienteId !== null && { clienteId }),
         ...(fechaEntrega ? { fechaEntrega: new Date(fechaEntrega) } : {}),
+        ...(modalidadEntrega ? { modalidadEntrega } : {}),
       },
     })
     res.status(201).json(pedido)
@@ -55,7 +60,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 router.put('/:pedidoId', async (req: Request, res: Response) => {
   const id = parseInt(req.params.pedidoId as string)
-  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña, clienteId, fechaEntrega } = req.body
+  const { nombreCliente, telefono, descripcion, precioTotal, estadoEntrega, estadoPago, notas, montoSeña, clienteId, fechaEntrega, modalidadEntrega } = req.body
   try {
     const pedido = await prisma.pedido.update({
       where: { id },
@@ -70,6 +75,7 @@ router.put('/:pedidoId', async (req: Request, res: Response) => {
         ...(montoSeña !== undefined && { montoSeña: montoSeña === null ? null : montoSeña }),
         ...(clienteId !== undefined && { clienteId: clienteId === null ? null : clienteId }),
         ...(fechaEntrega !== undefined && { fechaEntrega: fechaEntrega === null ? null : new Date(fechaEntrega) }),
+        ...(modalidadEntrega !== undefined && { modalidadEntrega: modalidadEntrega === null ? null : modalidadEntrega }),
       },
     })
     res.json(pedido)

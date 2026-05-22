@@ -64,6 +64,7 @@ model Pedido {
   notas          String?
   montoSeña      Decimal?         @db.Decimal(10, 2)
   fechaEntrega   DateTime?
+  modalidadEntrega ModalidadEntrega?
   createdAt      DateTime         @default(now())
   productos      PedidoProducto[]
 }
@@ -96,6 +97,11 @@ enum EstadoPago {
   sin_seña
   señado
   pagado
+}
+
+enum ModalidadEntrega {
+  ENVIO
+  RETIRA
 }
 
 model Usuario {

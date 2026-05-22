@@ -462,7 +462,14 @@ export default function EventoPage() {
               <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl px-5 py-4 hover:border-[#9CC6EA] transition-colors">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="font-semibold text-[#1F2937]">{p.nombreCliente}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="font-semibold text-[#1F2937]">{p.nombreCliente}</p>
+                      {p.modalidadEntrega && (
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${p.modalidadEntrega === 'ENVIO' ? 'bg-[#CFE6F7] text-[#1F2937]' : 'bg-[#F3F4F6] text-[#6B7280]'}`}>
+                          {p.modalidadEntrega === 'ENVIO' ? 'Envío' : 'Retira'}
+                        </span>
+                      )}
+                    </div>
                     {(p.cliente?.telefono || p.telefono) && (
                       <a href={`tel:${p.cliente?.telefono ?? p.telefono}`}
                         className="text-xs text-[#6B7280] hover:text-[#1F2937] mt-0.5 block transition-colors"

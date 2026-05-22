@@ -6,7 +6,7 @@ import {
   LayoutGrid, ChevronDown, ChevronUp, Banknote, PackageCheck, Trash2, StickyNote, Calendar
 } from 'lucide-react'
 import { toast } from 'sonner'
-import { PedidoConEvento, FiltrosPedidos, EstadoEntrega, EstadoPago, getPedidosGlobal, updatePedido, deletePedido } from '../api/pedidos'
+import { PedidoConEvento, FiltrosPedidos, EstadoEntrega, EstadoPago, ModalidadEntrega, getPedidosGlobal, updatePedido, deletePedido } from '../api/pedidos'
 import { Evento, getEventos } from '../api/eventos'
 import { getGastosTotal } from '../api/materiasPrimas'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -133,6 +133,7 @@ export default function PedidosPage() {
     !!filtros.estadoPago,
     !!filtros.search,
     !!(filtros.fechaDesde || filtros.fechaHasta),
+    !!filtros.modalidadEntrega,
   ].filter(Boolean).length
 
   const totalMonto = pedidos.reduce((s, p) => s + parseFloat(p.precioTotal), 0)
@@ -270,7 +271,7 @@ export default function PedidosPage() {
         </button>
         {filtrosOpen && (
           <div className="px-4 pb-4 border-t border-[#E5EAF1] pt-3 flex flex-col gap-3">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               <div>
                 <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Evento</label>
                 <select className={inputClass} value={eventoSelect} onChange={e => handleEventoSelect(e.target.value)}>
@@ -294,6 +295,14 @@ export default function PedidosPage() {
                   <option value="sin_seña">Pendiente</option>
                   <option value="señado">Señado</option>
                   <option value="pagado">Pagado</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Modalidad</label>
+                <select className={inputClass} value={filtros.modalidadEntrega ?? ''} onChange={e => setFiltro('modalidadEntrega', e.target.value as ModalidadEntrega || undefined)}>
+                  <option value="">Todos</option>
+                  <option value="ENVIO">Envío</option>
+                  <option value="RETIRA">Retira</option>
                 </select>
               </div>
             </div>
@@ -368,8 +377,13 @@ export default function PedidosPage() {
                 {/* Header */}
                 <div className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-semibold text-[#1F2937] truncate">{p.nombreCliente}</p>
+                      {p.modalidadEntrega && (
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${p.modalidadEntrega === 'ENVIO' ? 'bg-[#CFE6F7] text-[#1F2937]' : 'bg-[#F3F4F6] text-[#6B7280]'}`}>
+                          {p.modalidadEntrega === 'ENVIO' ? 'Envío' : 'Retira'}
+                        </span>
+                      )}
                       {(p.telefono || p.cliente?.telefono) && (
                         <a href={toWhatsAppUrl((p.telefono || p.cliente!.telefono)!)}
                           target="_blank" rel="noopener noreferrer"

@@ -2,6 +2,7 @@ import client from './client'
 
 export type EstadoEntrega = 'pendiente' | 'entregado'
 export type EstadoPago = 'sin_seña' | 'señado' | 'pagado'
+export type ModalidadEntrega = 'ENVIO' | 'RETIRA'
 
 export interface PedidoProductoEnPedido {
   id: number
@@ -25,6 +26,7 @@ export interface Pedido {
   notas: string | null
   montoSeña: string | null
   fechaEntrega: string | null
+  modalidadEntrega: ModalidadEntrega | null
   createdAt: string
   productos: PedidoProductoEnPedido[]
 }
@@ -41,6 +43,7 @@ export interface PedidoInput {
   clienteId?: number | null
   eventoId?: number | null
   fechaEntrega?: string | null
+  modalidadEntrega?: ModalidadEntrega | null
 }
 
 export interface PedidoConEvento extends Pedido {
@@ -59,6 +62,7 @@ export interface FiltrosPedidos {
   filtroPor?: 'creacion' | 'entrega'
   ordenarPor?: 'fechaEntrega'
   sinFecha?: boolean
+  modalidadEntrega?: ModalidadEntrega
 }
 
 export const getPedidos = (eventoId: number) =>
@@ -76,6 +80,7 @@ export const getPedidosGlobal = (filtros: FiltrosPedidos = {}) => {
   if (filtros.filtroPor) params.filtroPor = filtros.filtroPor
   if (filtros.ordenarPor) params.ordenarPor = filtros.ordenarPor
   if (filtros.sinFecha) params.sinFecha = 'true'
+  if (filtros.modalidadEntrega) params.modalidadEntrega = filtros.modalidadEntrega
   return client.get<PedidoConEvento[]>('/pedidos', { params }).then(r => r.data)
 }
 

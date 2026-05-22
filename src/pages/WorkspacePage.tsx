@@ -129,6 +129,7 @@ export default function WorkspacePage() {
       return 0
     })
   const pendientesCobro = pedidos.filter(p => p.estadoPago !== 'pagado')
+  const enviosPendientes = pendientesEntrega.filter(p => p.modalidadEntrega === 'ENVIO').length
   const allClear = !loading && pendientesEntrega.length === 0 && pendientesCobro.length === 0
 
   const hoy = new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
@@ -151,6 +152,11 @@ export default function WorkspacePage() {
             {pendientesEntrega.length > 0 && (
               <span className="text-xs bg-[#fffbeb] text-[#b45309] px-2.5 py-1 rounded-full font-medium">
                 {pendientesEntrega.length} por entregar
+              </span>
+            )}
+            {enviosPendientes > 0 && (
+              <span className="text-xs bg-[#CFE6F7] text-[#1F2937] px-2.5 py-1 rounded-full font-medium">
+                {enviosPendientes} {enviosPendientes === 1 ? 'envío' : 'envíos'}
               </span>
             )}
             {pendientesCobro.length > 0 && (
@@ -195,7 +201,14 @@ export default function WorkspacePage() {
                       {/* Header */}
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-[#1F2937] text-sm truncate">{p.nombreCliente}</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-semibold text-[#1F2937] text-sm truncate">{p.nombreCliente}</p>
+                            {p.modalidadEntrega && (
+                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${p.modalidadEntrega === 'ENVIO' ? 'bg-[#CFE6F7] text-[#1F2937]' : 'bg-[#F3F4F6] text-[#6B7280]'}`}>
+                                {p.modalidadEntrega === 'ENVIO' ? 'Envío' : 'Retira'}
+                              </span>
+                            )}
+                          </div>
                           {p.evento && <p className="text-xs text-[#9CC6EA] font-medium truncate">{p.evento.nombre}</p>}
                           {p.fechaEntrega && (
                             <div className="flex items-center gap-1.5 mt-0.5">
@@ -293,7 +306,14 @@ export default function WorkspacePage() {
                       {/* Header */}
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
-                          <p className="font-semibold text-[#1F2937] text-sm truncate">{p.nombreCliente}</p>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-semibold text-[#1F2937] text-sm truncate">{p.nombreCliente}</p>
+                            {p.modalidadEntrega && (
+                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${p.modalidadEntrega === 'ENVIO' ? 'bg-[#CFE6F7] text-[#1F2937]' : 'bg-[#F3F4F6] text-[#6B7280]'}`}>
+                                {p.modalidadEntrega === 'ENVIO' ? 'Envío' : 'Retira'}
+                              </span>
+                            )}
+                          </div>
                           {p.evento && <p className="text-xs text-[#9CC6EA] font-medium truncate">{p.evento.nombre}</p>}
                           {p.fechaEntrega && (
                             <div className="flex items-center gap-1.5 mt-0.5">
