@@ -5,12 +5,9 @@ const router = Router()
 
 function calcularMetricas(
   pedidos: { precioTotal: any; estadoPago: string }[],
-  gastos: { cantidad: any; precioUnitario: any }[]
+  gastos: { monto: any }[]
 ) {
-  const totalGastos = gastos.reduce(
-    (s, g) => s + parseFloat(g.cantidad.toString()) * parseFloat(g.precioUnitario.toString()),
-    0
-  )
+  const totalGastos = gastos.reduce((s, g) => s + parseFloat(g.monto.toString()), 0)
   const totalEsperado = pedidos.reduce((s, p) => s + parseFloat(p.precioTotal.toString()), 0)
   const totalCobrado = pedidos
     .filter(p => p.estadoPago === 'pagado')
@@ -30,7 +27,7 @@ router.get('/', async (_req: Request, res: Response) => {
       orderBy: { fecha: 'asc' },
       include: {
         pedidos: { select: { precioTotal: true, estadoPago: true } },
-        gastos: { select: { cantidad: true, precioUnitario: true } },
+        gastos: { select: { monto: true } },
       },
     })
     const result = eventos.map(({ pedidos, gastos, ...ev }) => ({
@@ -50,7 +47,7 @@ router.get('/:id', async (req: Request, res: Response) => {
       where: { id },
       include: {
         pedidos: { select: { precioTotal: true, estadoPago: true } },
-        gastos: { select: { cantidad: true, precioUnitario: true } },
+        gastos: { select: { monto: true } },
       },
     })
     if (!ev) {

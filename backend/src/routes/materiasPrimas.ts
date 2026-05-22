@@ -53,7 +53,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 router.delete('/:id', async (req: Request, res: Response) => {
   const id = parseInt(req.params.id as string)
   try {
-    const enUso = await prisma.eventoGasto.count({ where: { materiaPrimaId: id } })
+    const enUso = await prisma.gasto.count({ where: { materiaPrimaId: id } })
     if (enUso > 0) {
       res.status(409).json({ error: `No se puede eliminar: la materia prima tiene ${enUso} gasto${enUso > 1 ? 's' : ''} asociado${enUso > 1 ? 's' : ''}` })
       return

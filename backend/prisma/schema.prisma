@@ -8,34 +8,37 @@ datasource db {
 }
 
 model Evento {
-  id          Int           @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   nombre      String
   fecha       DateTime
   descripcion String?
-  createdAt   DateTime      @default(now())
+  createdAt   DateTime @default(now())
   pedidos     Pedido[]
-  gastos      EventoGasto[]
+  gastos      Gasto[]
 }
 
 model MateriaPrima {
-  id            Int           @id @default(autoincrement())
+  id            Int      @id @default(autoincrement())
   nombre        String
   descripcion   String?
-  precioDefault Decimal       @db.Decimal(10, 2)
-  createdAt     DateTime      @default(now())
-  gastos        EventoGasto[]
+  precioDefault Decimal  @db.Decimal(10, 2)
+  createdAt     DateTime @default(now())
+  gastos        Gasto[]
 }
 
-model EventoGasto {
-  id             Int          @id @default(autoincrement())
-  eventoId       Int
-  evento         Evento       @relation(fields: [eventoId], references: [id])
-  materiaPrimaId Int
-  materiaPrima   MateriaPrima @relation(fields: [materiaPrimaId], references: [id])
-  cantidad       Decimal      @db.Decimal(10, 2)
-  precioUnitario Decimal      @db.Decimal(10, 2)
+model Gasto {
+  id             Int           @id @default(autoincrement())
+  fecha          DateTime
+  eventoId       Int?
+  evento         Evento?       @relation(fields: [eventoId], references: [id])
+  materiaPrimaId Int?
+  materiaPrima   MateriaPrima? @relation(fields: [materiaPrimaId], references: [id])
+  cantidad       Decimal?      @db.Decimal(10, 2)
+  precioUnitario Decimal?      @db.Decimal(10, 2)
+  monto          Decimal       @db.Decimal(10, 2)
+  descripcion    String?
   notas          String?
-  createdAt      DateTime     @default(now())
+  createdAt      DateTime      @default(now())
 }
 
 model Cliente {
@@ -50,23 +53,23 @@ model Cliente {
 }
 
 model Pedido {
-  id             Int              @id @default(autoincrement())
-  eventoId       Int?
-  evento         Evento?          @relation(fields: [eventoId], references: [id])
-  clienteId      Int?
-  cliente        Cliente?         @relation(fields: [clienteId], references: [id])
-  nombreCliente  String
-  telefono       String?
-  descripcion    String?
-  precioTotal    Decimal          @db.Decimal(10, 2)
-  estadoEntrega  EstadoEntrega    @default(pendiente)
-  estadoPago     EstadoPago       @default(sin_seña)
-  notas          String?
-  montoSeña      Decimal?         @db.Decimal(10, 2)
-  fechaEntrega   DateTime?
+  id               Int               @id @default(autoincrement())
+  eventoId         Int?
+  evento           Evento?           @relation(fields: [eventoId], references: [id])
+  clienteId        Int?
+  cliente          Cliente?          @relation(fields: [clienteId], references: [id])
+  nombreCliente    String
+  telefono         String?
+  descripcion      String?
+  precioTotal      Decimal           @db.Decimal(10, 2)
+  estadoEntrega    EstadoEntrega     @default(pendiente)
+  estadoPago       EstadoPago        @default(sin_seña)
+  notas            String?
+  montoSeña        Decimal?          @db.Decimal(10, 2)
+  fechaEntrega     DateTime?
   modalidadEntrega ModalidadEntrega?
-  createdAt      DateTime         @default(now())
-  productos      PedidoProducto[]
+  createdAt        DateTime          @default(now())
+  productos        PedidoProducto[]
 }
 
 model Producto {

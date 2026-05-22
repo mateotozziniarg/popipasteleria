@@ -10,7 +10,8 @@ import productosRouter from './routes/productos'
 import pedidoProductosRouter from './routes/pedidoProductos'
 import materiasPrimasRouter from './routes/materiasPrimas'
 import eventoGastosRouter from './routes/eventoGastos'
-import gastosGlobalRouter from './routes/gastosGlobal'
+import gastosRouter from './routes/gastos'
+import finanzasRouter from './routes/finanzas'
 import clientesRouter from './routes/clientes'
 
 const app = express()
@@ -29,7 +30,6 @@ app.get('/health', (_req, res) => {
 
 app.use('/auth', authRouter)
 
-// Todas las rutas siguientes requieren token válido
 app.use(authMiddleware)
 
 app.use('/events', eventosRouter)
@@ -39,7 +39,8 @@ app.use('/pedidos/:pedidoId/productos', pedidoProductosRouter)
 app.use('/pedidos', pedidosGlobalRouter)
 app.use('/productos', productosRouter)
 app.use('/materias-primas', materiasPrimasRouter)
-app.use('/gastos', gastosGlobalRouter)
+app.use('/gastos', gastosRouter)
+app.use('/finanzas', finanzasRouter)
 app.use('/clientes', clientesRouter)
 
 app.listen(port, () => {

@@ -11,6 +11,7 @@ import PedidosPage from './pages/PedidosPage'
 import ProductosPage from './pages/ProductosPage'
 import MateriasPrimasPage from './pages/MateriasPrimasPage'
 import ClientesPage from './pages/ClientesPage'
+import GastosPage from './pages/GastosPage'
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
                     <Route path="/productos" element={<ProductosPage />} />
                     <Route path="/materias-primas" element={<MateriasPrimasPage />} />
                     <Route path="/clientes" element={<ClientesPage />} />
+                    <Route path="/gastos" element={<GastosPage />} />
                     <Route path="*" element={<NotFoundPage />} />
                   </Routes>
                 </div>
