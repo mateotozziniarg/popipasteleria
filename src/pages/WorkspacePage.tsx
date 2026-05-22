@@ -120,17 +120,27 @@ export default function WorkspacePage() {
     }
   }
 
-  const pendientesEntrega = pedidos
-    .filter(p => p.estadoEntrega === 'pendiente')
-    .sort((a, b) => {
-      if (a.fechaEntrega && b.fechaEntrega) return a.fechaEntrega.localeCompare(b.fechaEntrega)
-      if (a.fechaEntrega && !b.fechaEntrega) return -1
-      if (!a.fechaEntrega && b.fechaEntrega) return 1
-      return 0
-    })
-  const pendientesCobro = pedidos.filter(p => p.estadoPago !== 'pagado')
-  const enviosPendientes = pendientesEntrega.filter(p => p.modalidadEntrega === 'ENVIO').length
-  const allClear = !loading && pendientesEntrega.length === 0 && pendientesCobro.length === 0
+  const sortByFecha = (a: PedidoConEvento, b: PedidoConEvento) => {
+    if (a.fechaEntrega && b.fechaEntrega) return a.fechaEntrega.localeCompare(b.fechaEntrega)
+    if (a.fechaEntrega && !b.fechaEntrega) return -1
+    if (!a.fechaEntrega && b.fechaEntrega) return 1
+    return 0
+  }
+
+  const pendientesAmbos = pedidos
+    .filter(p => p.estadoEntrega === 'pendiente' && p.estadoPago !== 'pagado')
+    .sort(sortByFecha)
+
+  const pendientesEntregaSolo = pedidos
+    .filter(p => p.estadoEntrega === 'pendiente' && p.estadoPago === 'pagado')
+    .sort(sortByFecha)
+
+  const pendientesCobroSolo = pedidos
+    .filter(p => p.estadoEntrega === 'entregado' && p.estadoPago !== 'pagado')
+
+  const enviosPendientes = [...pendientesAmbos, ...pendientesEntregaSolo].filter(p => p.modalidadEntrega === 'ENVIO').length
+
+  const allClear = !loading && pendientesAmbos.length === 0 && pendientesEntregaSolo.length === 0 && pendientesCobroSolo.length === 0
 
   const hoy = new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })
   const hoyCapitalizado = hoy.charAt(0).toUpperCase() + hoy.slice(1)
@@ -147,11 +157,11 @@ export default function WorkspacePage() {
           <h1 className="text-xl font-semibold text-[#1F2937]">Buen día</h1>
           <p className="text-xs text-[#6B7280]">{hoyCapitalizado}</p>
         </div>
-        {!loading && (pendientesEntrega.length > 0 || pendientesCobro.length > 0) && (
-          <div className="ml-auto flex gap-2">
-            {pendientesEntrega.length > 0 && (
+        {!loading && (pendientesAmbos.length > 0 || pendientesEntregaSolo.length > 0 || pendientesCobroSolo.length > 0) && (
+          <div className="ml-auto flex gap-2 flex-wrap justify-end">
+            {(pendientesAmbos.length + pendientesEntregaSolo.length) > 0 && (
               <span className="text-xs bg-[#fffbeb] text-[#b45309] px-2.5 py-1 rounded-full font-medium">
-                {pendientesEntrega.length} por entregar
+                {pendientesAmbos.length + pendientesEntregaSolo.length} por entregar
               </span>
             )}
             {enviosPendientes > 0 && (
@@ -159,9 +169,9 @@ export default function WorkspacePage() {
                 {enviosPendientes} {enviosPendientes === 1 ? 'envío' : 'envíos'}
               </span>
             )}
-            {pendientesCobro.length > 0 && (
+            {(pendientesAmbos.length + pendientesCobroSolo.length) > 0 && (
               <span className="text-xs bg-[#ecfdf5] text-[#047857] px-2.5 py-1 rounded-full font-medium">
-                {pendientesCobro.length} por cobrar
+                {pendientesAmbos.length + pendientesCobroSolo.length} por cobrar
               </span>
             )}
           </div>
@@ -181,24 +191,23 @@ export default function WorkspacePage() {
       ) : (
         <div className="flex flex-col gap-8">
 
-          {/* ── Sección: por entregar ── */}
-          {pendientesEntrega.length > 0 && (
+          {/* ── Sección: por entregar y cobrar ── */}
+          {pendientesAmbos.length > 0 && (
             <section>
               <div className="flex items-center gap-2 mb-3">
                 <PackageCheck size={14} color="#9CC6EA" strokeWidth={2} />
                 <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">
-                  Pendiente de entrega
+                  Pendiente de entrega y cobro
                 </p>
                 <span className="ml-auto text-xs text-[#6B7280]">
-                  {pendientesEntrega.length} · {formatMonto(pendientesEntrega.reduce((s, p) => s + parseFloat(p.precioTotal), 0))}
+                  {pendientesAmbos.length} · {formatMonto(pendientesAmbos.reduce((s, p) => s + parseFloat(p.precioTotal), 0))}
                 </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                {pendientesEntrega.map(p => {
+                {pendientesAmbos.map(p => {
                   const tel = p.telefono ?? p.cliente?.telefono ?? null
                   return (
                     <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl p-3 flex flex-col gap-2">
-                      {/* Header */}
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
@@ -253,7 +262,6 @@ export default function WorkspacePage() {
                         </div>
                       )}
 
-                      {/* Precio + badge pago */}
                       <div className="flex items-center justify-between gap-2">
                         <p className="text-xl font-bold text-[#1F2937]">{formatMonto(parseFloat(p.precioTotal))}</p>
                         <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${badgePago(p.estadoPago)}`}>
@@ -267,112 +275,6 @@ export default function WorkspacePage() {
                         </p>
                       )}
 
-                      {/* Acciones */}
-                      <div className="flex gap-2 mt-auto pt-1">
-                        <button onClick={() => setViewTarget(p)}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#F7FAFC] border border-[#E5EAF1] text-[#1F2937] rounded-xl hover:bg-[#E5EAF1] transition-colors">
-                          Ver
-                        </button>
-                        <button onClick={() => setConfirmEntregarTarget(p)}
-                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#fffbeb] text-[#b45309] rounded-xl hover:bg-[#fef3c7] transition-colors">
-                          <PackageCheck size={14} strokeWidth={2} />
-                          Entregar
-                        </button>
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            </section>
-          )}
-
-          {/* ── Sección: por cobrar ── */}
-          {pendientesCobro.length > 0 && (
-            <section>
-              <div className="flex items-center gap-2 mb-3">
-                <Banknote size={14} color="#9CC6EA" strokeWidth={2} />
-                <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">
-                  Pendiente de cobro
-                </p>
-                <span className="ml-auto text-xs text-[#6B7280]">
-                  {pendientesCobro.length} · {formatMonto(pendientesCobro.reduce((s, p) => s + parseFloat(p.precioTotal), 0))}
-                </span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
-                {pendientesCobro.map(p => {
-                  const tel = p.telefono ?? p.cliente?.telefono ?? null
-                  return (
-                    <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl p-3 flex flex-col gap-2">
-                      {/* Header */}
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="font-semibold text-[#1F2937] text-sm truncate">{p.nombreCliente}</p>
-                            {p.modalidadEntrega && (
-                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${p.modalidadEntrega === 'ENVIO' ? 'bg-[#CFE6F7] text-[#1F2937]' : 'bg-[#F3F4F6] text-[#6B7280]'}`}>
-                                {p.modalidadEntrega === 'ENVIO' ? 'Envío' : 'Retira'}
-                              </span>
-                            )}
-                          </div>
-                          {p.evento && <p className="text-xs text-[#9CC6EA] font-medium truncate">{p.evento.nombre}</p>}
-                          {p.fechaEntrega && (
-                            <div className="flex items-center gap-1.5 mt-0.5">
-                              <Calendar size={11} className={`shrink-0 ${esPasada(p.fechaEntrega) ? 'text-red-400' : 'text-[#9CC6EA]'}`} strokeWidth={2} />
-                              <span className={`text-xs font-medium ${esPasada(p.fechaEntrega) ? 'text-red-500' : 'text-[#6B7280]'}`}>
-                                {formatFechaCorta(p.fechaEntrega)}
-                              </span>
-                              {esHoy(p.fechaEntrega) && (
-                                <span className="text-[9px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full leading-none">Hoy</span>
-                              )}
-                              {esPasada(p.fechaEntrega) && (
-                                <span className="text-[9px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full leading-none">Vencido</span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        {tel && (
-                          <a href={toWhatsAppUrl(tel)} target="_blank" rel="noopener noreferrer"
-                            className="p-2 rounded-xl text-[#25D366] hover:bg-emerald-50 transition-colors shrink-0"
-                            title={`WhatsApp ${tel}`}>
-                            <WhatsAppIcon size={22} />
-                          </a>
-                        )}
-                      </div>
-
-                      {p.productos.length > 0 ? (
-                        <ul className="flex flex-col gap-0.5">
-                          {p.productos.map(pp => (
-                            <li key={pp.id} className="text-xs text-[#6B7280] flex items-baseline gap-1.5">
-                              <span className="font-semibold text-[#1F2937] shrink-0">{pp.cantidad}×</span>
-                              <span className="truncate">{pp.producto.nombre}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : p.descripcion ? (
-                        <p className="text-xs text-[#6B7280] italic truncate">"{p.descripcion}"</p>
-                      ) : null}
-                      {p.notas && (
-                        <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 flex gap-2 items-start">
-                          <StickyNote size={13} className="text-amber-400 shrink-0 mt-0.5" strokeWidth={2} />
-                          <p className="text-xs text-amber-900 leading-relaxed font-medium">{p.notas}</p>
-                        </div>
-                      )}
-
-                      {/* Precio + badge entrega */}
-                      <div className="flex items-center justify-between gap-2">
-                        <p className="text-xl font-bold text-[#1F2937]">{formatMonto(parseFloat(p.precioTotal))}</p>
-                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${badgeEntrega(p.estadoEntrega)}`}>
-                          {p.estadoEntrega === 'entregado' ? 'Entregado' : 'Sin entregar'}
-                        </span>
-                      </div>
-
-                      {p.montoSeña && p.estadoPago === 'señado' && (
-                        <p className="text-xs text-[#6B7280]">
-                          Seña: {formatMonto(parseFloat(p.montoSeña))} · Resta: {formatMonto(parseFloat(p.precioTotal) - parseFloat(p.montoSeña))}
-                        </p>
-                      )}
-
-                      {/* Cobrar inline */}
                       {cobrandoId === p.id && (
                         <div className="bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl p-2.5 flex flex-col gap-2.5">
                           <p className="text-xs font-semibold text-[#1F2937]">¿Cuánto cobró?</p>
@@ -395,26 +297,268 @@ export default function WorkspacePage() {
                             )
                           })()}
                           <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => { setCobrandoId(null); setCobrarMonto('') }}
-                              className="flex-1 py-2.5 text-sm text-[#6B7280] hover:text-[#1F2937] bg-white border border-[#E5EAF1] rounded-xl hover:bg-[#F7FAFC] transition-colors"
-                            >
+                            <button type="button" onClick={() => { setCobrandoId(null); setCobrarMonto('') }}
+                              className="flex-1 py-2.5 text-sm text-[#6B7280] hover:text-[#1F2937] bg-white border border-[#E5EAF1] rounded-xl hover:bg-[#F7FAFC] transition-colors">
                               Cancelar
                             </button>
-                            <button
-                              type="button"
-                              disabled={!cobrarMonto || parseFloat(cobrarMonto) <= 0}
+                            <button type="button" disabled={!cobrarMonto || parseFloat(cobrarMonto) <= 0}
                               onClick={() => handleCobrar(p)}
-                              className="flex-1 py-2.5 text-sm font-semibold bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors"
-                            >
+                              className="flex-1 py-2.5 text-sm font-semibold bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors">
                               Guardar
                             </button>
                           </div>
                         </div>
                       )}
 
-                      {/* Acciones */}
+                      <div className="flex flex-col gap-2 mt-auto pt-1">
+                        <div className="flex gap-2">
+                          <button onClick={() => setViewTarget(p)}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#F7FAFC] border border-[#E5EAF1] text-[#1F2937] rounded-xl hover:bg-[#E5EAF1] transition-colors">
+                            Ver
+                          </button>
+                          <button onClick={() => setConfirmEntregarTarget(p)}
+                            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#fffbeb] text-[#b45309] rounded-xl hover:bg-[#fef3c7] transition-colors">
+                            <PackageCheck size={14} strokeWidth={2} />
+                            Entregar
+                          </button>
+                        </div>
+                        {cobrandoId !== p.id && (
+                          <div className="flex gap-2">
+                            <button onClick={() => { setCobrandoId(p.id); setCobrarMonto('') }}
+                              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#ecfdf5] text-[#047857] rounded-xl hover:bg-[#d1fae5] transition-colors">
+                              <Banknote size={14} strokeWidth={2} />
+                              Cobrar
+                            </button>
+                            <button onClick={() => setConfirmPagarTarget(p)}
+                              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] transition-colors">
+                              <CheckCircle2 size={14} strokeWidth={2} />
+                              Pagado
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* ── Sección: solo por entregar ── */}
+          {pendientesEntregaSolo.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <PackageCheck size={14} color="#9CC6EA" strokeWidth={2} />
+                <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">
+                  Pendiente de entrega
+                </p>
+                <span className="ml-auto text-xs text-[#6B7280]">
+                  {pendientesEntregaSolo.length} · {formatMonto(pendientesEntregaSolo.reduce((s, p) => s + parseFloat(p.precioTotal), 0))}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                {pendientesEntregaSolo.map(p => {
+                  const tel = p.telefono ?? p.cliente?.telefono ?? null
+                  return (
+                    <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl p-3 flex flex-col gap-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-semibold text-[#1F2937] text-sm truncate">{p.nombreCliente}</p>
+                            {p.modalidadEntrega && (
+                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${p.modalidadEntrega === 'ENVIO' ? 'bg-[#CFE6F7] text-[#1F2937]' : 'bg-[#F3F4F6] text-[#6B7280]'}`}>
+                                {p.modalidadEntrega === 'ENVIO' ? 'Envío' : 'Retira'}
+                              </span>
+                            )}
+                          </div>
+                          {p.evento && <p className="text-xs text-[#9CC6EA] font-medium truncate">{p.evento.nombre}</p>}
+                          {p.fechaEntrega && (
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <Calendar size={11} className={`shrink-0 ${esPasada(p.fechaEntrega) ? 'text-red-400' : 'text-[#9CC6EA]'}`} strokeWidth={2} />
+                              <span className={`text-xs font-medium ${esPasada(p.fechaEntrega) ? 'text-red-500' : 'text-[#6B7280]'}`}>
+                                {formatFechaCorta(p.fechaEntrega)}
+                              </span>
+                              {esHoy(p.fechaEntrega) && (
+                                <span className="text-[9px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full leading-none">Hoy</span>
+                              )}
+                              {esPasada(p.fechaEntrega) && (
+                                <span className="text-[9px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full leading-none">Vencido</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        {tel && (
+                          <a href={toWhatsAppUrl(tel)} target="_blank" rel="noopener noreferrer"
+                            className="p-2 rounded-xl text-[#25D366] hover:bg-emerald-50 transition-colors shrink-0"
+                            title={`WhatsApp ${tel}`}>
+                            <WhatsAppIcon size={22} />
+                          </a>
+                        )}
+                      </div>
+
+                      {p.productos.length > 0 ? (
+                        <ul className="flex flex-col gap-0.5">
+                          {p.productos.map(pp => (
+                            <li key={pp.id} className="text-xs text-[#6B7280] flex items-baseline gap-1.5">
+                              <span className="font-semibold text-[#1F2937] shrink-0">{pp.cantidad}×</span>
+                              <span className="truncate">{pp.producto.nombre}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : p.descripcion ? (
+                        <p className="text-xs text-[#6B7280] italic truncate">"{p.descripcion}"</p>
+                      ) : null}
+                      {p.notas && (
+                        <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 flex gap-2 items-start">
+                          <StickyNote size={13} className="text-amber-400 shrink-0 mt-0.5" strokeWidth={2} />
+                          <p className="text-xs text-amber-900 leading-relaxed font-medium">{p.notas}</p>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xl font-bold text-[#1F2937]">{formatMonto(parseFloat(p.precioTotal))}</p>
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${badgePago(p.estadoPago)}`}>
+                          {etiquetaPago[p.estadoPago]}
+                        </span>
+                      </div>
+
+                      <div className="flex gap-2 mt-auto pt-1">
+                        <button onClick={() => setViewTarget(p)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#F7FAFC] border border-[#E5EAF1] text-[#1F2937] rounded-xl hover:bg-[#E5EAF1] transition-colors">
+                          Ver
+                        </button>
+                        <button onClick={() => setConfirmEntregarTarget(p)}
+                          className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#fffbeb] text-[#b45309] rounded-xl hover:bg-[#fef3c7] transition-colors">
+                          <PackageCheck size={14} strokeWidth={2} />
+                          Entregar
+                        </button>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </section>
+          )}
+
+          {/* ── Sección: solo por cobrar ── */}
+          {pendientesCobroSolo.length > 0 && (
+            <section>
+              <div className="flex items-center gap-2 mb-3">
+                <Banknote size={14} color="#9CC6EA" strokeWidth={2} />
+                <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">
+                  Pendiente de cobro
+                </p>
+                <span className="ml-auto text-xs text-[#6B7280]">
+                  {pendientesCobroSolo.length} · {formatMonto(pendientesCobroSolo.reduce((s, p) => s + parseFloat(p.precioTotal), 0))}
+                </span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                {pendientesCobroSolo.map(p => {
+                  const tel = p.telefono ?? p.cliente?.telefono ?? null
+                  return (
+                    <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl p-3 flex flex-col gap-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-semibold text-[#1F2937] text-sm truncate">{p.nombreCliente}</p>
+                            {p.modalidadEntrega && (
+                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${p.modalidadEntrega === 'ENVIO' ? 'bg-[#CFE6F7] text-[#1F2937]' : 'bg-[#F3F4F6] text-[#6B7280]'}`}>
+                                {p.modalidadEntrega === 'ENVIO' ? 'Envío' : 'Retira'}
+                              </span>
+                            )}
+                          </div>
+                          {p.evento && <p className="text-xs text-[#9CC6EA] font-medium truncate">{p.evento.nombre}</p>}
+                          {p.fechaEntrega && (
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <Calendar size={11} className={`shrink-0 ${esPasada(p.fechaEntrega) ? 'text-red-400' : 'text-[#9CC6EA]'}`} strokeWidth={2} />
+                              <span className={`text-xs font-medium ${esPasada(p.fechaEntrega) ? 'text-red-500' : 'text-[#6B7280]'}`}>
+                                {formatFechaCorta(p.fechaEntrega)}
+                              </span>
+                              {esHoy(p.fechaEntrega) && (
+                                <span className="text-[9px] font-bold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full leading-none">Hoy</span>
+                              )}
+                              {esPasada(p.fechaEntrega) && (
+                                <span className="text-[9px] font-bold bg-red-100 text-red-600 px-1.5 py-0.5 rounded-full leading-none">Vencido</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                        {tel && (
+                          <a href={toWhatsAppUrl(tel)} target="_blank" rel="noopener noreferrer"
+                            className="p-2 rounded-xl text-[#25D366] hover:bg-emerald-50 transition-colors shrink-0"
+                            title={`WhatsApp ${tel}`}>
+                            <WhatsAppIcon size={22} />
+                          </a>
+                        )}
+                      </div>
+
+                      {p.productos.length > 0 ? (
+                        <ul className="flex flex-col gap-0.5">
+                          {p.productos.map(pp => (
+                            <li key={pp.id} className="text-xs text-[#6B7280] flex items-baseline gap-1.5">
+                              <span className="font-semibold text-[#1F2937] shrink-0">{pp.cantidad}×</span>
+                              <span className="truncate">{pp.producto.nombre}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : p.descripcion ? (
+                        <p className="text-xs text-[#6B7280] italic truncate">"{p.descripcion}"</p>
+                      ) : null}
+                      {p.notas && (
+                        <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 flex gap-2 items-start">
+                          <StickyNote size={13} className="text-amber-400 shrink-0 mt-0.5" strokeWidth={2} />
+                          <p className="text-xs text-amber-900 leading-relaxed font-medium">{p.notas}</p>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="text-xl font-bold text-[#1F2937]">{formatMonto(parseFloat(p.precioTotal))}</p>
+                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${badgeEntrega(p.estadoEntrega)}`}>
+                          {p.estadoEntrega === 'entregado' ? 'Entregado' : 'Sin entregar'}
+                        </span>
+                      </div>
+
+                      {p.montoSeña && p.estadoPago === 'señado' && (
+                        <p className="text-xs text-[#6B7280]">
+                          Seña: {formatMonto(parseFloat(p.montoSeña))} · Resta: {formatMonto(parseFloat(p.precioTotal) - parseFloat(p.montoSeña))}
+                        </p>
+                      )}
+
+                      {cobrandoId === p.id && (
+                        <div className="bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl p-2.5 flex flex-col gap-2.5">
+                          <p className="text-xs font-semibold text-[#1F2937]">¿Cuánto cobró?</p>
+                          <input
+                            type="number" min="0" step="0.01" autoFocus
+                            placeholder="Monto..."
+                            value={cobrarMonto}
+                            onChange={e => setCobrarMonto(e.target.value)}
+                            className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
+                          />
+                          {cobrarMonto && parseFloat(cobrarMonto) > 0 && (() => {
+                            const pagado = (p.montoSeña ? parseFloat(p.montoSeña) : 0) + parseFloat(cobrarMonto)
+                            const total = parseFloat(p.precioTotal)
+                            return (
+                              <p className="text-xs text-[#6B7280]">
+                                {pagado >= total
+                                  ? '✓ Cubre el total — quedará pagado'
+                                  : `Resta ${formatMonto(total - pagado)} tras registrar`}
+                              </p>
+                            )
+                          })()}
+                          <div className="flex gap-2">
+                            <button type="button" onClick={() => { setCobrandoId(null); setCobrarMonto('') }}
+                              className="flex-1 py-2.5 text-sm text-[#6B7280] hover:text-[#1F2937] bg-white border border-[#E5EAF1] rounded-xl hover:bg-[#F7FAFC] transition-colors">
+                              Cancelar
+                            </button>
+                            <button type="button" disabled={!cobrarMonto || parseFloat(cobrarMonto) <= 0}
+                              onClick={() => handleCobrar(p)}
+                              className="flex-1 py-2.5 text-sm font-semibold bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors">
+                              Guardar
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="flex gap-2 mt-auto pt-1">
                         <button onClick={() => setViewTarget(p)}
                           className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#F7FAFC] border border-[#E5EAF1] text-[#1F2937] rounded-xl hover:bg-[#E5EAF1] transition-colors">
