@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts'
 import { Zap, Banknote, PackageCheck, CheckCircle2, StickyNote, Calendar, BarChart2, Receipt, ArrowUpRight, ArrowDownRight, AlertTriangle } from 'lucide-react'
 import { toast } from 'sonner'
 import { PedidoConEvento, EstadoPago, getPedidosGlobal, updatePedido } from '../api/pedidos'
@@ -122,6 +123,28 @@ function TrendBadge({ curr, prev, positiveIsGood = true }: { curr: number; prev:
       {isPositive ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
       {Math.abs(pct).toFixed(0)}%
     </span>
+  )
+}
+
+function formatMontoCorto(n: number): string {
+  if (Math.abs(n) >= 1_000_000) return `$${(n / 1_000_000).toFixed(1)}M`
+  if (Math.abs(n) >= 1_000) return `$${(n / 1_000).toFixed(0)}k`
+  return `$${n.toFixed(0)}`
+}
+
+function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string }) {
+  if (!active || !payload?.length) return null
+  return (
+    <div className="bg-white border border-[#E5EAF1] rounded-xl shadow-lg px-3 py-2.5 text-xs">
+      <p className="font-semibold text-[#1F2937] mb-1.5">{label}</p>
+      {payload.map(entry => (
+        <p key={entry.name} className="flex items-center gap-2 text-[#6B7280] leading-relaxed">
+          <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
+          {entry.name}:{' '}
+          <span className="font-semibold text-[#1F2937]">{formatMonto(entry.value)}</span>
+        </p>
+      ))}
+    </div>
   )
 }
 
@@ -807,127 +830,207 @@ export default function WorkspacePage() {
 
           {loadingFinanzas ? (
             <LoadingSpinner />
-          ) : resumen ? (
-            <div className="flex flex-col gap-6">
+          ) : resumen ? (() => {
+            const cobradoPct = resumen.totalIngresosEsperados > 0
+              ? Math.min(100, (resumen.totalIngresosCobrados / resumen.totalIngresosEsperados) * 100)
+              : 0
+            const gastosPct = resumen.totalIngresosEsperados > 0
+              ? Math.min(100, (resumen.totalGastos / resumen.totalIngresosEsperados) * 100)
+              : 0
+            const chartData = [
+              { name: 'Cobrado', actual: resumen.totalIngresosCobrados, anterior: resumen.periodoAnterior.totalIngresosCobrados },
+              { name: 'Esperado', actual: resumen.totalIngresosEsperados, anterior: resumen.periodoAnterior.totalIngresosEsperados },
+              { name: 'Gastos', actual: resumen.totalGastos, anterior: resumen.periodoAnterior.totalGastos },
+              { name: 'Margen', actual: resumen.margenNeto, anterior: resumen.periodoAnterior.margenNeto },
+            ]
+            return (
+              <div className="flex flex-col gap-6">
 
-              {/* ── Sección ingresos ── */}
-              <section>
-                <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">Ingresos</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-                    <p className="text-xs text-[#6B7280] mb-1">Total esperado</p>
-                    <div className="flex items-end justify-between gap-2">
-                      <p className="text-2xl font-bold text-[#1F2937]">{formatMonto(resumen.totalIngresosEsperados)}</p>
-                      <TrendBadge curr={resumen.totalIngresosEsperados} prev={resumen.periodoAnterior.totalIngresosEsperados} />
-                    </div>
-                    <p className="text-xs text-[#9CC6EA] mt-1">{resumen.cantidadPedidos} pedido{resumen.cantidadPedidos !== 1 ? 's' : ''}</p>
-                  </div>
-                  <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-                    <p className="text-xs text-[#6B7280] mb-1">Total cobrado</p>
-                    <div className="flex items-end justify-between gap-2">
-                      <p className="text-2xl font-bold text-emerald-600">{formatMonto(resumen.totalIngresosCobrados)}</p>
-                      <TrendBadge curr={resumen.totalIngresosCobrados} prev={resumen.periodoAnterior.totalIngresosCobrados} />
-                    </div>
-                    {resumen.totalIngresosEsperados > 0 && (
-                      <div className="mt-2">
-                        <div className="w-full bg-[#E5EAF1] rounded-full h-1.5">
-                          <div
-                            className="bg-emerald-500 h-1.5 rounded-full transition-all"
-                            style={{ width: `${Math.min(100, (resumen.totalIngresosCobrados / resumen.totalIngresosEsperados) * 100).toFixed(1)}%` }}
-                          />
-                        </div>
-                        <p className="text-xs text-[#6B7280] mt-1">
-                          {((resumen.totalIngresosCobrados / resumen.totalIngresosEsperados) * 100).toFixed(0)}% del esperado
-                        </p>
+                {/* ── Cards métricas principales ── */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+
+                  {/* Cobrado */}
+                  <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden flex flex-col">
+                    <div className="h-1.5 bg-emerald-400 w-full" />
+                    <div className="p-4 flex flex-col gap-1 flex-1">
+                      <p className="text-xs text-[#6B7280] font-medium">Cobrado</p>
+                      <p className="text-2xl font-bold text-[#1F2937] leading-tight">{formatMonto(resumen.totalIngresosCobrados)}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <TrendBadge curr={resumen.totalIngresosCobrados} prev={resumen.periodoAnterior.totalIngresosCobrados} />
+                        <span className="text-xs text-[#9CC6EA]">vs anterior</span>
                       </div>
-                    )}
-                  </div>
-                  <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-                    <p className="text-xs text-[#6B7280] mb-1">Pendiente de cobro</p>
-                    <p className="text-2xl font-bold text-amber-500">
-                      {formatMonto(resumen.totalIngresosEsperados - resumen.totalIngresosCobrados)}
-                    </p>
-                    {resumen.cantidadPedidosPendientes > 0 && (
-                      <p className="text-xs text-[#9CC6EA] mt-1">
-                        {resumen.cantidadPedidosPendientes} pedido{resumen.cantidadPedidosPendientes !== 1 ? 's' : ''} sin cobrar
-                      </p>
-                    )}
-                  </div>
-                </div>
-              </section>
-
-              {/* ── Sección gastos y margen ── */}
-              <section>
-                <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">Gastos y margen</p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-                    <p className="text-xs text-[#6B7280] mb-1">Total gastado</p>
-                    <div className="flex items-end justify-between gap-2">
-                      <p className="text-2xl font-bold text-rose-500">{formatMonto(resumen.totalGastos)}</p>
-                      <TrendBadge curr={resumen.totalGastos} prev={resumen.periodoAnterior.totalGastos} positiveIsGood={false} />
+                      {resumen.totalIngresosEsperados > 0 && (
+                        <div className="mt-2">
+                          <div className="w-full bg-[#E5EAF1] rounded-full h-2">
+                            <div className="bg-emerald-400 h-2 rounded-full transition-all" style={{ width: `${cobradoPct.toFixed(1)}%` }} />
+                          </div>
+                          <p className="text-[11px] text-[#6B7280] mt-1">{cobradoPct.toFixed(0)}% del esperado</p>
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-                    <p className="text-xs text-[#6B7280] mb-1">Margen neto</p>
-                    <div className="flex items-end justify-between gap-2">
-                      <p className={`text-2xl font-bold ${resumen.margenNeto >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+
+                  {/* Esperado */}
+                  <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden flex flex-col">
+                    <div className="h-1.5 bg-[#9CC6EA] w-full" />
+                    <div className="p-4 flex flex-col gap-1 flex-1">
+                      <p className="text-xs text-[#6B7280] font-medium">Esperado</p>
+                      <p className="text-2xl font-bold text-[#1F2937] leading-tight">{formatMonto(resumen.totalIngresosEsperados)}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <TrendBadge curr={resumen.totalIngresosEsperados} prev={resumen.periodoAnterior.totalIngresosEsperados} />
+                        <span className="text-xs text-[#9CC6EA]">vs anterior</span>
+                      </div>
+                      <p className="text-[11px] text-[#6B7280] mt-auto pt-2">
+                        {resumen.cantidadPedidos} pedido{resumen.cantidadPedidos !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Pendiente */}
+                  <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden flex flex-col">
+                    <div className="h-1.5 bg-amber-400 w-full" />
+                    <div className="p-4 flex flex-col gap-1 flex-1">
+                      <p className="text-xs text-[#6B7280] font-medium">Pendiente</p>
+                      <p className="text-2xl font-bold text-[#1F2937] leading-tight">
+                        {formatMonto(resumen.totalIngresosEsperados - resumen.totalIngresosCobrados)}
+                      </p>
+                      {resumen.cantidadPedidosPendientes > 0 && (
+                        <p className="text-[11px] text-[#6B7280] mt-auto pt-2">
+                          {resumen.cantidadPedidosPendientes} sin cobrar
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Gastos */}
+                  <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden flex flex-col">
+                    <div className="h-1.5 bg-rose-400 w-full" />
+                    <div className="p-4 flex flex-col gap-1 flex-1">
+                      <p className="text-xs text-[#6B7280] font-medium">Gastos</p>
+                      <p className="text-2xl font-bold text-[#1F2937] leading-tight">{formatMonto(resumen.totalGastos)}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <TrendBadge curr={resumen.totalGastos} prev={resumen.periodoAnterior.totalGastos} positiveIsGood={false} />
+                        <span className="text-xs text-[#9CC6EA]">vs anterior</span>
+                      </div>
+                      {resumen.totalIngresosEsperados > 0 && (
+                        <div className="mt-2">
+                          <div className="w-full bg-[#E5EAF1] rounded-full h-2">
+                            <div className="bg-rose-400 h-2 rounded-full transition-all" style={{ width: `${gastosPct.toFixed(1)}%` }} />
+                          </div>
+                          <p className="text-[11px] text-[#6B7280] mt-1">{gastosPct.toFixed(0)}% del esperado</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Margen neto */}
+                  <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden flex flex-col">
+                    <div className={`h-1.5 w-full ${resumen.margenNeto >= 0 ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+                    <div className="p-4 flex flex-col gap-1 flex-1">
+                      <p className="text-xs text-[#6B7280] font-medium">Margen neto</p>
+                      <p className={`text-2xl font-bold leading-tight ${resumen.margenNeto >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
                         {formatMonto(resumen.margenNeto)}
                       </p>
-                      <TrendBadge curr={resumen.margenNeto} prev={resumen.periodoAnterior.margenNeto} />
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <TrendBadge curr={resumen.margenNeto} prev={resumen.periodoAnterior.margenNeto} />
+                        <span className="text-xs text-[#9CC6EA]">vs anterior</span>
+                      </div>
+                      <p className="text-[11px] text-[#6B7280] mt-auto pt-2">Cobrado − Gastos</p>
                     </div>
-                    <p className="text-xs text-[#9CC6EA] mt-1">Cobrado − Gastado</p>
                   </div>
-                  <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-                    <p className="text-xs text-[#6B7280] mb-1">Margen esperado</p>
-                    <div className="flex items-end justify-between gap-2">
-                      <p className={`text-2xl font-bold ${resumen.margenEsperado >= 0 ? 'text-[#1F2937]' : 'text-rose-500'}`}>
+
+                  {/* Margen esperado */}
+                  <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden flex flex-col">
+                    <div className={`h-1.5 w-full ${resumen.margenEsperado >= 0 ? 'bg-indigo-400' : 'bg-rose-400'}`} />
+                    <div className="p-4 flex flex-col gap-1 flex-1">
+                      <p className="text-xs text-[#6B7280] font-medium">Margen esperado</p>
+                      <p className={`text-2xl font-bold leading-tight ${resumen.margenEsperado >= 0 ? 'text-indigo-600' : 'text-rose-500'}`}>
                         {formatMonto(resumen.margenEsperado)}
                       </p>
-                      <TrendBadge curr={resumen.margenEsperado} prev={resumen.periodoAnterior.margenEsperado} />
-                    </div>
-                    <p className="text-xs text-[#9CC6EA] mt-1">Esperado − Gastado</p>
-                  </div>
-                </div>
-              </section>
-
-              {/* ── Gastos recientes ── */}
-              <section>
-                <div className="flex items-center justify-between mb-3">
-                  <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Gastos recientes</p>
-                  <button
-                    onClick={() => navigate('/gastos')}
-                    className="text-xs text-[#9CC6EA] hover:text-[#1F2937] font-medium transition-colors"
-                  >
-                    Ver todos →
-                  </button>
-                </div>
-                {gastosRecientes.length === 0 ? (
-                  <p className="text-sm text-[#6B7280] py-4">No hay gastos en este período.</p>
-                ) : (
-                  <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden">
-                    {gastosRecientes.map((g, idx) => (
-                      <div key={g.id} className={`flex items-center gap-3 px-4 py-3 ${idx < gastosRecientes.length - 1 ? 'border-b border-[#E5EAF1]' : ''}`}>
-                        <div className="w-7 h-7 rounded-lg bg-[#F7FAFC] border border-[#E5EAF1] flex items-center justify-center shrink-0">
-                          <Receipt size={13} className="text-[#9CC6EA]" strokeWidth={2} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-[#1F2937] truncate">
-                            {g.materiaPrima?.nombre ?? g.descripcion ?? '—'}
-                          </p>
-                          <p className="text-xs text-[#6B7280]">
-                            {new Date(g.fecha).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
-                            {g.evento && <span className="ml-1.5 text-[#9CC6EA]">· {g.evento.nombre}</span>}
-                          </p>
-                        </div>
-                        <p className="text-sm font-semibold text-rose-500 shrink-0">{formatMonto(parseFloat(g.monto))}</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        <TrendBadge curr={resumen.margenEsperado} prev={resumen.periodoAnterior.margenEsperado} />
+                        <span className="text-xs text-[#9CC6EA]">vs anterior</span>
                       </div>
-                    ))}
+                      <p className="text-[11px] text-[#6B7280] mt-auto pt-2">Esperado − Gastos</p>
+                    </div>
                   </div>
-                )}
-              </section>
 
-            </div>
-          ) : (
+                </div>
+
+                {/* ── Gráfico comparativo ── */}
+                <section>
+                  <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">
+                    Este período vs anterior
+                  </p>
+                  <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+                    <ResponsiveContainer width="100%" height={220}>
+                      <BarChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} barGap={2} barCategoryGap="28%">
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E5EAF1" vertical={false} />
+                        <XAxis
+                          dataKey="name"
+                          tick={{ fontSize: 11, fill: '#6B7280' }}
+                          axisLine={false}
+                          tickLine={false}
+                        />
+                        <YAxis
+                          tick={{ fontSize: 11, fill: '#6B7280' }}
+                          axisLine={false}
+                          tickLine={false}
+                          tickFormatter={formatMontoCorto}
+                          width={60}
+                        />
+                        <RechartsTooltip content={<ChartTooltip />} cursor={{ fill: '#F7FAFC' }} />
+                        <Legend
+                          iconType="circle"
+                          iconSize={7}
+                          wrapperStyle={{ fontSize: 11, color: '#6B7280', paddingTop: 12 }}
+                        />
+                        <Bar dataKey="actual" name="Este período" fill="#9CC6EA" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="anterior" name="Período anterior" fill="#E5EAF1" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                </section>
+
+                {/* ── Gastos recientes ── */}
+                <section>
+                  <div className="flex items-center justify-between mb-3">
+                    <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Gastos recientes</p>
+                    <button
+                      onClick={() => navigate('/gastos')}
+                      className="text-xs text-[#9CC6EA] hover:text-[#1F2937] font-medium transition-colors"
+                    >
+                      Ver todos →
+                    </button>
+                  </div>
+                  {gastosRecientes.length === 0 ? (
+                    <p className="text-sm text-[#6B7280] py-4">No hay gastos en este período.</p>
+                  ) : (
+                    <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden">
+                      {gastosRecientes.map((g, idx) => (
+                        <div key={g.id} className={`flex items-center gap-3 px-4 py-3 ${idx < gastosRecientes.length - 1 ? 'border-b border-[#E5EAF1]' : ''}`}>
+                          <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
+                            <Receipt size={13} className="text-rose-400" strokeWidth={2} />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-[#1F2937] truncate">
+                              {g.materiaPrima?.nombre ?? g.descripcion ?? '—'}
+                            </p>
+                            <p className="text-xs text-[#6B7280]">
+                              {new Date(g.fecha).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
+                              {g.evento && <span className="ml-1.5 text-[#9CC6EA]">· {g.evento.nombre}</span>}
+                            </p>
+                          </div>
+                          <p className="text-sm font-semibold text-rose-500 shrink-0">{formatMonto(parseFloat(g.monto))}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </section>
+
+              </div>
+            )
+          })() : (
             periodo === 'personalizado' && (!customDesde || !customHasta) ? (
               <p className="text-sm text-[#6B7280] py-4">Seleccioná un rango de fechas para ver el resumen.</p>
             ) : null
