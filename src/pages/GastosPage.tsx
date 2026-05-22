@@ -208,8 +208,8 @@ function GastoModal({ isOpen, editTarget, materias, eventos, onClose, onSaved, o
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" onClick={e => e.stopPropagation()}>
         <div className="px-5 py-4 border-b border-[#E5EAF1]">
           <h2 className="text-base font-semibold text-[#1F2937]">{editTarget ? 'Editar gasto' : 'Nuevo gasto'}</h2>
         </div>

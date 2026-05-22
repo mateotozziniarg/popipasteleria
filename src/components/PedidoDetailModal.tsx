@@ -78,8 +78,8 @@ export default function PedidoDetailModal({ pedido, onClose, onEdit }: Props) {
   const saldo = seña !== null ? total - seña : null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md border border-[#E5EAF1] flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md border border-[#E5EAF1] flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
         {/* Header */}
         <div className="flex-none flex items-center justify-between px-5 py-4 border-b-2 border-[#9CC6EA]">
           <h2 className="text-base font-semibold text-[#1F2937]">Detalle del pedido</h2>

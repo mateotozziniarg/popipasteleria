@@ -403,8 +403,8 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
   const mostrarManual = form.precioManual && form.items.length > 0
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg md:max-w-[860px] lg:max-w-[1160px] max-h-[90vh] flex flex-col border border-[#E5EAF1]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg md:max-w-[860px] lg:max-w-[1160px] max-h-[90vh] flex flex-col border border-[#E5EAF1]" onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div className="flex-none flex items-center justify-between px-5 md:px-6 lg:px-8 py-4 border-b-2 border-[#9CC6EA]">

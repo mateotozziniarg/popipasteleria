@@ -34,8 +34,8 @@ export default function ConfirmModal({
   const isDanger = variant === 'danger'
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-[#E5EAF1] p-6">
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/40" onClick={loading ? undefined : onCancelar}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm border border-[#E5EAF1] p-6" onClick={e => e.stopPropagation()}>
         <div className="flex items-start gap-3 mb-4">
           <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isDanger ? 'bg-rose-50' : 'bg-[#CFE6F7]'}`}>
             {isDanger
