@@ -401,14 +401,16 @@ export default function GastosPage() {
                         <span className="text-sm font-bold text-[#1F2937] whitespace-nowrap">{formatMonto(parseFloat(g.monto))}</span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1">
                           <button onClick={() => { setEditTarget(g); setModalOpen(true) }}
-                            className="p-1.5 rounded-lg text-[#9CC6EA] hover:text-[#1F2937] hover:bg-[#F7FAFC] transition-colors">
-                            <Pencil size={13} strokeWidth={2} />
+                            className="p-2 rounded-xl text-[#9CC6EA] hover:text-[#1F2937] hover:bg-[#F7FAFC] transition-colors"
+                            title="Editar">
+                            <Pencil size={15} strokeWidth={2} />
                           </button>
                           <button onClick={() => setConfirmId(g.id)}
-                            className="p-1.5 rounded-lg text-[#9CC6EA] hover:text-red-500 hover:bg-red-50 transition-colors">
-                            <Trash2 size={13} strokeWidth={2} />
+                            className="p-2 rounded-xl text-[#9CC6EA] hover:text-red-500 hover:bg-red-50 transition-colors"
+                            title="Eliminar">
+                            <Trash2 size={15} strokeWidth={2} />
                           </button>
                         </div>
                       </td>
