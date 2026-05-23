@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts'
 import { Zap, Banknote, PackageCheck, CheckCircle2, StickyNote, Calendar, BarChart2, Receipt, ArrowUpRight, ArrowDownRight, AlertTriangle, CalendarDays, Plus } from 'lucide-react'
 import { toast } from 'sonner'
@@ -177,9 +177,18 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 
 // ── main component ─────────────────────────────────────────────────
 
+const VALID_TABS = new Set(['hoy', 'finanzas', 'calendario'])
+
 export default function WorkspacePage() {
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState<'hoy' | 'finanzas' | 'calendario'>('hoy')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const rawTab = searchParams.get('tab')
+  const activeTab: 'hoy' | 'finanzas' | 'calendario' =
+    rawTab && VALID_TABS.has(rawTab) ? rawTab as 'hoy' | 'finanzas' | 'calendario' : 'hoy'
+
+  function setActiveTab(tab: 'hoy' | 'finanzas' | 'calendario') {
+    setSearchParams({ tab }, { replace: true })
+  }
 
   // ── Hoy tab state ──
   const [pedidos, setPedidos] = useState<PedidoConEvento[]>([])
