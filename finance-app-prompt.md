@@ -21,9 +21,72 @@ La app tiene un objetivo central: **saber exactamente a dónde va la plata y enc
 - Comparación entre períodos (mes vs mes anterior, etc.)
 
 ### Lo que NO queremos:
-- Carga manual de cada movimiento uno por uno
+- Carga manual de cada movimiento uno por uno (sí existe la opción, pero no es el flujo principal)
 - Conectividad directa a cuentas bancarias (sin APIs bancarias, sin scraping de sesiones)
-- El flujo es siempre: el usuario descarga el archivo desde el banco/MercadoPago → lo sube a esta app → la app procesa todo
+- El flujo principal es siempre: el usuario descarga el archivo desde el banco/MercadoPago → lo sube a esta app → la app procesa todo
+
+---
+
+## LÓGICA DE NEGOCIO — DETALLE IMPORTANTE
+
+### 1. Carga manual como fallback
+Debe existir un formulario de carga manual de movimiento (ingreso o egreso) para cubrir:
+- Gastos en efectivo
+- Pagos que no aparecen en ningún resumen
+- Correcciones manuales
+
+### 2. Transferencias — el problema más complejo
+Los resúmenes de Mercado Pago y Santander tienen muchísimas transferencias. Una transferencia puede ser cualquiera de estas cosas:
+- Dividir cuenta con la novia
+- Dividir un asado/juntada/salida con amigos
+- Pagarle al supermercado chino (que no tiene terminal)
+- Pagar con débito en el super chino
+- Pagar el alquiler al propietario
+- Pagarle a la inmobiliaria
+- Pagar la tarjeta de crédito
+- Vender dólar MEP (aparece como movimiento de "valores/acciones")
+
+**La app no puede saber al principio qué es cada cosa. La solución es un sistema de aprendizaje por mapeo de remitentes/destinatarios:**
+
+- Cada transferencia tiene un remitente o destinatario (nombre, apellido, alias de Mercado Pago o CBU)
+- La app guarda una tabla de mapeos: `{ identificador → { categoría, descripción, tipo } }`
+- Cuando se importa un resumen, la app intenta matchear automáticamente cada transferencia contra los mapeos conocidos
+- Las transferencias sin mapeo conocido quedan en una cola de "sin clasificar"
+- **Flujo post-importación**: la app muestra las transferencias sin clasificar una por una y le pregunta al usuario qué es cada una. El usuario responde y puede optar por "guardar este mapeo para siempre" para que en el futuro se clasifique solo
+- Todos los mapeos son editables
+- Esto mejora progresivamente: al principio hay muchas preguntas, con el tiempo casi ninguna
+
+### 3. Movimientos de inversión / dólar MEP
+En los resúmenes aparecen movimientos del tipo "venta de valores" o similar. Estos corresponden a ventas de dólar MEP. La app debe:
+- Reconocerlos como una categoría especial: "Venta MEP" (ingreso en pesos producto de vender dólares)
+- Trackear cuántos dólares se vendieron y a qué precio (para calcular el tipo de cambio real obtenido)
+- Esto se puede mapear como un tipo especial dentro del sistema de categorías
+
+### 4. Gastos fijos
+Algunos pagos son recurrentes y predecibles:
+- Alquiler (mismo destinatario, monto fijo mensual)
+- Tarjeta de crédito (mismo destinatario, monto variable pero siempre el mismo "remitente": banco)
+- Servicios, suscripciones, etc.
+
+Gracias al sistema de mapeo por remitente, estos se clasifican automáticamente una vez configurados.
+
+**Feature adicional — Generador de prompt de pago:**
+Cuando la app conoce el alias/CBU de un destinatario frecuente (ej: el propietario del alquiler), puede generar un texto listo para copiar:
+> "Transferirle $[monto] a [Nombre Apellido], alias [alias]"
+
+Así el usuario no tiene que recordar datos ni buscarlos — copia el texto, abre Mercado Pago y listo.
+
+### 5. Flujo de importación inteligente (paso a paso)
+
+Cuando el usuario sube un resumen (CSV/Excel/PDF):
+1. La app parsea todos los movimientos
+2. Los que matchean un mapeo conocido → se clasifican automáticamente
+3. Los que no matchean → entran a la cola de revisión
+4. **La app vuelve al usuario con preguntas específicas**: "Encontré 12 transferencias sin clasificar. ¿Qué es esta transferencia de $15.000 a 'Juan García / alias juangar'?" con opciones sugeridas + campo libre
+5. El usuario responde, elige si guardar el mapeo
+6. Al final, resumen de todo lo importado clasificado
+
+**Este flujo de preguntas es clave. No asumir, no ignorar — preguntar.**
 
 ---
 
