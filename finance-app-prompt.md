@@ -90,6 +90,84 @@ Cuando el usuario sube un resumen (CSV/Excel/PDF):
 
 ---
 
+## VISUALIZACIÓN — DASHBOARD Y REPORTES
+
+La app tiene que ser visualmente clara y útil. El objetivo no es solo cargar datos sino **entender la situación financiera de un vistazo**.
+
+### Dashboard principal
+Pantalla de inicio con los números más importantes del período seleccionado:
+
+**KPIs en la parte superior (cards grandes):**
+- Total ingresos del período (en ARS, con equivalente USD al MEP actual)
+- Total egresos del período
+- Balance neto (positivo en verde, negativo en rojo)
+- Ahorro % (qué porcentaje de los ingresos no se gastó)
+
+**Selector de período siempre visible:**
+- Botones rápidos: Esta semana / Este mes / Mes anterior / Este año
+- Rango personalizado: fecha desde → fecha hasta
+- El período seleccionado afecta a todos los gráficos y números del dashboard
+
+**Comparación con período anterior:**
+- Debajo de cada KPI, una línea pequeña que diga: "+12% vs mes anterior" o "-$8.000 vs mes anterior"
+- Flecha arriba/abajo con color (verde si mejoró, rojo si empeoró — considerando que menos gasto es "mejoró")
+
+### Gráficos
+Todos usando Recharts. Los gráficos más importantes:
+
+1. **Ingresos vs Egresos por semana/mes** (BarChart con dos barras lado a lado, una por tipo)
+2. **Distribución de gastos por categoría** (PieChart o BarChart horizontal ordenado de mayor a menor)
+3. **Evolución del balance en el tiempo** (LineChart, línea que sube y baja)
+4. **Top 5 categorías de gasto** (lista con barra de progreso, monto y % del total)
+
+### Vista de movimientos (tabla/lista)
+Pantalla separada donde se ven todos los movimientos con:
+
+**Filtros:**
+- Rango de fechas
+- Tipo: ingreso / egreso / todos
+- Categoría (multiselect)
+- Cuenta origen: Mercado Pago / Santander / Manual
+- Moneda: ARS / USD / todos
+- Estado: clasificado / sin clasificar
+- Búsqueda por texto libre (descripción, remitente, alias)
+
+**Tabla de movimientos:**
+- Fecha
+- Descripción / remitente
+- Cuenta (MP / Santander / Manual)
+- Categoría (con color, editable inline)
+- Moneda + monto (positivo en verde, negativo en rojo)
+- Equivalente en USD o ARS (según la moneda del movimiento)
+- Ícono de edición
+
+**Ordenamiento:** por fecha, monto, categoría (click en header de columna)
+
+**Paginación** o scroll infinito si hay muchos movimientos.
+
+### Vista por categorías
+Pantalla que muestra el detalle de una categoría específica:
+- Total gastado en la categoría en el período
+- Lista de todos los movimientos de esa categoría
+- Comparación con el período anterior
+- Promedio mensual de gasto en esa categoría
+
+### Vista de cuentas
+Un resumen por fuente de datos:
+- **Mercado Pago**: último resumen importado (fecha), total de movimientos, saldo neto
+- **Santander Río**: ídem
+- **Manual**: movimientos cargados a mano
+
+### Colores y convenciones visuales
+- **Ingresos / positivo**: verde (`#22c55e` o similar)
+- **Egresos / negativo**: rojo (`#ef4444` o similar)
+- **Neutral / sin clasificar**: gris
+- **Categorías**: cada categoría tiene un color fijo asignado, usado consistentemente en todos los gráficos
+- Los números negativos se muestran con signo `-` y en rojo, nunca en rojo sin signo
+- Los montos siempre con separador de miles y dos decimales: `$1.234.567,89`
+
+---
+
 ## PASOS MANUALES — IMPORTANTE
 
 **Cada vez que inicies el proyecto o implementes una feature nueva, antes de empezar a codear, listá los pasos manuales que el usuario puede ir haciendo en paralelo para no esperar.**
