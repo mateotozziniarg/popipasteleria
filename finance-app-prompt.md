@@ -6,6 +6,52 @@ Vamos a construir una aplicación web full-stack para gestionar finanzas persona
 
 ---
 
+## OBJETIVO DE LA APP
+
+La app tiene un objetivo central: **saber exactamente a dónde va la plata y encontrar dónde se puede ahorrar**.
+
+### Funcionalidades clave:
+- Registrar ingresos y egresos en **pesos argentinos y dólares**
+- **Conversión automática con dólar MEP** (tipo de cambio en tiempo real, consumido de una API pública, sin intervención manual)
+- **Importación automática de movimientos** desde resúmenes de cuenta de:
+  - **Mercado Pago**: el usuario descarga el resumen desde la app/web en formato CSV o Excel, lo sube a esta app, y la app parsea y carga los movimientos automáticamente
+  - **Santander Rio**: el usuario descarga el extracto bancario (PDF o CSV desde el home banking), lo sube, y la app parsea y carga los movimientos
+- Categorización de gastos (automática por keywords + manual)
+- Dashboard con análisis de dónde se gasta más y cómo reducirlo
+- Comparación entre períodos (mes vs mes anterior, etc.)
+
+### Lo que NO queremos:
+- Carga manual de cada movimiento uno por uno
+- Conectividad directa a cuentas bancarias (sin APIs bancarias, sin scraping de sesiones)
+- El flujo es siempre: el usuario descarga el archivo desde el banco/MercadoPago → lo sube a esta app → la app procesa todo
+
+---
+
+## PASOS MANUALES — IMPORTANTE
+
+**Cada vez que inicies el proyecto o implementes una feature nueva, antes de empezar a codear, listá los pasos manuales que el usuario puede ir haciendo en paralelo para no esperar.**
+
+Ejemplos de pasos manuales típicos al inicio:
+1. Crear el repo en GitHub: https://github.com/mateotozziniarg/personal-finance
+2. Crear proyecto en Vercel y conectarlo al repo (branch `main`, root `/`)
+3. Crear proyecto en Railway, agregar servicio PostgreSQL y servicio web (Node)
+4. Copiar `DATABASE_URL` de Railway y configurar variables de entorno:
+   - En Railway (backend): `DATABASE_URL`, `JWT_SECRET` (string aleatorio largo), `JWT_EXPIRES_IN=7d`, `CORS_ORIGINS=<url-vercel>`
+   - En Vercel (frontend): `VITE_API_BASE_URL=<url-railway-backend>`
+5. Mientras el código se genera: el usuario puede ir completando todos los pasos anteriores
+
+**Formato esperado al inicio de cada sesión de trabajo:**
+
+```
+Antes de que empiece, hacé esto en paralelo:
+[ ] Paso 1...
+[ ] Paso 2...
+[ ] Paso 3...
+Avisame cuando esté listo y sigo.
+```
+
+---
+
 ## INFRAESTRUCTURA
 
 ### Frontend — Vercel
