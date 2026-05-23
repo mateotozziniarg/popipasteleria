@@ -1,14 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer } from 'recharts'
-import { Zap, Banknote, PackageCheck, CheckCircle2, StickyNote, Calendar, BarChart2, Receipt, ArrowUpRight, ArrowDownRight, AlertTriangle } from 'lucide-react'
+import { Zap, Banknote, PackageCheck, CheckCircle2, StickyNote, Calendar, BarChart2, Receipt, ArrowUpRight, ArrowDownRight, AlertTriangle, CalendarDays, Plus } from 'lucide-react'
 import { toast } from 'sonner'
 import { PedidoConEvento, EstadoPago, getPedidosGlobal, updatePedido } from '../api/pedidos'
 import { getResumenFinanciero, getGastos, Gasto, ResumenFinanciero } from '../api/gastos'
+import { getCalendario, CalendarioData, CalendarioPedido } from '../api/calendario'
+import { Tarea } from '../api/tareas'
+import { getClientes } from '../api/clientes'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ConfirmModal from '../components/ConfirmModal'
 import PedidoDetailModal from '../components/PedidoDetailModal'
 import PedidoFormModal from '../components/PedidoFormModal'
+import CalendarioItemPopover, { PopoverData } from '../components/CalendarioItemPopover'
+import { WeekView, TareaModal } from './CalendarioPage'
 
 // ── helpers ────────────────────────────────────────────────────────
 
@@ -37,6 +42,28 @@ const esPasada = (iso: string) => iso.substring(0, 10) < getTodayStr()
 
 function getDateStr(d: Date): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+const todayStr = getDateStr(new Date())
+
+function getWeekDays(anchor: Date): Date[] {
+  const dow = anchor.getDay()
+  const daysSinceMon = dow === 0 ? 6 : dow - 1
+  const mon = new Date(anchor)
+  mon.setDate(anchor.getDate() - daysSinceMon)
+  return Array.from({ length: 7 }, (_, i) => { const d = new Date(mon); d.setDate(mon.getDate() + i); return d })
+}
+
+function groupByDay<T>(items: T[], getDate: (item: T) => string | null): Record<string, T[]> {
+  const result: Record<string, T[]> = {}
+  for (const item of items) {
+    const d = getDate(item)
+    if (!d) continue
+    const key = d.substring(0, 10)
+    if (!result[key]) result[key] = []
+    result[key].push(item)
+  }
+  return result
 }
 
 type Periodo = 'semana' | 'mes' | 'anio' | 'personalizado'
@@ -152,7 +179,7 @@ function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: 
 
 export default function WorkspacePage() {
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = useState<'hoy' | 'finanzas'>('hoy')
+  const [activeTab, setActiveTab] = useState<'hoy' | 'finanzas' | 'calendario'>('hoy')
 
   // ── Hoy tab state ──
   const [pedidos, setPedidos] = useState<PedidoConEvento[]>([])
@@ -166,6 +193,16 @@ export default function WorkspacePage() {
   const [confirmPagarTarget, setConfirmPagarTarget] = useState<PedidoConEvento | null>(null)
   const [confirmando, setConfirmando] = useState(false)
   const [climaMañana, setClimaMañana] = useState<{ maxHumedad: number; maxRocio: number } | null>(null)
+
+  // ── Calendario tab state ──
+  const [calData, setCalData] = useState<CalendarioData | null>(null)
+  const [calLoading, setCalLoading] = useState(false)
+  const [calClientes, setCalClientes] = useState<{ id: number; nombre: string; telefono: string | null }[]>([])
+  const [calPedidosAuto, setCalPedidosAuto] = useState<{ id: number; nombreCliente: string; descripcion: string | null }[]>([])
+  const [calPopover, setCalPopover] = useState<PopoverData | null>(null)
+  const [calTareaModal, setCalTareaModal] = useState<{ isOpen: boolean; editTarget: Tarea | null; defaultFecha: string }>({
+    isOpen: false, editTarget: null, defaultFecha: todayStr,
+  })
 
   // ── Finanzas tab state ──
   const [periodo, setPeriodo] = useState<Periodo>('mes')
@@ -202,6 +239,25 @@ export default function WorkspacePage() {
   }
 
   useEffect(() => { loadPedidos() }, [])
+
+  const calWeekDays = getWeekDays(new Date())
+
+  const loadCalendario = useCallback(async () => {
+    setCalLoading(true)
+    try {
+      const desde = getDateStr(calWeekDays[0])
+      const hasta = getDateStr(calWeekDays[6])
+      setCalData(await getCalendario(desde, hasta))
+    } catch { toast.error('Error al cargar calendario') }
+    finally { setCalLoading(false) }
+  }, [])
+
+  useEffect(() => {
+    if (activeTab !== 'calendario') return
+    loadCalendario()
+    getClientes().then(setCalClientes).catch(() => {})
+    getPedidosGlobal({}).then(ps => setCalPedidosAuto(ps.map(p => ({ id: p.id, nombreCliente: p.nombreCliente, descripcion: p.descripcion })))).catch(() => {})
+  }, [activeTab])
 
   useEffect(() => {
     if (activeTab !== 'finanzas') return
@@ -320,6 +376,13 @@ export default function WorkspacePage() {
         >
           <BarChart2 size={14} strokeWidth={2} />
           Finanzas
+        </button>
+        <button
+          onClick={() => setActiveTab('calendario')}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'calendario' ? 'bg-white text-[#1F2937] shadow-sm' : 'text-[#6B7280] hover:text-[#1F2937]'}`}
+        >
+          <CalendarDays size={14} strokeWidth={2} />
+          Calendario
         </button>
       </div>
 
@@ -1037,6 +1100,78 @@ export default function WorkspacePage() {
           )}
         </>
       )}
+
+      {/* ════════════════ TAB CALENDARIO ════════════════ */}
+      {activeTab === 'calendario' && (() => {
+        const calPedidosByDay = groupByDay(calData?.pedidos ?? [], (p: CalendarioPedido) => p.fechaEntrega)
+        const calTareasByDay = groupByDay(calData?.tareas ?? [], (t: Tarea) => t.fecha)
+        const start = calWeekDays[0], end = calWeekDays[6]
+        const calWeekTitle = start.getMonth() === end.getMonth()
+          ? `${start.getDate()}–${end.getDate()} de ${start.toLocaleDateString('es-AR', { month: 'long', year: 'numeric' })}`
+          : `${start.getDate()} ${start.toLocaleDateString('es-AR', { month: 'short' })} – ${end.getDate()} ${end.toLocaleDateString('es-AR', { month: 'short', year: 'numeric' })}`
+        return (
+          <>
+            <div className="flex items-center gap-2.5 mb-5 flex-wrap">
+              <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center shrink-0">
+                <CalendarDays size={16} color="#1F2937" strokeWidth={2} />
+              </div>
+              <div>
+                <h1 className="text-xl font-semibold text-[#1F2937]">Esta semana</h1>
+                <p className="text-xs text-[#6B7280]">{calWeekTitle}</p>
+              </div>
+              <button
+                onClick={() => setCalTareaModal({ isOpen: true, editTarget: null, defaultFecha: todayStr })}
+                className="ml-auto flex items-center gap-1.5 text-xs font-medium bg-[#1F2937] text-white px-3 py-2 rounded-xl hover:bg-[#374151] transition-colors shrink-0"
+              >
+                <Plus size={13} strokeWidth={2.5} /> Nueva tarea
+              </button>
+            </div>
+
+            {calLoading ? (
+              <LoadingSpinner />
+            ) : (
+              <WeekView
+                days={calWeekDays}
+                pedidosByDay={calPedidosByDay}
+                tareasByDay={calTareasByDay}
+                compact
+                onClickPedido={(pedido, rect) => setCalPopover({ tipo: 'pedido', pedido, rect })}
+                onClickTarea={(tarea, rect) => setCalPopover({ tipo: 'tarea', tarea, rect })}
+                onClickDay={(dateStr) => setCalTareaModal({ isOpen: true, editTarget: null, defaultFecha: dateStr })}
+              />
+            )}
+
+            <div className="flex justify-end mt-3">
+              <button
+                onClick={() => navigate('/calendario')}
+                className="text-xs text-[#9CC6EA] hover:text-[#1F2937] font-medium transition-colors"
+              >
+                Ver calendario completo →
+              </button>
+            </div>
+
+            <CalendarioItemPopover
+              data={calPopover}
+              onClose={() => setCalPopover(null)}
+              onUpdated={() => { setCalPopover(null); loadCalendario() }}
+              onEditTarea={(tarea) => {
+                setCalPopover(null)
+                setCalTareaModal({ isOpen: true, editTarget: tarea, defaultFecha: tarea.fecha.substring(0, 10) })
+              }}
+            />
+
+            <TareaModal
+              isOpen={calTareaModal.isOpen}
+              editTarget={calTareaModal.editTarget}
+              defaultFecha={calTareaModal.defaultFecha}
+              clientes={calClientes}
+              pedidosAutocomplete={calPedidosAuto}
+              onClose={() => setCalTareaModal(s => ({ ...s, isOpen: false }))}
+              onSaved={() => { setCalTareaModal(s => ({ ...s, isOpen: false })); loadCalendario() }}
+            />
+          </>
+        )
+      })()}
 
       {/* Modales */}
       <PedidoDetailModal
