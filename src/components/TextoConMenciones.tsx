@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { Hash, AtSign } from 'lucide-react'
 import type { Tarea } from '../api/tareas'
 
@@ -156,10 +155,9 @@ export function RenderTextoConMenciones({ tarea, onClickPedido, className }: Ren
     const displayText = texto.slice(m.posicionInicio, m.posicionFin)
     if (m.tipo === 'CLIENTE' && m.cliente) {
       parts.push(
-        <Link key={`m-${m.id}`} to={`/clientes/${m.cliente.id}`}
-          className="text-[#9CC6EA] font-semibold hover:underline">
+        <span key={`m-${m.id}`} className="text-[#9CC6EA] font-semibold">
           {displayText}
-        </Link>
+        </span>
       )
     } else if (m.tipo === 'PEDIDO') {
       parts.push(
