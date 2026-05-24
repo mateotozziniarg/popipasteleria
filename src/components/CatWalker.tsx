@@ -112,8 +112,9 @@ function Cat({ pal, speed, startDelay }: CatProps) {
   const wrapRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const wrap = wrapRef.current
-    if (!wrap) return
+    const _wrap = wrapRef.current
+    if (!_wrap) return
+    const wrap: HTMLDivElement = _wrap
 
     let x = -W_PX
     let pauseMs = startDelay
