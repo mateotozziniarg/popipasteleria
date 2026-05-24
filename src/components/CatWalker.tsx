@@ -1,32 +1,35 @@
 // Pixel art walking cats — reusable sprite with swappable palettes
 
 // ── Pixel data (shared shape) ──────────────────────────────────────
-// Codes: O=body, D=outline, W=eye-white, K=pupil, P=pink, .=transparent
+// Codes: O=body, D=outline/stripe, W=cream muzzle, K=eye, P=pink ear/nose, .=transparent
 type Px = 'O'|'D'|'W'|'K'|'P'|'.'
 
+// 16 cols × 14 rows total (11 static + 3 leg rows)
 const STATIC_DATA: Px[][] = [
-//  0    1    2    3    4    5    6    7    8    9   10   11   12   13
-  ['.', '.', '.', '.', '.', '.', '.', '.', '.', 'D', '.', 'D', '.', '.'], // R0 ear tips
-  ['D', '.', '.', '.', '.', '.', '.', '.', 'D', 'O', 'D', 'O', 'D', '.'], // R1 tail-tip + ears
-  ['D', '.', '.', '.', '.', '.', '.', 'D', 'O', 'P', 'D', 'P', 'O', 'D'], // R2 tail + inner ears
-  ['.', 'D', '.', '.', '.', '.', 'D', 'O', 'O', 'O', 'D', 'O', 'O', 'D'], // R3 tail + head
-  ['.', 'D', '.', '.', '.', 'D', 'O', 'W', 'K', 'O', 'O', 'W', 'K', 'D'], // R4 tail + eyes
-  ['.', '.', 'D', 'D', 'D', 'O', 'O', 'O', 'O', 'O', 'O', 'P', 'D', '.'], // R5 tail-base + nose
-  ['.', '.', '.', 'D', 'O', 'O', 'D', 'O', 'O', 'O', 'D', 'O', 'D', '.'], // R6 body + stripes
-  ['.', '.', '.', 'D', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'D', '.'], // R7 body smooth
-  ['.', '.', '.', '.', 'D', 'D', 'D', 'D', 'D', 'D', 'D', 'D', '.', '.'], // R8 body bottom
+//   0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15
+  ['.', '.', 'D', '.', '.', '.', '.', '.', '.', '.', 'D', '.', 'D', '.', '.', '.'], // R0  tail-tip, ear-tips
+  ['.', 'D', 'O', 'D', '.', '.', '.', '.', '.', '.', 'D', 'O', 'D', 'O', 'D', '.'], // R1  tail, ears
+  ['D', 'O', 'D', '.', '.', '.', '.', '.', '.', 'D', 'O', 'P', 'D', 'P', 'O', 'D'], // R2  tail, inner-ears
+  ['D', 'O', 'D', '.', '.', '.', '.', '.', 'D', 'O', 'K', 'K', 'O', 'K', 'K', 'D'], // R3  tail, head+eyes(top)
+  ['.', 'D', 'D', 'D', '.', '.', '.', 'D', 'O', 'O', 'K', 'K', 'O', 'K', 'K', 'D'], // R4  tail-base, eyes(bot)
+  ['.', '.', '.', 'D', 'O', 'O', 'O', 'O', 'O', 'O', 'W', 'W', 'W', 'O', 'O', 'D'], // R5  body+neck, muzzle
+  ['.', '.', '.', 'D', 'O', 'O', 'O', 'O', 'O', 'O', 'W', 'P', 'W', 'O', 'D', '.'], // R6  body, nose
+  ['.', '.', '.', 'D', 'O', 'D', 'O', 'O', 'O', 'O', 'O', 'O', 'D', '.', '.', '.'], // R7  body stripe
+  ['.', '.', '.', 'D', 'O', 'O', 'O', 'O', 'O', 'O', 'O', 'D', '.', '.', '.', '.'], // R8  body
+  ['.', '.', '.', '.', 'D', 'O', 'D', 'O', 'O', 'O', 'O', 'D', '.', '.', '.', '.'], // R9  belly stripe
+  ['.', '.', '.', '.', '.', 'D', 'D', 'D', 'D', 'D', 'D', '.', '.', '.', '.', '.'], // R10 belly-bottom
 ]
 
 const LEGS_A_DATA: Px[][] = [
-  ['.', '.', '.', '.', 'D', 'D', '.', '.', '.', 'D', 'D', '.', '.', '.'], // R9
-  ['.', '.', '.', '.', 'D', 'D', '.', '.', '.', 'D', 'D', '.', '.', '.'], // R10
-  ['.', '.', '.', '.', 'D', 'D', '.', '.', '.', 'D', 'D', '.', '.', '.'], // R11
+  ['.', '.', '.', '.', '.', 'D', 'D', '.', '.', 'D', 'D', '.', '.', '.', '.', '.'], // R11
+  ['.', '.', '.', '.', '.', 'D', 'D', '.', '.', 'D', 'D', '.', '.', '.', '.', '.'], // R12
+  ['.', '.', '.', '.', '.', 'D', 'D', '.', '.', 'D', 'D', '.', '.', '.', '.', '.'], // R13
 ]
 
 const LEGS_B_DATA: Px[][] = [
-  ['.', '.', '.', '.', '.', 'D', 'D', '.', 'D', 'D', '.', '.', '.', '.'], // R9
-  ['.', '.', '.', '.', '.', 'D', 'D', '.', 'D', 'D', '.', '.', '.', '.'], // R10
-  ['.', '.', '.', '.', '.', 'D', 'D', '.', 'D', 'D', '.', '.', '.', '.'], // R11
+  ['.', '.', '.', '.', '.', '.', 'D', 'D', '.', '.', 'D', 'D', '.', '.', '.', '.'], // R11
+  ['.', '.', '.', '.', '.', '.', 'D', 'D', '.', '.', 'D', 'D', '.', '.', '.', '.'], // R12
+  ['.', '.', '.', '.', '.', '.', 'D', 'D', '.', '.', 'D', 'D', '.', '.', '.', '.'], // R13
 ]
 
 // ── Palettes ───────────────────────────────────────────────────────
@@ -42,8 +45,8 @@ function resolve(code: Px, pal: Palette): string | null {
 
 // ── Sprite renderer ────────────────────────────────────────────────
 const SCALE = 4
-const W_PX  = 14 * SCALE  // 56px
-const H_PX  = 12 * SCALE  // 48px
+const W_PX  = 16 * SCALE  // 64px
+const H_PX  = 14 * SCALE  // 56px
 
 function PixelGrid({ data, offsetY = 0, pal }: { data: Px[][]; offsetY?: number; pal: Palette }) {
   return (
@@ -63,14 +66,14 @@ function PixelGrid({ data, offsetY = 0, pal }: { data: Px[][]; offsetY?: number;
 function CatSprite({ pal }: { pal: Palette }) {
   return (
     <svg
-      viewBox="0 0 14 12"
+      viewBox="0 0 16 14"
       width={W_PX}
       height={H_PX}
       style={{ imageRendering: 'pixelated', display: 'block' } as React.CSSProperties}
     >
       <PixelGrid data={STATIC_DATA} pal={pal} />
-      <g className="catw-frm-a"><PixelGrid data={LEGS_A_DATA} offsetY={9} pal={pal} /></g>
-      <g className="catw-frm-b"><PixelGrid data={LEGS_B_DATA} offsetY={9} pal={pal} /></g>
+      <g className="catw-frm-a"><PixelGrid data={LEGS_A_DATA} offsetY={11} pal={pal} /></g>
+      <g className="catw-frm-b"><PixelGrid data={LEGS_B_DATA} offsetY={11} pal={pal} /></g>
     </svg>
   )
 }
