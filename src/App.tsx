@@ -13,6 +13,7 @@ import MateriasPrimasPage from './pages/MateriasPrimasPage'
 import ClientesPage from './pages/ClientesPage'
 import GastosPage from './pages/GastosPage'
 import CalendarioPage from './pages/CalendarioPage'
+import CatWalker from './components/CatWalker'
 
 export default function App() {
   return (
@@ -26,6 +27,7 @@ export default function App() {
               <div className="min-h-screen" style={{ backgroundColor: '#F7FAFC' }}>
                 <Sidebar />
                 <BottomNav />
+                <CatWalker />
               <div className="overflow-x-hidden pb-20 sm:pb-0">
                   <Routes>
                     <Route path="/" element={<WorkspacePage />} />
