@@ -15,6 +15,7 @@ import finanzasRouter from './routes/finanzas'
 import clientesRouter from './routes/clientes'
 import tareasRouter from './routes/tareas'
 import calendarioRouter from './routes/calendario'
+import propuestasRouter from './routes/propuestas'
 
 const app = express()
 const port = process.env.PORT || 3001
@@ -46,6 +47,7 @@ app.use('/finanzas', finanzasRouter)
 app.use('/clientes', clientesRouter)
 app.use('/tareas', tareasRouter)
 app.use('/calendario', calendarioRouter)
+app.use('/propuestas', propuestasRouter)
 
 app.listen(port, () => {
   console.log(`Server running on port ${port}`)

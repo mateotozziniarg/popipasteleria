@@ -13,6 +13,8 @@ import MateriasPrimasPage from './pages/MateriasPrimasPage'
 import ClientesPage from './pages/ClientesPage'
 import GastosPage from './pages/GastosPage'
 import CalendarioPage from './pages/CalendarioPage'
+import PropuestasPage from './pages/PropuestasPage'
+import PropuestaPage from './pages/PropuestaPage'
 import CatWalker from './components/CatWalker'
 
 export default function App() {
@@ -39,6 +41,8 @@ export default function App() {
                     <Route path="/clientes" element={<ClientesPage />} />
                     <Route path="/gastos" element={<GastosPage />} />
                     <Route path="/calendario" element={<CalendarioPage />} />
+                    <Route path="/propuestas" element={<PropuestasPage />} />
+                    <Route path="/propuestas/:id" element={<PropuestaPage />} />
                     <Route path="*" element={<NotFoundPage />} />
                   </Routes>
                 </div>

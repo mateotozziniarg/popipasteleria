@@ -8,13 +8,14 @@ datasource db {
 }
 
 model Evento {
-  id          Int      @id @default(autoincrement())
+  id          Int         @id @default(autoincrement())
   nombre      String
   fecha       DateTime
   descripcion String?
-  createdAt   DateTime @default(now())
+  createdAt   DateTime    @default(now())
   pedidos     Pedido[]
   gastos      Gasto[]
+  propuestas  Propuesta[]
 }
 
 model MateriaPrima {
@@ -144,4 +145,71 @@ model Usuario {
   nombre       String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+}
+
+enum EstadoPropuesta {
+  BORRADOR
+  PRESENTADA
+  CONFIRMADA
+}
+
+enum CategoriaIdea {
+  RELLENO
+  DECORACION
+  PACKAGING
+  PRECIO
+  OTRO
+}
+
+model Propuesta {
+  id          Int                 @id @default(autoincrement())
+  nombre      String
+  tematica    String?
+  descripcion String?
+  estado      EstadoPropuesta     @default(BORRADOR)
+  eventoId    Int?
+  evento      Evento?             @relation(fields: [eventoId], references: [id])
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  productos   PropuestaProducto[]
+  combos      PropuestaCombo[]
+  ideas       PropuestaIdea[]
+}
+
+model PropuestaProducto {
+  id          Int                      @id @default(autoincrement())
+  propuestaId Int
+  propuesta   Propuesta                @relation(fields: [propuestaId], references: [id], onDelete: Cascade)
+  nombre      String
+  descripcion String?
+  precio      Decimal?                 @db.Decimal(10, 2)
+  notas       String?
+  combos      PropuestaComboProducto[]
+}
+
+model PropuestaCombo {
+  id          Int                      @id @default(autoincrement())
+  propuestaId Int
+  propuesta   Propuesta                @relation(fields: [propuestaId], references: [id], onDelete: Cascade)
+  nombre      String
+  descripcion String?
+  precioCombo Decimal?                 @db.Decimal(10, 2)
+  productos   PropuestaComboProducto[]
+}
+
+model PropuestaComboProducto {
+  id                  Int               @id @default(autoincrement())
+  comboId             Int
+  combo               PropuestaCombo    @relation(fields: [comboId], references: [id], onDelete: Cascade)
+  propuestaProductoId Int
+  producto            PropuestaProducto @relation(fields: [propuestaProductoId], references: [id], onDelete: Cascade)
+  cantidad            Int               @default(1)
+}
+
+model PropuestaIdea {
+  id          Int           @id @default(autoincrement())
+  propuestaId Int
+  propuesta   Propuesta     @relation(fields: [propuestaId], references: [id], onDelete: Cascade)
+  texto       String
+  categoria   CategoriaIdea
 }
