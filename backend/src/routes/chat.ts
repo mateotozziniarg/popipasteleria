@@ -5,7 +5,7 @@ import prisma from '../lib/prisma'
 const router = Router()
 
 const SYSTEM_PROMPT =
-  'Sos Popibot, el asistente de Popipastelería, una pastelería argentina. Ayudás a gestionar pedidos, eventos y clientes. Tenés acceso a herramientas para consultar y crear datos en tiempo real. Cuando el usuario quiera crear algo (un pedido, etc.), mostrá un resumen de los datos que vas a guardar y pedí confirmación antes de ejecutar la herramienta. Respondé siempre en español rioplatense, de forma concisa y amigable. Los precios son en pesos argentinos.'
+  'Sos Popibot, el asistente de Popipastelería, una pastelería argentina. Ayudás a gestionar pedidos, eventos y clientes. Tenés acceso a herramientas para consultar y crear datos en tiempo real.\n\nCuando el usuario mencione productos al crear un pedido, siempre usá el campo `productos` de `crear_pedido` — el sistema automáticamente busca cada producto en el catálogo y lo crea si no existe. Si el usuario no mencionó un precio para el pedido, calculalo desde los productos o preguntá antes de crear. Cuando el usuario quiera crear un pedido, mostrá un resumen de los datos antes de ejecutar y pedí confirmación.\n\nRespondé siempre en español rioplatense, de forma concisa y amigable. Los precios son en pesos argentinos.'
 
 const tools: OpenAI.Chat.ChatCompletionTool[] = [
   {
@@ -71,19 +71,32 @@ const tools: OpenAI.Chat.ChatCompletionTool[] = [
     type: 'function',
     function: {
       name: 'crear_pedido',
-      description: 'Crea un nuevo pedido. Si el usuario proporcionó teléfono o dirección del cliente, incluirlos. Si el precio no fue mencionado, omitir y pedir confirmación antes de ejecutar.',
+      description: 'Crea un nuevo pedido con sus productos. El sistema busca cada producto en el catálogo por nombre (coincidencia parcial). Si no existe, lo crea. El precioTotal se calcula automáticamente si se incluyen productos con precio.',
       parameters: {
         type: 'object',
         properties: {
           nombreCliente: { type: 'string', description: 'Nombre completo del cliente' },
-          precioTotal: { description: 'Precio total en pesos argentinos. Número, ejemplo: 5000. Si no se indicó precio, preguntar antes de crear.' },
-          descripcion: { type: 'string', description: 'Descripción del pedido (productos, cantidades, etc.)' },
+          descripcion: { type: 'string', description: 'Descripción general del pedido. Omitir si se usan productos.' },
           fechaEntrega: { type: 'string', description: 'Fecha de entrega en formato YYYY-MM-DD. Omitir si no se indicó.' },
           modalidadEntrega: { type: 'string', description: 'ENVIO o RETIRA. Omitir si no se indicó.' },
           telefono: { type: 'string', description: 'Teléfono del cliente. Omitir si no se proporcionó.' },
           direccion: { type: 'string', description: 'Dirección del cliente. Omitir si no se proporcionó.' },
+          precioTotal: { description: 'Precio total manual en pesos. Omitir si se incluyen productos con precio (se calcula solo).' },
+          productos: {
+            type: 'array',
+            description: 'Lista de productos del pedido. Siempre incluir si se mencionaron productos.',
+            items: {
+              type: 'object',
+              properties: {
+                nombre: { type: 'string', description: 'Nombre del producto tal como lo dijo el usuario. El sistema lo buscará en el catálogo.' },
+                cantidad: { description: 'Cantidad. Número entero.' },
+                precioUnitario: { description: 'Precio unitario en pesos. Omitir si no se mencionó (se usa el precio del catálogo).' },
+              },
+              required: ['nombre', 'cantidad'],
+            },
+          },
         },
-        required: ['nombreCliente', 'precioTotal'],
+        required: ['nombreCliente'],
       },
     },
   },
@@ -217,9 +230,7 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
     }
 
     case 'crear_pedido': {
-      const precioTotal = parseFloat(String(args.precioTotal))
-      if (isNaN(precioTotal)) return { error: 'precioTotal inválido' }
-
+      // Resolver cliente
       let clienteId: number | null = null
       if (args.telefono || args.direccion) {
         const existente = await prisma.cliente.findFirst({
@@ -246,6 +257,45 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
         }
       }
 
+      // Resolver productos: buscar en catálogo o crear si no existen
+      type ProdInput = { nombre: string; cantidad: any; precioUnitario?: any }
+      const productosInput: ProdInput[] = Array.isArray(args.productos) ? args.productos : []
+      type ResolvedProd = { productoId: number; nombre: string; cantidad: number; precioUnitario: number; esNuevo: boolean }
+      const productosResueltos: ResolvedProd[] = []
+
+      for (const p of productosInput) {
+        const cantidad = Math.max(1, parseInt(String(p.cantidad)) || 1)
+        let catalogo = await prisma.producto.findFirst({
+          where: { nombre: { contains: p.nombre as string, mode: 'insensitive' } },
+        })
+        const precioUnit = p.precioUnitario != null
+          ? parseFloat(String(p.precioUnitario))
+          : catalogo ? parseFloat(catalogo.precioDefault.toString()) : 0
+
+        if (!catalogo) {
+          catalogo = await prisma.producto.create({
+            data: { nombre: p.nombre as string, precioDefault: precioUnit },
+          })
+        }
+        productosResueltos.push({
+          productoId: catalogo.id,
+          nombre: catalogo.nombre,
+          cantidad,
+          precioUnitario: precioUnit,
+          esNuevo: !catalogo,
+        })
+      }
+
+      // Calcular precioTotal
+      let precioTotal: number
+      if (args.precioTotal != null && !isNaN(parseFloat(String(args.precioTotal)))) {
+        precioTotal = parseFloat(String(args.precioTotal))
+      } else if (productosResueltos.length > 0) {
+        precioTotal = productosResueltos.reduce((s, p) => s + p.precioUnitario * p.cantidad, 0)
+      } else {
+        precioTotal = 0
+      }
+
       const pedido = await prisma.pedido.create({
         data: {
           nombreCliente: args.nombreCliente as string,
@@ -257,16 +307,33 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
           ...(clienteId ? { clienteId } : {}),
         },
       })
+
+      // Crear PedidoProducto
+      for (const p of productosResueltos) {
+        await prisma.pedidoProducto.create({
+          data: {
+            pedidoId: pedido.id,
+            productoId: p.productoId,
+            cantidad: p.cantidad,
+            precioUnitario: p.precioUnitario,
+          },
+        })
+      }
+
       return {
         pedido: {
           id: pedido.id,
           nombreCliente: pedido.nombreCliente,
-          precioTotal: parseFloat(pedido.precioTotal.toString()),
+          precioTotal,
+          productos: productosResueltos.map(p => ({
+            nombre: p.nombre,
+            cantidad: p.cantidad,
+            precioUnitario: p.precioUnitario,
+            creadoEnCatalogo: p.esNuevo,
+          })),
         },
         clienteGuardado: clienteId !== null,
-        mensaje: clienteId
-          ? 'Pedido y cliente creados exitosamente'
-          : 'Pedido creado exitosamente',
+        mensaje: 'Pedido creado exitosamente',
       }
     }
 
