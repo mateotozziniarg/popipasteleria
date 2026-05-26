@@ -28,7 +28,7 @@ export default function App() {
           path="/*"
           element={
             <ProtectedRoute>
-              <div className="min-h-screen" style={{ backgroundColor: '#F7FAFC' }}>
+              <div className="min-h-screen">
                 <Sidebar />
                 <BottomNav />
                 <CatWalker />
