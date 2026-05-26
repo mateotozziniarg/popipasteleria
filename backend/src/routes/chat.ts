@@ -26,7 +26,7 @@ const tools: OpenAI.Chat.ChatCompletionTool[] = [
         properties: {
           estadoPago: { type: 'string', description: 'Filtrar por estado de pago: sin_seña, señado, pagado' },
           estadoEntrega: { type: 'string', description: 'Filtrar por estado de entrega: pendiente, entregado' },
-          limite: { type: 'integer', description: 'Cantidad máxima de resultados (default 15)' },
+          limite: { description: 'Cantidad máxima de resultados (default 15). Número entero.' },
         },
       },
     },
@@ -61,7 +61,7 @@ const tools: OpenAI.Chat.ChatCompletionTool[] = [
       parameters: {
         type: 'object',
         properties: {
-          eventoId: { type: 'integer', description: 'ID del evento' },
+          eventoId: { description: 'ID numérico del evento' },
         },
         required: ['eventoId'],
       },
@@ -71,16 +71,17 @@ const tools: OpenAI.Chat.ChatCompletionTool[] = [
     type: 'function',
     function: {
       name: 'crear_pedido',
-      description: 'Crea un nuevo pedido en el sistema. Usá esta herramienta solo después de confirmar los datos con el usuario.',
+      description: 'Crea un nuevo pedido. Si el usuario proporcionó teléfono o dirección del cliente, incluirlos. Si el precio no fue mencionado, omitir y pedir confirmación antes de ejecutar.',
       parameters: {
         type: 'object',
         properties: {
           nombreCliente: { type: 'string', description: 'Nombre completo del cliente' },
-          precioTotal: { type: 'number', description: 'Precio total en pesos argentinos' },
-          descripcion: { type: 'string', description: 'Descripción del pedido' },
-          fechaEntrega: { type: 'string', description: 'Fecha de entrega en formato YYYY-MM-DD (opcional)' },
-          eventoId: { type: 'integer', description: 'ID del evento al que pertenece (opcional)' },
-          modalidadEntrega: { type: 'string', description: 'ENVIO o RETIRA (opcional)' },
+          precioTotal: { description: 'Precio total en pesos argentinos. Número, ejemplo: 5000. Si no se indicó precio, preguntar antes de crear.' },
+          descripcion: { type: 'string', description: 'Descripción del pedido (productos, cantidades, etc.)' },
+          fechaEntrega: { type: 'string', description: 'Fecha de entrega en formato YYYY-MM-DD. Omitir si no se indicó.' },
+          modalidadEntrega: { type: 'string', description: 'ENVIO o RETIRA. Omitir si no se indicó.' },
+          telefono: { type: 'string', description: 'Teléfono del cliente. Omitir si no se proporcionó.' },
+          direccion: { type: 'string', description: 'Dirección del cliente. Omitir si no se proporcionó.' },
         },
         required: ['nombreCliente', 'precioTotal'],
       },
@@ -216,14 +217,44 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
     }
 
     case 'crear_pedido': {
+      const precioTotal = parseFloat(String(args.precioTotal))
+      if (isNaN(precioTotal)) return { error: 'precioTotal inválido' }
+
+      let clienteId: number | null = null
+      if (args.telefono || args.direccion) {
+        const existente = await prisma.cliente.findFirst({
+          where: { nombre: { equals: args.nombreCliente as string, mode: 'insensitive' } },
+        })
+        if (existente) {
+          clienteId = existente.id
+          await prisma.cliente.update({
+            where: { id: existente.id },
+            data: {
+              ...(args.telefono ? { telefono: args.telefono as string } : {}),
+              ...(args.direccion ? { direccion: args.direccion as string } : {}),
+            },
+          })
+        } else {
+          const nuevo = await prisma.cliente.create({
+            data: {
+              nombre: args.nombreCliente as string,
+              telefono: (args.telefono as string) || null,
+              direccion: (args.direccion as string) || null,
+            },
+          })
+          clienteId = nuevo.id
+        }
+      }
+
       const pedido = await prisma.pedido.create({
         data: {
           nombreCliente: args.nombreCliente as string,
-          precioTotal: args.precioTotal as number,
+          precioTotal,
           descripcion: (args.descripcion as string) || null,
           fechaEntrega: args.fechaEntrega ? new Date(args.fechaEntrega as string) : null,
-          eventoId: (args.eventoId as number) || null,
           modalidadEntrega: (args.modalidadEntrega as any) || null,
+          telefono: (args.telefono as string) || null,
+          ...(clienteId ? { clienteId } : {}),
         },
       })
       return {
@@ -232,7 +263,10 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
           nombreCliente: pedido.nombreCliente,
           precioTotal: parseFloat(pedido.precioTotal.toString()),
         },
-        mensaje: 'Pedido creado exitosamente',
+        clienteGuardado: clienteId !== null,
+        mensaje: clienteId
+          ? 'Pedido y cliente creados exitosamente'
+          : 'Pedido creado exitosamente',
       }
     }
 
