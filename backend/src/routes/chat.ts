@@ -4,8 +4,15 @@ import prisma from '../lib/prisma'
 
 const router = Router()
 
-const SYSTEM_PROMPT =
-  'Sos Popibot, el asistente de Popipastelería, una pastelería argentina. Ayudás a gestionar pedidos, eventos y clientes. Tenés acceso a herramientas para consultar y crear datos en tiempo real.\n\nCuando el usuario mencione productos al crear un pedido, siempre usá el campo `productos` de `crear_pedido` — el sistema automáticamente busca cada producto en el catálogo y lo crea si no existe. Si el usuario no mencionó un precio para el pedido, calculalo desde los productos o preguntá antes de crear. Cuando el usuario quiera crear un pedido, mostrá un resumen de los datos antes de ejecutar y pedí confirmación.\n\nRespondé siempre en español rioplatense, de forma concisa y amigable. Los precios son en pesos argentinos.'
+const SYSTEM_PROMPT = `Sos Popibot, el asistente de Popipastelería, una pastelería argentina. Ayudás a gestionar pedidos, eventos y clientes. Tenés acceso a herramientas para consultar y crear datos en tiempo real.
+
+REGLAS CRÍTICAS PARA CREAR PEDIDOS:
+1. El sistema busca automáticamente cada producto en el catálogo usando coincidencia flexible (parcial y por palabras clave). No hace falta que busques vos — el backend lo resuelve.
+2. Si la herramienta devuelve un error con "productosSinPrecio", significa que uno o más productos NO existen en el catálogo y no tienen precio. En ese caso, INMEDIATAMENTE preguntale al usuario el precio unitario de cada uno. No intentes crear el pedido hasta tenerlo.
+3. Nunca asumas un precio de $0 para un producto. Si no sabés el precio, preguntá.
+4. Antes de ejecutar crear_pedido, confirmá con el usuario: qué productos, cantidades, precios y cliente.
+
+Respondé siempre en español rioplatense, de forma concisa y amigable. Los precios son en pesos argentinos.`
 
 const tools: OpenAI.Chat.ChatCompletionTool[] = [
   {
@@ -229,6 +236,52 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
     }
 
     case 'crear_pedido': {
+      type ProdInput = { nombre: string; cantidad: any; precioUnitario?: any }
+      const productosInput: ProdInput[] = Array.isArray(args.productos) ? args.productos : []
+
+      // Load full catalog once for fuzzy matching
+      const catalogo = await prisma.producto.findMany({ select: { id: true, nombre: true, precioDefault: true } })
+
+      function buscarEnCatalogo(nombreBuscado: string) {
+        const inputNorm = nombreBuscado.toLowerCase().trim()
+        // Strategy 1: catalog name is contained in input or input is contained in catalog name
+        let match = catalogo.find(p => {
+          const pNorm = p.nombre.toLowerCase()
+          return pNorm.includes(inputNorm) || inputNorm.includes(pNorm)
+        })
+        if (match) return match
+        // Strategy 2: significant words of catalog name appear in input
+        match = catalogo.find(p => {
+          const words = p.nombre.toLowerCase().split(/\s+/).filter(w => w.length > 3)
+          return words.some(w => inputNorm.includes(w))
+        })
+        if (match) return match
+        // Strategy 3: significant words of input appear in catalog name
+        const inputWords = inputNorm.split(/\s+/).filter((w: string) => w.length > 3)
+        for (const word of inputWords) {
+          match = catalogo.find(p => p.nombre.toLowerCase().includes(word))
+          if (match) return match
+        }
+        return null
+      }
+
+      // Pre-check: detect products with no catalog match and no price provided
+      const sinPrecio: string[] = []
+      for (const p of productosInput) {
+        const encontrado = buscarEnCatalogo(p.nombre as string)
+        const tienePrecio = p.precioUnitario != null && !isNaN(parseFloat(String(p.precioUnitario))) && parseFloat(String(p.precioUnitario)) > 0
+        if (!encontrado && !tienePrecio) {
+          sinPrecio.push(p.nombre as string)
+        }
+      }
+      if (sinPrecio.length > 0) {
+        return {
+          error: 'productos_sin_precio',
+          mensaje: `Los siguientes productos no existen en el catálogo y no tienen precio definido: ${sinPrecio.join(', ')}. Preguntale al usuario el precio unitario antes de crear el pedido.`,
+          productosSinPrecio: sinPrecio,
+        }
+      }
+
       // Resolver cliente
       let clienteId: number | null = null
       if (args.telefono || args.direccion) {
@@ -256,40 +309,35 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
         }
       }
 
-      // Resolver productos: buscar en catálogo o crear si no existen
-      type ProdInput = { nombre: string; cantidad: any; precioUnitario?: any }
-      const productosInput: ProdInput[] = Array.isArray(args.productos) ? args.productos : []
+      // Resolver productos
       type ResolvedProd = { productoId: number; nombre: string; cantidad: number; precioUnitario: number; esNuevo: boolean }
       const productosResueltos: ResolvedProd[] = []
 
       for (const p of productosInput) {
         const cantidad = Math.max(1, parseInt(String(p.cantidad)) || 1)
-        let catalogo = await prisma.producto.findFirst({
-          where: { nombre: { contains: p.nombre as string, mode: 'insensitive' } },
-        })
-        const precioUnit = p.precioUnitario != null
+        let encontrado = buscarEnCatalogo(p.nombre as string)
+        const precioUnit = p.precioUnitario != null && !isNaN(parseFloat(String(p.precioUnitario)))
           ? parseFloat(String(p.precioUnitario))
-          : catalogo ? parseFloat(catalogo.precioDefault.toString()) : 0
+          : encontrado ? parseFloat(encontrado.precioDefault.toString()) : 0
 
-        if (!catalogo) {
-          catalogo = await prisma.producto.create({
+        if (!encontrado) {
+          const nuevo = await prisma.producto.create({
             data: { nombre: p.nombre as string, precioDefault: precioUnit },
           })
+          encontrado = { id: nuevo.id, nombre: nuevo.nombre, precioDefault: nuevo.precioDefault }
         }
         productosResueltos.push({
-          productoId: catalogo.id,
-          nombre: catalogo.nombre,
+          productoId: encontrado.id,
+          nombre: encontrado.nombre,
           cantidad,
           precioUnitario: precioUnit,
-          esNuevo: !catalogo,
+          esNuevo: false,
         })
       }
 
       // Calcular precioTotal
       let precioTotal: number
-      if (args.precioTotal != null && !isNaN(parseFloat(String(args.precioTotal)))) {
-        precioTotal = parseFloat(String(args.precioTotal))
-      } else if (productosResueltos.length > 0) {
+      if (productosResueltos.length > 0) {
         precioTotal = productosResueltos.reduce((s, p) => s + p.precioUnitario * p.cantidad, 0)
       } else {
         precioTotal = 0
@@ -307,7 +355,6 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
         },
       })
 
-      // Crear PedidoProducto
       for (const p of productosResueltos) {
         await prisma.pedidoProducto.create({
           data: {
@@ -328,7 +375,6 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
             nombre: p.nombre,
             cantidad: p.cantidad,
             precioUnitario: p.precioUnitario,
-            creadoEnCatalogo: p.esNuevo,
           })),
         },
         clienteGuardado: clienteId !== null,
