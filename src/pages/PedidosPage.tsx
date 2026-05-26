@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
-  ShoppingCart, LayoutList, BarChart2, CheckCircle2, Clock, CreditCard,
-  TrendingDown, TrendingUp, DollarSign, SlidersHorizontal, FlaskConical, Plus, Search, Eye, Pencil,
-  LayoutGrid, ChevronDown, ChevronUp, Banknote, PackageCheck, Trash2, StickyNote, Calendar
+  ShoppingCart, Plus, Search, Pencil, Trash2, ChevronDown,
+  Banknote, PackageCheck, CheckCircle2, MapPin, Phone, Calendar, SlidersHorizontal,
+  ChevronUp, X
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { PedidoConEvento, FiltrosPedidos, EstadoEntrega, EstadoPago, ModalidadEntrega, getPedidosGlobal, updatePedido, deletePedido } from '../api/pedidos'
@@ -15,34 +15,33 @@ import PedidoDetailModal from '../components/PedidoDetailModal'
 import ConfirmModal from '../components/ConfirmModal'
 import EmptyState from '../components/EmptyState'
 
-type Modo = 'tabla' | 'cards' | 'dashboard'
-
-const etiquetaEntrega: Record<EstadoEntrega, string> = { pendiente: 'Pendiente', entregado: 'Entregado' }
-const etiquetaPago: Record<EstadoPago, string> = { sin_seña: 'Pendiente', señado: 'Señado', pagado: 'Pagado' }
-
-const badgeEntrega = (e: EstadoEntrega) =>
-  e === 'entregado' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'
-
-const badgePago = (e: EstadoPago) =>
-  e === 'pagado'
-    ? 'bg-emerald-50 text-emerald-700'
-    : e === 'señado'
-    ? 'bg-[#CFE6F7] text-[#1F2937]'
-    : 'bg-rose-50 text-rose-600'
+type Modo = 'tabla' | 'cards'
+type QuickFilter = 'todos' | 'hoy' | 'manana' | 'porEntregar' | 'porCobrar'
 
 const formatMonto = (n: number) =>
   n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 
 const formatFecha = (iso: string) =>
-  new Date(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
+  new Date(iso + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
 
-const formatFechaCorta = (iso: string) =>
-  new Date(iso).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
+const formatFechaDia = (iso: string) => {
+  const d = new Date(iso + 'T00:00:00')
+  return {
+    day: d.toLocaleDateString('es-AR', { day: 'numeric' }),
+    rest: d.toLocaleDateString('es-AR', { weekday: 'long', month: 'long' }),
+  }
+}
 
 function getTodayStr() {
   const d = new Date()
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
+function getTomorrowStr() {
+  const d = new Date()
+  d.setDate(d.getDate() + 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
 const esFechaHoy = (iso: string) => iso.substring(0, 10) === getTodayStr()
 const esFechaPasada = (iso: string) => iso.substring(0, 10) < getTodayStr()
 
@@ -53,7 +52,7 @@ function toWhatsAppUrl(tel: string) {
   return `https://wa.me/549${digits}`
 }
 
-function WhatsAppIcon({ size = 18 }: { size?: number }) {
+function WhatsAppIcon({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
       <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
@@ -61,23 +60,236 @@ function WhatsAppIcon({ size = 18 }: { size?: number }) {
   )
 }
 
-const inputClass = 'w-full border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white'
-const btnPrimary = 'bg-[#1F2937] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors flex items-center gap-2'
+const AVATAR_TONES: [string, string][] = [
+  ['#F1E4CC', '#7A5A3A'],
+  ['#FBD7DC', '#8C2F3E'],
+  ['#D9E9D8', '#2E5C36'],
+  ['#F4D9B3', '#7E4A14'],
+  ['#E0DAF1', '#473C75'],
+  ['#FBE4B5', '#7C5F1B'],
+]
+function avatarTone(name: string): [string, string] {
+  let h = 0
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0
+  return AVATAR_TONES[h % AVATAR_TONES.length]
+}
+function Avatar({ name, size = 36 }: { name: string; size?: number }) {
+  const [bg, fg] = avatarTone(name)
+  const initials = name.split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()
+  return (
+    <div
+      className="popi-avatar"
+      style={{ width: size, height: size, background: bg, color: fg, fontSize: size * 0.38 }}
+    >
+      {initials}
+    </div>
+  )
+}
+
+function StatusPill({ value, kind }: { value: string; kind: 'entrega' | 'pago' }) {
+  const map: Record<string, Record<string, { lbl: string; tone: string }>> = {
+    entrega: {
+      entregado: { lbl: 'Entregado', tone: 'mint' },
+      pendiente: { lbl: 'Pendiente', tone: 'amber' },
+    },
+    pago: {
+      pagado:    { lbl: 'Pagado',    tone: 'mint' },
+      señado:    { lbl: 'Señado',    tone: 'amber' },
+      sin_seña:  { lbl: 'Pendiente', tone: 'rose' },
+    },
+  }
+  const cfg = (map[kind] || {})[value]
+  if (!cfg) return <span className="popi-pill popi-pill-mute">—</span>
+  return (
+    <span className={`popi-pill popi-pill-${cfg.tone}`}>
+      <span className="popi-pill-dot" />
+      {cfg.lbl}
+    </span>
+  )
+}
+
+function RowDetail({
+  p, onEdit, onDelete, onMarkEntregado, onMarkPagado, onCobrar
+}: {
+  p: PedidoConEvento
+  onEdit: () => void
+  onDelete: () => void
+  onMarkEntregado: () => void
+  onMarkPagado: () => void
+  onCobrar: () => void
+}) {
+  const tel = p.telefono || p.cliente?.telefono
+  return (
+    <div className="popi-row-detail">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Items */}
+        <div className="md:col-span-1">
+          <p className="text-[10.5px] font-bold tracking-widest uppercase text-[var(--ink-3)] mb-3">Detalle</p>
+          {p.productos.length > 0 ? (
+            <table className="w-full text-sm border-collapse">
+              <tbody>
+                {p.productos.map(pp => (
+                  <tr key={pp.id} className="border-b border-[var(--line-2)] last:border-0">
+                    <td className="py-1.5 pr-2 text-[var(--ink-3)] w-8 text-xs font-medium">{pp.cantidad}×</td>
+                    <td className="py-1.5 pr-2 font-medium text-[var(--ink)]">{pp.producto.nombre}</td>
+                    <td className="py-1.5 text-right font-semibold text-[var(--ink-2)] tabular-nums">
+                      {formatMonto(parseFloat(pp.precioUnitario) * pp.cantidad)}
+                    </td>
+                  </tr>
+                ))}
+                {p.montoSeña && p.estadoPago === 'señado' && (
+                  <>
+                    <tr className="border-t border-[var(--line)]">
+                      <td colSpan={2} className="pt-2.5 pb-1 text-[var(--ink-3)] text-xs">Seña abonada</td>
+                      <td className="pt-2.5 pb-1 text-right text-[var(--ink-3)] text-xs tabular-nums">
+                        {formatMonto(parseFloat(p.montoSeña))}
+                      </td>
+                    </tr>
+                    <tr className="font-semibold">
+                      <td colSpan={2} className="pb-1 text-[var(--ink)]">Saldo</td>
+                      <td className="pb-1 text-right text-[var(--ink)] tabular-nums">
+                        {formatMonto(parseFloat(p.precioTotal) - parseFloat(p.montoSeña))}
+                      </td>
+                    </tr>
+                  </>
+                )}
+              </tbody>
+              <tfoot>
+                <tr className="border-t border-[var(--line)] font-bold text-base">
+                  <td colSpan={2} className="pt-2.5 text-[var(--ink)]">Total</td>
+                  <td className="pt-2.5 text-right text-[var(--ink)] tabular-nums">{formatMonto(parseFloat(p.precioTotal))}</td>
+                </tr>
+              </tfoot>
+            </table>
+          ) : p.descripcion ? (
+            <p className="text-sm text-[var(--ink-2)] italic">"{p.descripcion}"</p>
+          ) : (
+            <p className="text-sm text-[var(--ink-4)]">Sin detalle</p>
+          )}
+        </div>
+
+        {/* Info */}
+        <div>
+          <p className="text-[10.5px] font-bold tracking-widest uppercase text-[var(--ink-3)] mb-3">Info</p>
+          <div className="flex flex-col gap-2.5 text-sm text-[var(--ink-2)]">
+            {p.fechaEntrega && (
+              <div className="flex items-center gap-2">
+                <Calendar size={14} className="text-[var(--ink-4)] shrink-0" />
+                <span>{formatFecha(p.fechaEntrega)}</span>
+                {esFechaHoy(p.fechaEntrega) && (
+                  <span className="text-[10px] font-semibold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full">Hoy</span>
+                )}
+              </div>
+            )}
+            {p.modalidadEntrega && (
+              <div className="flex items-center gap-2">
+                <MapPin size={14} className="text-[var(--ink-4)] shrink-0" />
+                <span>{p.modalidadEntrega === 'ENVIO' ? 'Envío a domicilio' : 'Retira en local'}</span>
+              </div>
+            )}
+            {tel && (
+              <div className="flex items-center gap-2">
+                <Phone size={14} className="text-[var(--ink-4)] shrink-0" />
+                <span>{tel}</span>
+              </div>
+            )}
+            {p.evento && (
+              <div className="flex items-center gap-2">
+                <ShoppingCart size={14} className="text-[var(--ink-4)] shrink-0" />
+                <span className="font-medium">{p.evento.nombre}</span>
+              </div>
+            )}
+          </div>
+          {p.notas && (
+            <div className="mt-4">
+              <p className="text-[10.5px] font-bold tracking-widest uppercase text-[var(--ink-3)] mb-2">Notas</p>
+              <div className="bg-white border border-[var(--line)] rounded-lg px-3 py-2.5 text-sm text-[var(--ink-2)] leading-relaxed">
+                {p.notas}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Acciones */}
+        <div>
+          <p className="text-[10.5px] font-bold tracking-widest uppercase text-[var(--ink-3)] mb-3">Acciones</p>
+          <div className="flex flex-col gap-2">
+            {tel && (
+              <a
+                href={toWhatsAppUrl(tel)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-[var(--line)] bg-white text-sm font-semibold text-emerald-700 hover:bg-[var(--mint-soft)] transition-colors"
+              >
+                <WhatsAppIcon size={16} />
+                WhatsApp
+              </a>
+            )}
+            <button
+              onClick={onEdit}
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-[var(--line)] bg-white text-sm font-semibold text-[var(--ink)] hover:bg-[var(--cream-1)] transition-colors"
+            >
+              <Pencil size={14} />
+              Editar pedido
+            </button>
+            {p.estadoEntrega !== 'entregado' && (
+              <button
+                onClick={onMarkEntregado}
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-[var(--line)] bg-white text-sm font-semibold text-[var(--ink)] hover:bg-[var(--amber-soft)] transition-colors"
+              >
+                <PackageCheck size={14} />
+                Marcar entregado
+              </button>
+            )}
+            {p.estadoPago !== 'pagado' && (
+              <button
+                onClick={onCobrar}
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-[var(--line)] bg-white text-sm font-semibold text-[var(--ink)] hover:bg-[var(--mint-soft)] transition-colors"
+              >
+                <Banknote size={14} />
+                Registrar cobro
+              </button>
+            )}
+            {p.estadoPago !== 'pagado' && (
+              <button
+                onClick={onMarkPagado}
+                className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg bg-[var(--ink)] text-sm font-semibold text-[var(--cream-0)] hover:opacity-90 transition-colors"
+              >
+                <CheckCircle2 size={14} />
+                Marcar pagado
+              </button>
+            )}
+            <button
+              onClick={onDelete}
+              className="flex items-center gap-2.5 px-3 py-2.5 rounded-lg border border-red-200 bg-white text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors mt-1"
+            >
+              <Trash2 size={14} />
+              Eliminar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function PedidosPage() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const [modo, setModo] = useState<Modo>(() => window.innerWidth < 1024 ? 'cards' : 'tabla')
+  const [modo, setModo] = useState<Modo>(() => window.innerWidth < 768 ? 'cards' : 'tabla')
   const [pedidos, setPedidos] = useState<PedidoConEvento[]>([])
   const [eventos, setEventos] = useState<Evento[]>([])
   const [loading, setLoading] = useState(true)
   const [filtros, setFiltros] = useState<FiltrosPedidos>({})
-  const [filtroPor, setFiltroPor] = useState<'creacion' | 'entrega'>('creacion')
+  const [filtroPor, setFiltroPor] = useState<'creacion' | 'entrega'>('entrega')
   const [eventoSelect, setEventoSelect] = useState('')
   const [totalGastosGlobal, setTotalGastosGlobal] = useState(0)
   const [modalOpen, setModalOpen] = useState(false)
   const [editTarget, setEditTarget] = useState<PedidoConEvento | null>(null)
   const [viewTarget, setViewTarget] = useState<PedidoConEvento | null>(null)
   const [filtrosOpen, setFiltrosOpen] = useState(false)
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>('todos')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [expandedId, setExpandedId] = useState<number | null>(null)
   const [cobrandoId, setCobrandoId] = useState<number | null>(null)
   const [cobrarMonto, setCobrarMonto] = useState('')
   const [confirmEntregarTarget, setConfirmEntregarTarget] = useState<PedidoConEvento | null>(null)
@@ -85,6 +297,9 @@ export default function PedidosPage() {
   const [confirmando, setConfirmando] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<PedidoConEvento | null>(null)
   const [deleting, setDeleting] = useState(false)
+
+  const today = getTodayStr()
+  const tomorrow = getTomorrowStr()
 
   useEffect(() => {
     if (searchParams.get('nuevo') === '1') {
@@ -127,24 +342,63 @@ export default function PedidosPage() {
     else setFiltros(f => ({ ...f, eventoId: parseInt(val), sinEvento: undefined }))
   }
 
-  const activeFilterCount = [
-    eventoSelect !== '',
-    !!filtros.estadoEntrega,
-    !!filtros.estadoPago,
-    !!filtros.search,
-    !!(filtros.fechaDesde || filtros.fechaHasta),
-    !!filtros.modalidadEntrega,
-  ].filter(Boolean).length
+  // Quick filters + search applied client-side on top of server-filtered data
+  const filtered = useMemo(() => {
+    let arr = pedidos.slice()
+    if (quickFilter === 'hoy')         arr = arr.filter(o => o.fechaEntrega?.substring(0,10) === today)
+    else if (quickFilter === 'manana') arr = arr.filter(o => o.fechaEntrega?.substring(0,10) === tomorrow)
+    else if (quickFilter === 'porEntregar') arr = arr.filter(o => o.estadoEntrega !== 'entregado')
+    else if (quickFilter === 'porCobrar')   arr = arr.filter(o => o.estadoPago !== 'pagado')
 
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      arr = arr.filter(o =>
+        o.nombreCliente.toLowerCase().includes(q) ||
+        (o.evento?.nombre || '').toLowerCase().includes(q) ||
+        (o.descripcion || '').toLowerCase().includes(q) ||
+        (o.notas || '').toLowerCase().includes(q)
+      )
+    }
+    return arr.sort((a, b) => {
+      const fa = a.fechaEntrega ?? '9999'
+      const fb = b.fechaEntrega ?? '9999'
+      return fa.localeCompare(fb)
+    })
+  }, [pedidos, quickFilter, searchQuery, today, tomorrow])
+
+  // Group by fechaEntrega
+  const grouped = useMemo(() => {
+    const map = new Map<string, PedidoConEvento[]>()
+    for (const p of filtered) {
+      const key = p.fechaEntrega ?? 'sin-fecha'
+      if (!map.has(key)) map.set(key, [])
+      map.get(key)!.push(p)
+    }
+    return Array.from(map.entries())
+  }, [filtered])
+
+  // Counts for chips
+  const counts = {
+    todos:       pedidos.length,
+    hoy:         pedidos.filter(o => o.fechaEntrega?.substring(0,10) === today).length,
+    manana:      pedidos.filter(o => o.fechaEntrega?.substring(0,10) === tomorrow).length,
+    porEntregar: pedidos.filter(o => o.estadoEntrega !== 'entregado').length,
+    porCobrar:   pedidos.filter(o => o.estadoPago !== 'pagado').length,
+  }
+
+  // KPIs
   const totalMonto = pedidos.reduce((s, p) => s + parseFloat(p.precioTotal), 0)
   const cobrado = pedidos.filter(p => p.estadoPago === 'pagado').reduce((s, p) => s + parseFloat(p.precioTotal), 0)
   const pendienteCobro = totalMonto - cobrado
   const entregados = pedidos.filter(p => p.estadoEntrega === 'entregado').length
-  const pendientesEntrega = pedidos.filter(p => p.estadoEntrega === 'pendiente').length
-  const gananciaNeta = cobrado - totalGastosGlobal
-  const gananciaEsperada = totalMonto - totalGastosGlobal
-  const sinEventoCantidad = pedidos.filter(p => !p.eventoId).length
-  const sinEventoMonto = pedidos.filter(p => !p.eventoId).reduce((s, p) => s + parseFloat(p.precioTotal), 0)
+
+  const advancedFilterCount = [
+    eventoSelect !== '',
+    !!filtros.estadoEntrega,
+    !!filtros.estadoPago,
+    !!(filtros.fechaDesde || filtros.fechaHasta),
+    !!filtros.modalidadEntrega,
+  ].filter(Boolean).length
 
   async function handleConfirmarEntregado() {
     if (!confirmEntregarTarget) return
@@ -209,519 +463,537 @@ export default function PedidosPage() {
     }
   }
 
-  const porEstadoPago = (['sin_seña', 'señado', 'pagado'] as EstadoPago[]).map(estado => ({
-    estado,
-    cantidad: pedidos.filter(p => p.estadoPago === estado).length,
-    monto: pedidos.filter(p => p.estadoPago === estado).reduce((s, p) => s + parseFloat(p.precioTotal), 0),
-  }))
+  const inputClass = 'w-full border border-[var(--line)] rounded-xl px-2.5 py-2 text-sm text-[var(--ink)] focus:outline-none bg-white transition-colors placeholder-[var(--ink-4)]'
 
   return (
-    <div className="max-w-7xl mx-auto px-4 pt-20 pb-8">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center">
-            <ShoppingCart size={16} color="#1F2937" strokeWidth={2} />
-          </div>
-          <h1 className="text-xl font-semibold text-[#1F2937]">Pedidos</h1>
+    <div className="max-w-7xl mx-auto px-4 pt-20 pb-10">
+
+      {/* ── Page header ─────────────────────────────── */}
+      <div className="flex flex-wrap items-end justify-between gap-4 mb-6">
+        <div>
+          <p className="text-[11px] font-bold tracking-[0.08em] uppercase text-[var(--ink-3)] mb-1">Gestión</p>
+          <h1
+            className="font-serif text-5xl leading-none tracking-tight text-[var(--ink)]"
+            style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+          >
+            Pedidos
+          </h1>
+          {!loading && (
+            <p className="text-sm text-[var(--ink-3)] mt-2">
+              <strong className="text-[var(--ink)] font-semibold">{filtered.length}</strong> pedido{filtered.length !== 1 ? 's' : ''} ·{' '}
+              <strong className="text-[var(--ink)] font-semibold">{entregados}</strong> entregado{entregados !== 1 ? 's' : ''}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2">
-          <button onClick={() => setModalOpen(true)} className={btnPrimary}>
-            <Plus size={14} strokeWidth={2.5} />
-            <span>Nuevo pedido</span>
-          </button>
-          <div className="flex gap-1 bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl p-1">
-            <button onClick={() => setModo('cards')}
-              className={`text-sm px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${modo === 'cards' ? 'bg-white shadow-sm font-medium text-[#1F2937] border border-[#E5EAF1]' : 'text-[#6B7280] hover:text-[#1F2937]'}`}>
-              <LayoutGrid size={14} strokeWidth={2} />
-              <span className="hidden sm:inline">Cards</span>
+          {/* View toggle */}
+          <div className="flex gap-0.5 bg-white border border-[var(--line)] rounded-xl p-1 shadow-sm">
+            <button
+              onClick={() => setModo('tabla')}
+              className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${modo === 'tabla' ? 'bg-[var(--ink)] text-[var(--cream-0)]' : 'text-[var(--ink-3)] hover:text-[var(--ink)]'}`}
+            >
+              Tabla
             </button>
-            <button onClick={() => setModo('tabla')}
-              className={`text-sm px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${modo === 'tabla' ? 'bg-white shadow-sm font-medium text-[#1F2937] border border-[#E5EAF1]' : 'text-[#6B7280] hover:text-[#1F2937]'}`}>
-              <LayoutList size={14} strokeWidth={2} />
-              <span className="hidden sm:inline">Tabla</span>
-            </button>
-            <button onClick={() => setModo('dashboard')}
-              className={`text-sm px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${modo === 'dashboard' ? 'bg-white shadow-sm font-medium text-[#1F2937] border border-[#E5EAF1]' : 'text-[#6B7280] hover:text-[#1F2937]'}`}>
-              <BarChart2 size={14} strokeWidth={2} />
-              <span className="hidden sm:inline">Stats</span>
+            <button
+              onClick={() => setModo('cards')}
+              className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${modo === 'cards' ? 'bg-[var(--ink)] text-[var(--cream-0)]' : 'text-[var(--ink-3)] hover:text-[var(--ink)]'}`}
+            >
+              Cards
             </button>
           </div>
+          <button
+            onClick={() => setModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--ink)] text-[var(--cream-0)] text-sm font-semibold hover:opacity-90 transition-opacity shadow-sm"
+            style={{ boxShadow: '0 1px 2px rgba(42,31,26,0.12), 0 6px 16px -8px rgba(42,31,26,0.35)' }}
+          >
+            <Plus size={15} strokeWidth={2.5} />
+            Nuevo pedido
+          </button>
         </div>
       </div>
 
-      {/* Filtros colapsables */}
-      <div className="bg-white border border-[#E5EAF1] rounded-2xl mb-5 overflow-hidden">
-        <button
-          onClick={() => setFiltrosOpen(o => !o)}
-          className="w-full flex items-center justify-between px-4 py-3 hover:bg-[#F7FAFC] transition-colors"
-        >
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal size={13} color="#9CC6EA" strokeWidth={2} />
-            <span className="text-xs font-medium text-[#6B7280]">Filtros</span>
-            {activeFilterCount > 0 && (
-              <span className="bg-[#CFE6F7] text-[#1F2937] text-[10px] font-semibold px-1.5 py-0.5 rounded-full leading-none">
-                {activeFilterCount}
-              </span>
+      {/* ── KPIs ─────────────────────────────────────── */}
+      {!loading && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+          <div className="popi-kpi" style={{ '--kpi-accent': 'var(--ink)' } as React.CSSProperties}>
+            <p className="text-[11px] font-bold tracking-wide uppercase text-[var(--ink-3)] mb-1.5">Total</p>
+            <p className="text-3xl font-bold text-[var(--ink)] leading-none">{pedidos.length}</p>
+            <p className="text-xs text-[var(--ink-4)] mt-1.5">{counts.porEntregar} por entregar</p>
+          </div>
+          <div className="popi-kpi" style={{ '--kpi-accent': 'oklch(0.72 0.14 70)' } as React.CSSProperties}>
+            <p className="text-[11px] font-bold tracking-wide uppercase text-[var(--ink-3)] mb-1.5">Facturado</p>
+            <p className="text-xl font-bold text-[var(--ink)] leading-none tabular-nums">{formatMonto(totalMonto)}</p>
+            <p className="text-xs text-[var(--ink-4)] mt-1.5">esperado total</p>
+          </div>
+          <div className="popi-kpi" style={{ '--kpi-accent': 'oklch(0.62 0.11 150)' } as React.CSSProperties}>
+            <p className="text-[11px] font-bold tracking-wide uppercase text-[var(--ink-3)] mb-1.5">Cobrado</p>
+            <p className="text-xl font-bold leading-none tabular-nums" style={{ color: 'oklch(0.36 0.10 145)' }}>{formatMonto(cobrado)}</p>
+            <p className="text-xs text-[var(--ink-4)] mt-1.5">pagos completos</p>
+          </div>
+          <div className="popi-kpi" style={{ '--kpi-accent': 'oklch(0.62 0.16 20)' } as React.CSSProperties}>
+            <p className="text-[11px] font-bold tracking-wide uppercase text-[var(--ink-3)] mb-1.5">Por cobrar</p>
+            <p className="text-xl font-bold leading-none tabular-nums" style={{ color: 'oklch(0.42 0.16 22)' }}>{formatMonto(pendienteCobro)}</p>
+            <p className="text-xs text-[var(--ink-4)] mt-1.5">{counts.porCobrar} pedidos</p>
+          </div>
+        </div>
+      )}
+
+      {/* ── Filter bar ───────────────────────────────── */}
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div className="flex items-center gap-2 flex-wrap">
+          {([
+            { id: 'todos',       lbl: 'Todos',        count: counts.todos },
+            { id: 'hoy',         lbl: 'Hoy',          count: counts.hoy },
+            { id: 'manana',      lbl: 'Mañana',       count: counts.manana },
+            { id: 'porEntregar', lbl: 'Por entregar', count: counts.porEntregar },
+            { id: 'porCobrar',   lbl: 'Por cobrar',   count: counts.porCobrar },
+          ] as { id: QuickFilter; lbl: string; count: number }[]).map(c => (
+            <button
+              key={c.id}
+              className={`popi-chip ${quickFilter === c.id ? 'active' : ''}`}
+              onClick={() => setQuickFilter(c.id)}
+            >
+              {c.lbl}
+              <span className="popi-chip-count">{c.count}</span>
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2">
+          {/* Search */}
+          <div className="popi-search" style={{ width: 280 }}>
+            <Search size={14} />
+            <input
+              type="text"
+              placeholder="Buscar cliente, evento..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="w-5 h-5 flex items-center justify-center rounded hover:bg-[var(--cream-1)] transition-colors"
+              >
+                <X size={12} />
+              </button>
             )}
           </div>
-          {filtrosOpen
-            ? <ChevronUp size={14} color="#6B7280" strokeWidth={2} />
-            : <ChevronDown size={14} color="#6B7280" strokeWidth={2} />
-          }
-        </button>
-        {filtrosOpen && (
-          <div className="px-4 pb-4 border-t border-[#E5EAF1] pt-3 flex flex-col gap-3">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Evento</label>
-                <select className={inputClass} value={eventoSelect} onChange={e => handleEventoSelect(e.target.value)}>
-                  <option value="">Todos</option>
-                  <option value="sin_evento">Sin evento</option>
-                  {eventos.map(ev => <option key={ev.id} value={ev.id}>{ev.nombre}</option>)}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Entrega</label>
-                <select className={inputClass} value={filtros.estadoEntrega ?? ''} onChange={e => setFiltro('estadoEntrega', e.target.value as EstadoEntrega || undefined)}>
-                  <option value="">Todos</option>
-                  <option value="pendiente">Pendiente</option>
-                  <option value="entregado">Entregado</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Pago</label>
-                <select className={inputClass} value={filtros.estadoPago ?? ''} onChange={e => setFiltro('estadoPago', e.target.value as EstadoPago || undefined)}>
-                  <option value="">Todos</option>
-                  <option value="sin_seña">Pendiente</option>
-                  <option value="señado">Señado</option>
-                  <option value="pagado">Pagado</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Modalidad</label>
-                <select className={inputClass} value={filtros.modalidadEntrega ?? ''} onChange={e => setFiltro('modalidadEntrega', e.target.value as ModalidadEntrega || undefined)}>
-                  <option value="">Todos</option>
-                  <option value="ENVIO">Envío</option>
-                  <option value="RETIRA">Retira</option>
-                </select>
-              </div>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Buscar cliente</label>
-                <div className="relative">
-                  <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CC6EA]" strokeWidth={2} />
-                  <input
-                    className="w-full border border-[#E5EAF1] rounded-xl pl-8 pr-3 py-2 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
-                    placeholder="Nombre del cliente..."
-                    value={filtros.search ?? ''}
-                    onChange={e => setFiltro('search', e.target.value || undefined)}
-                  />
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="text-xs font-medium text-[#6B7280]">Fecha</label>
-                  <div className="flex gap-1">
-                    <button
-                      type="button"
-                      onClick={() => setFiltroPor('creacion')}
-                      className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${filtroPor === 'creacion' ? 'bg-[#CFE6F7] text-[#1F2937] font-medium' : 'text-[#6B7280] hover:text-[#1F2937]'}`}
-                    >
-                      Pedido
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setFiltroPor('entrega')}
-                      className={`text-[10px] px-2 py-0.5 rounded-full transition-colors ${filtroPor === 'entrega' ? 'bg-amber-100 text-amber-800 font-medium' : 'text-[#6B7280] hover:text-[#1F2937]'}`}
-                    >
-                      Entrega
-                    </button>
-                  </div>
-                </div>
-                <div className="flex gap-2 items-center">
-                  <input type="date"
-                    className="flex-1 border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
-                    value={filtros.fechaDesde ?? ''} onChange={e => setFiltro('fechaDesde', e.target.value || undefined)}
-                  />
-                  <span className="text-[#6B7280] text-xs shrink-0">–</span>
-                  <input type="date"
-                    className="flex-1 border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
-                    value={filtros.fechaHasta ?? ''} onChange={e => setFiltro('fechaHasta', e.target.value || undefined)}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+          {/* Filtros avanzados */}
+          <button
+            onClick={() => setFiltrosOpen(o => !o)}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl border text-sm font-semibold transition-colors ${filtrosOpen || advancedFilterCount > 0 ? 'bg-[var(--ink)] text-[var(--cream-0)] border-[var(--ink)]' : 'bg-white border-[var(--line)] text-[var(--ink-2)] hover:text-[var(--ink)]'}`}
+          >
+            <SlidersHorizontal size={13} />
+            <span className="hidden sm:inline">Filtros</span>
+            {advancedFilterCount > 0 && (
+              <span className="w-4 h-4 rounded-full bg-white/20 text-[10px] font-bold flex items-center justify-center">{advancedFilterCount}</span>
+            )}
+          </button>
+        </div>
       </div>
 
-      {loading ? (
-        <LoadingSpinner />
-      ) : modo === 'cards' ? (
-        pedidos.length === 0 ? (
-          <EmptyState
-            variant="pedidos"
-            titulo="No hay pedidos"
-            descripcion="No encontramos pedidos con esos filtros. Probá cambiando la búsqueda o creá uno nuevo."
-            accion={
-              <button onClick={() => setModalOpen(true)} className="bg-[#1F2937] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-[#374151] transition-colors">
-                Nuevo pedido
-              </button>
-            }
-          />
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {pedidos.map(p => (
-              <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl p-4 flex flex-col gap-3">
-                {/* Header */}
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <p className="font-semibold text-[#1F2937] truncate">{p.nombreCliente}</p>
-                      {p.modalidadEntrega && (
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${p.modalidadEntrega === 'ENVIO' ? 'bg-[#CFE6F7] text-[#1F2937]' : 'bg-[#F3F4F6] text-[#6B7280]'}`}>
-                          {p.modalidadEntrega === 'ENVIO' ? 'Envío' : 'Retira'}
-                        </span>
-                      )}
-                      {(p.telefono || p.cliente?.telefono) && (
-                        <a href={toWhatsAppUrl((p.telefono || p.cliente!.telefono)!)}
-                          target="_blank" rel="noopener noreferrer"
-                          className="p-1.5 rounded-xl text-[#25D366] hover:bg-emerald-50 transition-colors shrink-0"
-                          title="WhatsApp" onClick={e => e.stopPropagation()}>
-                          <WhatsAppIcon size={20} />
-                        </a>
-                      )}
-                    </div>
-                    {p.telefono && <p className="text-xs text-[#6B7280] mt-0.5">{p.telefono}</p>}
-                    {p.evento && <p className="text-xs text-[#9CC6EA] mt-0.5 font-medium">{p.evento.nombre}</p>}
-                    {p.fechaEntrega && (
-                      <div className="flex items-center gap-1 mt-0.5">
-                        <Calendar size={10} className={`shrink-0 ${esFechaPasada(p.fechaEntrega) && p.estadoEntrega === 'pendiente' ? 'text-red-400' : 'text-[#9CC6EA]'}`} strokeWidth={2} />
-                        <span className={`text-xs font-medium ${esFechaPasada(p.fechaEntrega) && p.estadoEntrega === 'pendiente' ? 'text-red-500' : 'text-[#6B7280]'}`}>
-                          Entrega: {formatFechaCorta(p.fechaEntrega)}
-                        </span>
-                        {esFechaHoy(p.fechaEntrega) && (
-                          <span className="text-[9px] font-semibold bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full leading-none">Hoy</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-1 shrink-0">
-                    <p className="text-xs text-[#6B7280] mr-1">{formatFecha(p.createdAt)}</p>
-                    <button onClick={() => { setEditTarget(p); setModalOpen(true) }}
-                      className="p-1.5 rounded-lg text-[#9CC6EA] hover:text-[#1F2937] hover:bg-[#F7FAFC] transition-colors" title="Editar">
-                      <Pencil size={13} strokeWidth={2} />
-                    </button>
-                    <button onClick={() => setDeleteTarget(p)}
-                      className="p-1.5 rounded-lg text-[#9CC6EA] hover:text-red-500 hover:bg-red-50 transition-colors" title="Eliminar">
-                      <Trash2 size={13} strokeWidth={2} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Info */}
-                {p.productos.length > 0 ? (
-                  <ul className="flex flex-col gap-0.5">
-                    {p.productos.map(pp => (
-                      <li key={pp.id} className="text-xs text-[#6B7280] flex items-baseline gap-1.5">
-                        <span className="font-semibold text-[#1F2937] shrink-0">{pp.cantidad}×</span>
-                        <span className="truncate">{pp.producto.nombre}</span>
-                      </li>
-                    ))}
-                  </ul>
-                ) : p.descripcion ? (
-                  <p className="text-xs text-[#6B7280] italic truncate">"{p.descripcion}"</p>
-                ) : null}
-                {p.notas && (
-                  <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2 flex gap-2 items-start">
-                    <StickyNote size={12} className="text-amber-400 shrink-0 mt-0.5" strokeWidth={2} />
-                    <p className="text-xs text-amber-900 leading-relaxed">{p.notas}</p>
-                  </div>
-                )}
-                <p className="text-2xl font-bold text-[#1F2937]">{formatMonto(parseFloat(p.precioTotal))}</p>
-                {p.montoSeña && p.estadoPago === 'señado' && (
-                  <p className="text-xs text-[#6B7280] -mt-2">
-                    Seña: {formatMonto(parseFloat(p.montoSeña))} · Resta: {formatMonto(parseFloat(p.precioTotal) - parseFloat(p.montoSeña))}
-                  </p>
-                )}
-                <div className="flex gap-2 flex-wrap">
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgeEntrega(p.estadoEntrega)}`}>
-                    {etiquetaEntrega[p.estadoEntrega]}
-                  </span>
-                  <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${badgePago(p.estadoPago)}`}>
-                    {etiquetaPago[p.estadoPago]}
-                  </span>
-                </div>
-
-                {/* Cobrar inline */}
-                {cobrandoId === p.id && (
-                  <div className="bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl p-3 flex flex-col gap-2.5">
-                    <p className="text-xs font-semibold text-[#1F2937]">¿Cuánto cobró?</p>
-                    <input
-                      type="number" min="0" step="0.01" autoFocus
-                      placeholder="Monto..."
-                      value={cobrarMonto}
-                      onChange={e => setCobrarMonto(e.target.value)}
-                      className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
-                    />
-                    {cobrarMonto && parseFloat(cobrarMonto) > 0 && (() => {
-                      const pagado = (p.montoSeña ? parseFloat(p.montoSeña) : 0) + parseFloat(cobrarMonto)
-                      const total = parseFloat(p.precioTotal)
-                      return (
-                        <p className="text-xs text-[#6B7280]">
-                          {pagado >= total
-                            ? '✓ Cubre el total — quedará pagado'
-                            : `Resta ${formatMonto(total - pagado)} tras registrar`}
-                        </p>
-                      )
-                    })()}
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => { setCobrandoId(null); setCobrarMonto('') }}
-                        className="flex-1 py-2.5 text-sm text-[#6B7280] hover:text-[#1F2937] bg-white border border-[#E5EAF1] rounded-xl hover:bg-[#F7FAFC] transition-colors"
-                      >
-                        Cancelar
-                      </button>
-                      <button
-                        type="button"
-                        disabled={!cobrarMonto || parseFloat(cobrarMonto) <= 0}
-                        onClick={() => handleCobrar(p)}
-                        className="flex-1 py-2.5 text-sm font-semibold bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors"
-                      >
-                        Guardar
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Botones de acción */}
-                <div className="flex gap-2 mt-auto">
-                  <button onClick={() => setViewTarget(p)}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium bg-[#F7FAFC] border border-[#E5EAF1] text-[#1F2937] rounded-xl hover:bg-[#E5EAF1] transition-colors">
-                    <Eye size={16} strokeWidth={2} />
-                    Ver
-                  </button>
-                  {p.estadoPago !== 'pagado' && cobrandoId !== p.id && (
-                    <button onClick={() => { setCobrandoId(p.id); setCobrarMonto('') }}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium bg-[#ecfdf5] text-[#047857] rounded-xl hover:bg-[#d1fae5] transition-colors">
-                      <Banknote size={16} strokeWidth={2} />
-                      Cobrar
-                    </button>
-                  )}
-                  {p.estadoPago !== 'pagado' && cobrandoId !== p.id && (
-                    <button onClick={() => setConfirmPagarTarget(p)}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] transition-colors">
-                      <CheckCircle2 size={16} strokeWidth={2} />
-                      Pagado
-                    </button>
-                  )}
-                  {p.estadoEntrega !== 'entregado' && cobrandoId !== p.id && (
-                    <button onClick={() => setConfirmEntregarTarget(p)}
-                      className="flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium bg-[#fffbeb] text-[#b45309] rounded-xl hover:bg-[#fef3c7] transition-colors">
-                      <PackageCheck size={16} strokeWidth={2} />
-                      Entregar
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )
-      ) : modo === 'tabla' ? (
-        pedidos.length === 0 ? (
-          <EmptyState
-            variant="pedidos"
-            titulo="No hay pedidos"
-            descripcion="No encontramos pedidos con esos filtros. Probá cambiando la búsqueda o creá uno nuevo."
-            accion={
-              <button onClick={() => setModalOpen(true)} className="bg-[#1F2937] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-[#374151] transition-colors">
-                Nuevo pedido
-              </button>
-            }
-          />
-        ) : (
-          <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-[#E5EAF1] text-xs text-[#6B7280] font-medium">
-                    <th className="text-left px-4 py-3">Cliente</th>
-                    <th className="text-left px-4 py-3">Evento</th>
-                    <th className="text-left px-4 py-3 hidden md:table-cell">Descripción</th>
-                    <th className="text-right px-4 py-3">Precio</th>
-                    <th className="text-left px-4 py-3">Entrega</th>
-                    <th className="text-left px-4 py-3">Pago</th>
-                    <th className="text-left px-4 py-3 hidden lg:table-cell">Notas</th>
-                    <th className="px-4 py-3"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#F7FAFC]">
-                  {pedidos.map(p => (
-                    <tr key={p.id} className="hover:bg-[#F7FAFC] transition-colors">
-                      <td className="px-4 py-3 font-medium text-[#1F2937] whitespace-nowrap">{p.nombreCliente}</td>
-                      <td className="px-4 py-3 whitespace-nowrap">
-                        {p.evento ? (
-                          <>
-                            <div className="text-[#1F2937]">{p.evento.nombre}</div>
-                            <div className="text-xs text-[#6B7280]">{formatFecha(p.evento.fecha)}</div>
-                          </>
-                        ) : (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-[#F7FAFC] text-[#6B7280] border border-[#E5EAF1]">
-                            Sin evento
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-4 py-3 text-[#6B7280] max-w-48 hidden md:table-cell">
-                        <p className="truncate">{p.descripcion}</p>
-                      </td>
-                      <td className="px-4 py-3 text-right font-semibold text-[#1F2937] whitespace-nowrap">
-                        {formatMonto(parseFloat(p.precioTotal))}
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap ${badgeEntrega(p.estadoEntrega)}`}>
-                          {etiquetaEntrega[p.estadoEntrega]}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs px-2.5 py-1 rounded-full font-medium whitespace-nowrap ${badgePago(p.estadoPago)}`}>
-                          {etiquetaPago[p.estadoPago]}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-[#6B7280] text-xs max-w-36 hidden lg:table-cell">
-                        <p className="truncate italic">{p.notas ?? '—'}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-1">
-                          {(p.telefono || p.cliente?.telefono) && (
-                            <a
-                              href={toWhatsAppUrl((p.telefono || p.cliente!.telefono)!)}
-                              target="_blank" rel="noopener noreferrer"
-                              className="p-1.5 rounded-lg text-[#25D366] hover:bg-emerald-50 transition-colors"
-                              title="WhatsApp"
-                            >
-                              <WhatsAppIcon size={17} />
-                            </a>
-                          )}
-                          <button
-                            onClick={() => setViewTarget(p)}
-                            className="p-1.5 rounded-lg text-[#9CC6EA] hover:text-[#1F2937] hover:bg-[#F7FAFC] transition-colors"
-                            title="Ver detalle"
-                          >
-                            <Eye size={15} strokeWidth={2} />
-                          </button>
-                          <button
-                            onClick={() => { setEditTarget(p); setModalOpen(true) }}
-                            className="p-1.5 rounded-lg text-[#9CC6EA] hover:text-[#1F2937] hover:bg-[#F7FAFC] transition-colors"
-                            title="Editar"
-                          >
-                            <Pencil size={15} strokeWidth={2} />
-                          </button>
-                          <button
-                            onClick={() => setDeleteTarget(p)}
-                            className="p-1.5 rounded-lg text-[#9CC6EA] hover:text-red-500 hover:bg-red-50 transition-colors"
-                            title="Eliminar"
-                          >
-                            <Trash2 size={15} strokeWidth={2} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )
-      ) : (
-        <div className="flex flex-col gap-4">
-          {/* Métricas de ingresos */}
+      {/* Filtros avanzados colapsables */}
+      {filtrosOpen && (
+        <div className="bg-white border border-[var(--line)] rounded-2xl px-4 py-4 mb-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
           <div>
-            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Ingresos</p>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-2"><ShoppingCart size={14} color="#9CC6EA" strokeWidth={2} /><p className="text-xs text-[#6B7280]">Total pedidos</p></div>
-                <p className="text-2xl font-semibold text-[#1F2937]">{pedidos.length}</p>
-                {sinEventoCantidad > 0 && <p className="text-xs text-[#6B7280] mt-0.5">{sinEventoCantidad} sin evento</p>}
-              </div>
-              <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-2"><DollarSign size={14} color="#9CC6EA" strokeWidth={2} /><p className="text-xs text-[#6B7280]">Monto esperado</p></div>
-                <p className="text-lg font-semibold text-[#1F2937]">{formatMonto(totalMonto)}</p>
-                {sinEventoMonto > 0 && <p className="text-xs text-[#6B7280] mt-0.5">{formatMonto(sinEventoMonto)} sin evento</p>}
-              </div>
-              <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-2"><CheckCircle2 size={14} color="#10b981" strokeWidth={2} /><p className="text-xs text-[#6B7280]">Cobrado</p></div>
-                <p className="text-lg font-semibold text-emerald-600">{formatMonto(cobrado)}</p>
-              </div>
-              <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-2"><TrendingDown size={14} color="#f59e0b" strokeWidth={2} /><p className="text-xs text-[#6B7280]">Pendiente cobro</p></div>
-                <p className="text-lg font-semibold text-amber-500">{formatMonto(pendienteCobro)}</p>
-              </div>
-            </div>
+            <label className="block text-[10.5px] font-bold uppercase tracking-wider text-[var(--ink-3)] mb-1.5">Evento</label>
+            <select className={inputClass} value={eventoSelect} onChange={e => handleEventoSelect(e.target.value)}>
+              <option value="">Todos</option>
+              <option value="sin_evento">Sin evento</option>
+              {eventos.map(ev => <option key={ev.id} value={ev.id}>{ev.nombre}</option>)}
+            </select>
           </div>
-
-          {/* Rentabilidad global */}
           <div>
-            <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Rentabilidad</p>
-            <div className="grid grid-cols-3 gap-3">
-              <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-2"><FlaskConical size={14} color="#9CC6EA" strokeWidth={2} /><p className="text-xs text-[#6B7280]">Total gastos</p></div>
-                <p className="text-lg font-semibold text-[#1F2937]">{formatMonto(totalGastosGlobal)}</p>
-                {filtros.eventoId && <p className="text-xs text-[#6B7280] mt-0.5">evento seleccionado</p>}
-              </div>
-              <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  {gananciaNeta >= 0 ? <TrendingUp size={14} color="#10b981" strokeWidth={2} /> : <TrendingDown size={14} color="#ef4444" strokeWidth={2} />}
-                  <p className="text-xs text-[#6B7280]">Ganancia neta</p>
-                </div>
-                <p className={`text-lg font-semibold ${gananciaNeta >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>{formatMonto(gananciaNeta)}</p>
-                <p className="text-xs text-[#6B7280] mt-0.5">cobrado − gastos</p>
-              </div>
-              <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  {gananciaEsperada >= 0 ? <TrendingUp size={14} color="#9CC6EA" strokeWidth={2} /> : <TrendingDown size={14} color="#f59e0b" strokeWidth={2} />}
-                  <p className="text-xs text-[#6B7280]">Ganancia esperada</p>
-                </div>
-                <p className={`text-lg font-semibold ${gananciaEsperada >= 0 ? 'text-[#1F2937]' : 'text-amber-500'}`}>{formatMonto(gananciaEsperada)}</p>
-                <p className="text-xs text-[#6B7280] mt-0.5">total − gastos</p>
-              </div>
-            </div>
+            <label className="block text-[10.5px] font-bold uppercase tracking-wider text-[var(--ink-3)] mb-1.5">Entrega</label>
+            <select className={inputClass} value={filtros.estadoEntrega ?? ''} onChange={e => setFiltro('estadoEntrega', e.target.value as EstadoEntrega || undefined)}>
+              <option value="">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="entregado">Entregado</option>
+            </select>
           </div>
-
-          {/* Estados */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="bg-white border border-[#E5EAF1] rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-4"><Clock size={14} color="#9CC6EA" strokeWidth={2} /><p className="text-sm font-semibold text-[#1F2937]">Estado de entrega</p></div>
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-amber-700 bg-amber-50 px-2.5 py-1 rounded-full font-medium">Pendiente</span>
-                  <span className="text-sm font-semibold text-[#1F2937]">{pendientesEntrega}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-medium">Entregado</span>
-                  <span className="text-sm font-semibold text-[#1F2937]">{entregados}</span>
-                </div>
+          <div>
+            <label className="block text-[10.5px] font-bold uppercase tracking-wider text-[var(--ink-3)] mb-1.5">Pago</label>
+            <select className={inputClass} value={filtros.estadoPago ?? ''} onChange={e => setFiltro('estadoPago', e.target.value as EstadoPago || undefined)}>
+              <option value="">Todos</option>
+              <option value="sin_seña">Pendiente</option>
+              <option value="señado">Señado</option>
+              <option value="pagado">Pagado</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-[10.5px] font-bold uppercase tracking-wider text-[var(--ink-3)] mb-1.5">Modalidad</label>
+            <select className={inputClass} value={filtros.modalidadEntrega ?? ''} onChange={e => setFiltro('modalidadEntrega', e.target.value as ModalidadEntrega || undefined)}>
+              <option value="">Todos</option>
+              <option value="ENVIO">Envío</option>
+              <option value="RETIRA">Retira</option>
+            </select>
+          </div>
+          <div className="col-span-2">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-[10.5px] font-bold uppercase tracking-wider text-[var(--ink-3)]">Fecha</label>
+              <div className="flex gap-1">
+                <button type="button" onClick={() => setFiltroPor('entrega')}
+                  className={`text-[10px] px-2 py-0.5 rounded-full font-semibold transition-colors ${filtroPor === 'entrega' ? 'bg-[var(--ink)] text-[var(--cream-0)]' : 'text-[var(--ink-3)] hover:text-[var(--ink)]'}`}>
+                  Entrega
+                </button>
+                <button type="button" onClick={() => setFiltroPor('creacion')}
+                  className={`text-[10px] px-2 py-0.5 rounded-full font-semibold transition-colors ${filtroPor === 'creacion' ? 'bg-[var(--ink)] text-[var(--cream-0)]' : 'text-[var(--ink-3)] hover:text-[var(--ink)]'}`}>
+                  Creación
+                </button>
               </div>
             </div>
-            <div className="bg-white border border-[#E5EAF1] rounded-2xl p-5">
-              <div className="flex items-center gap-2 mb-4"><CreditCard size={14} color="#9CC6EA" strokeWidth={2} /><p className="text-sm font-semibold text-[#1F2937]">Estado de pago</p></div>
-              <div className="flex flex-col gap-3">
-                {porEstadoPago.map(({ estado, cantidad, monto }) => (
-                  <div key={estado} className="flex items-center justify-between">
-                    <span className={`text-sm px-2.5 py-1 rounded-full font-medium ${badgePago(estado)}`}>{etiquetaPago[estado]}</span>
-                    <div className="text-right">
-                      <span className="text-sm font-semibold text-[#1F2937]">{cantidad}</span>
-                      <span className="text-xs text-[#6B7280] ml-2">{formatMonto(monto)}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <div className="flex gap-2 items-center">
+              <input type="date" className={inputClass} value={filtros.fechaDesde ?? ''} onChange={e => setFiltro('fechaDesde', e.target.value || undefined)} />
+              <span className="text-[var(--ink-3)] text-xs shrink-0">–</span>
+              <input type="date" className={inputClass} value={filtros.fechaHasta ?? ''} onChange={e => setFiltro('fechaHasta', e.target.value || undefined)} />
             </div>
           </div>
         </div>
       )}
 
+      {/* ── Content ──────────────────────────────────── */}
+      {loading ? (
+        <LoadingSpinner />
+      ) : filtered.length === 0 ? (
+        <EmptyState
+          variant="pedidos"
+          titulo="No hay pedidos"
+          descripcion="No encontramos pedidos. Probá cambiando los filtros o creá uno nuevo."
+          accion={
+            <button
+              onClick={() => setModalOpen(true)}
+              className="px-5 py-2.5 rounded-xl bg-[var(--ink)] text-[var(--cream-0)] text-sm font-semibold hover:opacity-90 transition-opacity"
+            >
+              Nuevo pedido
+            </button>
+          }
+        />
+      ) : modo === 'tabla' ? (
+
+        /* ── TABLE VIEW ─────────────────────────────── */
+        <div className="popi-table-card">
+          {/* Table head */}
+          <div className="popi-table-thead hidden md:grid">
+            <span>Cliente</span>
+            <span>Descripción</span>
+            <span>Entrega</span>
+            <span>Pago</span>
+            <span className="text-right">Precio</span>
+          </div>
+
+          {/* Grouped rows */}
+          {grouped.map(([fecha, items]) => {
+            const fechaLabel = fecha === 'sin-fecha'
+              ? { day: '—', rest: 'sin fecha de entrega' }
+              : formatFechaDia(fecha)
+            const groupTotal = items.reduce((s, p) => s + parseFloat(p.precioTotal), 0)
+            const isToday = fecha === today
+            const isTomorrow = fecha === tomorrow
+
+            return (
+              <div key={fecha}>
+                {/* Group header */}
+                <div className="flex items-baseline justify-between px-5 py-3 border-t border-[var(--line-2)] first:border-0 bg-[var(--cream-0)/50]">
+                  <div className="flex items-baseline gap-2">
+                    <span
+                      className="font-bold text-xl leading-none text-[var(--ink)]"
+                      style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+                    >
+                      {fechaLabel.day}
+                    </span>
+                    <span className="text-xs text-[var(--ink-3)] capitalize">{fechaLabel.rest}</span>
+                    {isToday && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Hoy</span>
+                    )}
+                    {isTomorrow && (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">Mañana</span>
+                    )}
+                  </div>
+                  <span className="text-xs text-[var(--ink-3)] font-medium">
+                    {items.length} pedido{items.length !== 1 ? 's' : ''} · {formatMonto(groupTotal)}
+                  </span>
+                </div>
+
+                {/* Rows */}
+                {items.map(p => {
+                  const isExpanded = expandedId === p.id
+                  const tel = p.telefono || p.cliente?.telefono
+                  const hasPendingPago = p.estadoPago === 'sin_seña'
+                  const hasPendingEntrega = p.estadoEntrega === 'pendiente' && fecha !== 'sin-fecha' && esFechaPasada(fecha)
+
+                  return (
+                    <div key={p.id}>
+                      <button
+                        className={`popi-table-row w-full hidden md:grid ${isExpanded ? 'expanded' : ''} ${hasPendingPago ? 'has-rose' : hasPendingEntrega ? 'has-amber' : ''}`}
+                        onClick={() => setExpandedId(isExpanded ? null : p.id)}
+                      >
+                        {/* Cliente */}
+                        <div className="flex items-center gap-3 min-w-0">
+                          <Avatar name={p.nombreCliente} size={34} />
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-[var(--ink)] truncate">{p.nombreCliente}</p>
+                            {tel && (
+                              <p className="text-xs text-[var(--ink-4)] truncate">{tel}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Descripción / Evento */}
+                        <div className="min-w-0 pr-3">
+                          {p.evento && (
+                            <span className="inline-block text-[11px] font-semibold px-2 py-0.5 bg-[var(--cream-1)] text-[var(--ink-2)] rounded mb-1">
+                              {p.evento.nombre}
+                            </span>
+                          )}
+                          <p className="text-xs text-[var(--ink-3)] truncate">
+                            {p.productos.length > 0
+                              ? p.productos.map(pp => `${pp.cantidad}× ${pp.producto.nombre}`).join(', ')
+                              : p.descripcion || '—'}
+                          </p>
+                        </div>
+
+                        {/* Entrega */}
+                        <div>
+                          <StatusPill value={p.estadoEntrega} kind="entrega" />
+                        </div>
+
+                        {/* Pago */}
+                        <div>
+                          <StatusPill value={p.estadoPago} kind="pago" />
+                          {p.montoSeña && p.estadoPago === 'señado' && (
+                            <p className="text-[10px] text-[var(--ink-4)] mt-0.5 tabular-nums">
+                              Seña {formatMonto(parseFloat(p.montoSeña))}
+                            </p>
+                          )}
+                        </div>
+
+                        {/* Precio + chevron */}
+                        <div className="flex items-center justify-end gap-2">
+                          <div className="text-right">
+                            <p className="text-sm font-bold text-[var(--ink)] tabular-nums">{formatMonto(parseFloat(p.precioTotal))}</p>
+                          </div>
+                          <ChevronDown
+                            size={16}
+                            className="text-[var(--ink-4)] shrink-0 transition-transform"
+                            style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                          />
+                        </div>
+                      </button>
+
+                      {/* Mobile card row */}
+                      <div
+                        className={`md:hidden p-4 border-t border-[var(--line-2)] cursor-pointer transition-colors ${isExpanded ? 'bg-[oklch(0.96_0.025_65_/_0.5)]' : 'hover:bg-[var(--cream-0)/70]'}`}
+                        onClick={() => setExpandedId(isExpanded ? null : p.id)}
+                      >
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <Avatar name={p.nombreCliente} size={32} />
+                            <div className="min-w-0">
+                              <p className="text-sm font-semibold text-[var(--ink)]">{p.nombreCliente}</p>
+                              <p className="text-xs text-[var(--ink-3)] truncate">
+                                {p.productos.length > 0
+                                  ? p.productos.map(pp => `${pp.cantidad}× ${pp.producto.nombre}`).join(', ')
+                                  : p.descripcion || '—'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <div className="text-right">
+                              <p className="text-sm font-bold tabular-nums text-[var(--ink)]">{formatMonto(parseFloat(p.precioTotal))}</p>
+                            </div>
+                            <ChevronDown
+                              size={15}
+                              className="text-[var(--ink-4)] transition-transform"
+                              style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                            />
+                          </div>
+                        </div>
+                        <div className="flex gap-1.5 mt-2">
+                          <StatusPill value={p.estadoEntrega} kind="entrega" />
+                          <StatusPill value={p.estadoPago} kind="pago" />
+                        </div>
+                      </div>
+
+                      {/* Expanded detail */}
+                      {isExpanded && (
+                        cobrandoId === p.id ? (
+                          <div className="popi-row-detail">
+                            <div className="max-w-sm">
+                              <p className="text-sm font-semibold text-[var(--ink)] mb-3">¿Cuánto cobró?</p>
+                              <input
+                                type="number" min="0" step="0.01" autoFocus
+                                placeholder="Monto..."
+                                value={cobrarMonto}
+                                onChange={e => setCobrarMonto(e.target.value)}
+                                className="w-full border border-[var(--line)] rounded-xl px-3 py-2.5 text-sm text-[var(--ink)] bg-white focus:outline-none mb-2"
+                              />
+                              {cobrarMonto && parseFloat(cobrarMonto) > 0 && (() => {
+                                const pagado = (p.montoSeña ? parseFloat(p.montoSeña) : 0) + parseFloat(cobrarMonto)
+                                const total = parseFloat(p.precioTotal)
+                                return (
+                                  <p className="text-xs text-[var(--ink-3)] mb-3">
+                                    {pagado >= total
+                                      ? '✓ Cubre el total — quedará pagado'
+                                      : `Resta ${formatMonto(total - pagado)} tras registrar`}
+                                  </p>
+                                )
+                              })()}
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => { setCobrandoId(null); setCobrarMonto('') }}
+                                  className="flex-1 py-2.5 text-sm font-semibold text-[var(--ink-2)] bg-white border border-[var(--line)] rounded-xl hover:bg-[var(--cream-1)] transition-colors"
+                                >
+                                  Cancelar
+                                </button>
+                                <button
+                                  disabled={!cobrarMonto || parseFloat(cobrarMonto) <= 0}
+                                  onClick={() => handleCobrar(p)}
+                                  className="flex-1 py-2.5 text-sm font-semibold bg-[var(--ink)] text-[var(--cream-0)] rounded-xl hover:opacity-90 disabled:opacity-40 transition-opacity"
+                                >
+                                  Guardar
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <RowDetail
+                            p={p}
+                            onEdit={() => { setEditTarget(p); setModalOpen(true) }}
+                            onDelete={() => setDeleteTarget(p)}
+                            onMarkEntregado={() => setConfirmEntregarTarget(p)}
+                            onMarkPagado={() => setConfirmPagarTarget(p)}
+                            onCobrar={() => { setCobrandoId(p.id); setCobrarMonto('') }}
+                          />
+                        )
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })}
+        </div>
+
+      ) : (
+
+        /* ── CARDS VIEW ─────────────────────────────── */
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+          {filtered.map(p => (
+            <div
+              key={p.id}
+              className="bg-white border border-[var(--line)] rounded-2xl p-4 flex flex-col gap-3 cursor-pointer transition-all hover:-translate-y-0.5"
+              style={{ boxShadow: '0 1px 2px rgba(42,31,26,0.04)' }}
+            >
+              {/* Top */}
+              <div className="flex items-center justify-between">
+                {p.fechaEntrega ? (
+                  <div className="flex items-baseline gap-1.5">
+                    <span
+                      className="text-xl font-bold text-[var(--ink)]"
+                      style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+                    >
+                      {formatFechaDia(p.fechaEntrega).day}
+                    </span>
+                    <span className="text-xs text-[var(--ink-3)] capitalize">{formatFechaDia(p.fechaEntrega).rest}</span>
+                    {esFechaHoy(p.fechaEntrega) && (
+                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-700">Hoy</span>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-xs text-[var(--ink-4)]">Sin fecha</span>
+                )}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => { setEditTarget(p); setModalOpen(true) }}
+                    className="p-1.5 rounded-lg text-[var(--ink-4)] hover:text-[var(--ink)] hover:bg-[var(--cream-1)] transition-colors"
+                  >
+                    <Pencil size={13} />
+                  </button>
+                  <button
+                    onClick={() => setDeleteTarget(p)}
+                    className="p-1.5 rounded-lg text-[var(--ink-4)] hover:text-red-500 hover:bg-red-50 transition-colors"
+                  >
+                    <Trash2 size={13} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Client */}
+              <div className="flex items-center gap-3">
+                <Avatar name={p.nombreCliente} size={38} />
+                <div className="min-w-0">
+                  <p className="font-bold text-sm text-[var(--ink)] truncate">{p.nombreCliente}</p>
+                  {p.evento && <p className="text-xs text-[var(--ink-3)]">{p.evento.nombre}</p>}
+                </div>
+              </div>
+
+              {/* Description */}
+              {(p.productos.length > 0 || p.descripcion) && (
+                <p className="text-xs text-[var(--ink-2)] border-l-2 border-[var(--cream-2)] pl-2.5 leading-relaxed line-clamp-2">
+                  {p.productos.length > 0
+                    ? p.productos.map(pp => `${pp.cantidad}× ${pp.producto.nombre}`).join(', ')
+                    : p.descripcion}
+                </p>
+              )}
+
+              {/* Notes */}
+              {p.notas && (
+                <div className="bg-[var(--amber-soft)] rounded-lg px-2.5 py-2 text-xs text-[oklch(0.42_0.13_65)] leading-relaxed line-clamp-2">
+                  {p.notas}
+                </div>
+              )}
+
+              {/* Footer */}
+              <div className="flex items-center justify-between pt-2.5 border-t border-[var(--line-2)] mt-auto">
+                <p
+                  className="text-2xl font-bold text-[var(--ink)] tabular-nums"
+                  style={{ fontFamily: "'Instrument Serif', Georgia, serif" }}
+                >
+                  {formatMonto(parseFloat(p.precioTotal))}
+                </p>
+                <div className="flex gap-1.5">
+                  <StatusPill value={p.estadoEntrega} kind="entrega" />
+                  <StatusPill value={p.estadoPago} kind="pago" />
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2">
+                {(p.telefono || p.cliente?.telefono) && (
+                  <a
+                    href={toWhatsAppUrl((p.telefono || p.cliente!.telefono)!)}
+                    target="_blank" rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold text-emerald-700 bg-[var(--mint-soft)] rounded-lg hover:opacity-90 transition-opacity"
+                  >
+                    <WhatsAppIcon size={13} />
+                    WA
+                  </a>
+                )}
+                {p.estadoPago !== 'pagado' && (
+                  <button
+                    onClick={() => { setCobrandoId(p.id); setExpandedId(p.id); setModo('tabla') }}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold text-[oklch(0.36_0.10_145)] bg-[var(--mint-soft)] rounded-lg hover:opacity-90 transition-opacity"
+                  >
+                    <Banknote size={13} />
+                    Cobrar
+                  </button>
+                )}
+                {p.estadoEntrega !== 'entregado' && (
+                  <button
+                    onClick={() => setConfirmEntregarTarget(p)}
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold text-[oklch(0.42_0.13_65)] bg-[var(--amber-soft)] rounded-lg hover:opacity-90 transition-opacity"
+                  >
+                    <PackageCheck size={13} />
+                    Entregar
+                  </button>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── Modals ───────────────────────────────────── */}
       <PedidoFormModal
         isOpen={modalOpen}
         onClose={() => { setModalOpen(false); setEditTarget(null) }}
@@ -743,7 +1015,7 @@ export default function PedidosPage() {
       <ConfirmModal
         isOpen={confirmEntregarTarget !== null}
         variant="confirm"
-        titulo={`¿Marcar como entregado?`}
+        titulo="¿Marcar como entregado?"
         descripcion={confirmEntregarTarget ? `Pedido de ${confirmEntregarTarget.nombreCliente}` : undefined}
         labelConfirmar="Marcar entregado"
         onConfirmar={handleConfirmarEntregado}

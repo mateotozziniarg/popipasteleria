@@ -23,8 +23,8 @@ interface Clima {
 }
 
 function colorRocio(r: number) {
-  if (r < 10) return 'text-emerald-500'
-  if (r <= 15) return 'text-amber-500'
+  if (r < 10) return 'text-emerald-600'
+  if (r <= 15) return 'text-amber-600'
   return 'text-red-500'
 }
 
@@ -89,46 +89,80 @@ export default function Sidebar() {
   return (
     <>
       {/* Header bar fija */}
-      <header className="fixed top-0 left-0 right-0 z-50 h-14 bg-white border-b border-[#E5EAF1] flex items-center px-4 gap-3">
+      <header
+        className="fixed top-0 left-0 right-0 z-50 h-14 flex items-center px-4 gap-3"
+        style={{
+          background: 'linear-gradient(to bottom, var(--cream-0), color-mix(in oklab, var(--cream-0), white 25%))',
+          borderBottom: '1px solid var(--line)',
+        }}
+      >
         <button
           ref={btnRef}
           onClick={() => setOpen(o => !o)}
-          className="flex items-center justify-center w-9 h-9 rounded-lg hover:bg-[#F7FAFC] transition-colors shrink-0"
+          className="flex items-center justify-center w-9 h-9 rounded-xl transition-colors shrink-0"
+          style={{ color: 'var(--ink-2)' }}
+          onMouseEnter={e => (e.currentTarget.style.background = 'var(--cream-1)')}
+          onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
           aria-label="Menú"
         >
           {open
-            ? <X size={18} color="#1F2937" strokeWidth={2} />
-            : <Menu size={18} color="#1F2937" strokeWidth={2} />
+            ? <X size={18} strokeWidth={2} />
+            : <Menu size={18} strokeWidth={2} />
           }
         </button>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <div className="w-6 h-6 rounded-md bg-[#CFE6F7] flex items-center justify-center">
-            <ChefHat size={13} color="#1F2937" strokeWidth={2} />
-          </div>
-          <span className="text-sm font-semibold text-[#1F2937] hidden sm:inline">Popipastelería</span>
+        {/* Brand */}
+        <div
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full shrink-0"
+          style={{
+            background: 'white',
+            border: '1px solid var(--line)',
+            boxShadow: '0 1px 2px rgba(42,31,26,0.04)',
+          }}
+        >
+          <ChefHat size={14} strokeWidth={2} style={{ color: 'var(--ink-3)' }} />
+          <span
+            className="text-sm font-bold hidden sm:inline"
+            style={{ color: 'var(--ink)', letterSpacing: '-0.01em' }}
+          >
+            Popi<span style={{ fontWeight: 400, color: 'var(--ink-3)' }}>pastelería</span>
+          </span>
         </div>
 
         {/* Clima Buenos Aires */}
         {clima && (
-          <div className="flex items-center gap-3 ml-2 px-3 py-1.5 rounded-lg bg-[#F7FAFC] border border-[#E5EAF1]">
-            <div className="flex items-center gap-1">
-              <Thermometer size={13} className="text-rose-400 shrink-0" strokeWidth={2} />
-              <span className="text-xs font-semibold text-[#1F2937]">{clima.temperatura}°</span>
+          <div
+            className="flex items-center gap-3 px-3 py-1.5 rounded-full"
+            style={{
+              background: 'white',
+              border: '1px solid var(--line)',
+              boxShadow: '0 1px 2px rgba(42,31,26,0.04)',
+              fontSize: 13,
+            }}
+          >
+            <div className="flex items-center gap-1.5">
+              <Thermometer size={12} className="text-rose-500 shrink-0" strokeWidth={2} />
+              <span className="font-semibold tabular-nums" style={{ color: 'var(--ink)' }}>{clima.temperatura}°</span>
             </div>
-            <div className="w-px h-3 bg-[#E5EAF1]" />
-            <div className="flex items-center gap-1">
-              <Droplets size={13} className="text-[#9CC6EA] shrink-0" strokeWidth={2} />
-              <span className="text-xs font-semibold text-[#1F2937]">{clima.humedad}%</span>
+            <div style={{ width: 1, height: 12, background: 'var(--line)' }} />
+            <div className="flex items-center gap-1.5">
+              <Droplets size={12} strokeWidth={2} style={{ color: 'oklch(0.62 0.11 210)' }} />
+              <span className="font-semibold tabular-nums" style={{ color: 'var(--ink)' }}>{clima.humedad}%</span>
             </div>
-            <div className="w-px h-3 bg-[#E5EAF1]" />
+            <div style={{ width: 1, height: 12, background: 'var(--line)' }} />
             <div className="relative group">
-              <div className="flex items-center gap-1 cursor-default">
-                <CloudFog size={13} className={`shrink-0 ${colorRocio(clima.rocio)}`} strokeWidth={2} />
-                <span className={`text-xs font-semibold ${colorRocio(clima.rocio)}`}>{clima.rocio}°</span>
+              <div className="flex items-center gap-1.5 cursor-default">
+                <CloudFog size={12} className={`shrink-0 ${colorRocio(clima.rocio)}`} strokeWidth={2} />
+                <span className={`font-semibold tabular-nums ${colorRocio(clima.rocio)}`}>{clima.rocio}°</span>
               </div>
-              <div className="invisible group-hover:visible absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 bg-[#1F2937] text-white text-[11px] leading-snug rounded-xl px-3 py-2.5 shadow-xl z-[100] pointer-events-none">
-                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-[#1F2937] rotate-45" />
+              <div
+                className="invisible group-hover:visible absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 text-[11px] leading-snug rounded-xl px-3 py-2.5 shadow-xl z-[100] pointer-events-none"
+                style={{ background: 'var(--ink)', color: 'var(--cream-0)' }}
+              >
+                <div
+                  className="absolute -top-1 left-1/2 -translate-x-1/2 w-2.5 h-2.5 rotate-45"
+                  style={{ background: 'var(--ink)' }}
+                />
                 <p className="font-semibold mb-1">Punto de rocío: {clima.rocio}°C</p>
                 <p>{textoRocio(clima.rocio)}</p>
               </div>
@@ -138,48 +172,88 @@ export default function Sidebar() {
 
         <button
           onClick={() => { navigate('/pedidos?nuevo=1'); setOpen(false) }}
-          className="ml-auto flex items-center gap-1.5 text-xs font-medium text-[#1F2937] bg-[#CFE6F7] hover:bg-[#9CC6EA] px-3 py-1.5 rounded-lg transition-colors shrink-0"
+          className="ml-auto flex items-center gap-1.5 text-xs font-semibold px-3 py-2 rounded-xl transition-colors shrink-0"
+          style={{
+            background: 'var(--ink)',
+            color: 'var(--cream-0)',
+            boxShadow: '0 1px 2px rgba(42,31,26,0.12)',
+          }}
         >
           <Plus size={12} strokeWidth={2.5} />
           <span className="hidden sm:inline">Nuevo pedido</span>
         </button>
       </header>
 
-      {open && <div className="fixed inset-0 z-40 bg-black/20" />}
+      {open && <div className="fixed inset-0 z-40 bg-black/10" onClick={() => setOpen(false)} />}
 
       <div
         ref={ref}
-        className={`fixed top-14 left-0 z-40 h-[calc(100%-3.5rem)] w-64 bg-white border-r border-[#E5EAF1] shadow-lg transform transition-transform duration-200 ${
+        className={`fixed top-14 left-0 z-40 h-[calc(100%-3.5rem)] w-64 shadow-xl transform transition-transform duration-200 ${
           open ? 'translate-x-0' : '-translate-x-full'
         }`}
+        style={{
+          background: 'linear-gradient(180deg, color-mix(in oklab, var(--cream-0), white 20%), var(--cream-0))',
+          borderRight: '1px solid var(--line)',
+        }}
       >
-        <div className="px-5 pt-6 pb-6 flex flex-col h-full">
-          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">Navegación</p>
-          <nav className="flex flex-col gap-1 flex-1">
+        <div className="px-4 pt-6 pb-6 flex flex-col h-full">
+          <p
+            className="text-[10px] font-bold uppercase tracking-[0.08em] mb-3 px-2"
+            style={{ color: 'var(--ink-4)' }}
+          >
+            Navegación
+          </p>
+          <nav className="flex flex-col gap-0.5 flex-1">
             {navItems.map(({ label, path, icon: Icon }) => {
               const active = pathname === path
               return (
                 <button
                   key={path}
                   onClick={() => goTo(path)}
-                  className={`text-left px-3 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center gap-3 ${
-                    active
-                      ? 'bg-[#CFE6F7] text-[#1F2937]'
-                      : 'text-[#6B7280] hover:bg-[#F7FAFC] hover:text-[#1F2937]'
-                  }`}
+                  className="text-left px-3 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-3"
+                  style={{
+                    background: active ? 'var(--ink)' : 'transparent',
+                    color: active ? 'var(--cream-0)' : 'var(--ink-2)',
+                    boxShadow: active ? '0 1px 2px rgba(0,0,0,0.10), 0 6px 14px -8px rgba(42,31,26,0.45)' : 'none',
+                  }}
+                  onMouseEnter={e => {
+                    if (!active) {
+                      e.currentTarget.style.background = 'var(--cream-1)'
+                      e.currentTarget.style.color = 'var(--ink)'
+                    }
+                  }}
+                  onMouseLeave={e => {
+                    if (!active) {
+                      e.currentTarget.style.background = 'transparent'
+                      e.currentTarget.style.color = 'var(--ink-2)'
+                    }
+                  }}
                 >
-                  <Icon size={16} strokeWidth={2} className={active ? 'text-[#1F2937]' : 'text-[#9CC6EA]'} />
+                  <Icon
+                    size={16}
+                    strokeWidth={2}
+                    style={{ color: active ? 'var(--cream-0)' : 'var(--ink-4)' }}
+                  />
                   {label}
                 </button>
               )
             })}
           </nav>
-          <div className="pt-4 border-t border-[#E5EAF1] mt-4">
+          <div className="pt-4 mt-4" style={{ borderTop: '1px solid var(--line)' }}>
             <button
               onClick={handleLogout}
-              className="w-full text-left px-3 py-2.5 rounded-lg text-sm font-medium text-[#6B7280] hover:bg-rose-50 hover:text-rose-600 transition-colors flex items-center gap-3"
+              className="w-full text-left px-3 py-2.5 rounded-xl text-sm font-semibold transition-colors flex items-center gap-3"
+              style={{ color: 'var(--ink-3)' }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'var(--rose-soft)'
+                e.currentTarget.style.color = 'oklch(0.42 0.16 22)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.color = 'var(--ink-3)'
+              }}
             >
-              <LogOut size={16} strokeWidth={2} className="text-[#9CC6EA]" />
+              <LogOut size={16} strokeWidth={2} style={{ color: 'var(--ink-4)' }} />
               Cerrar sesión
             </button>
           </div>
