@@ -81,7 +81,6 @@ const tools: OpenAI.Chat.ChatCompletionTool[] = [
           modalidadEntrega: { type: 'string', description: 'ENVIO o RETIRA. Omitir si no se indicó.' },
           telefono: { type: 'string', description: 'Teléfono del cliente. Omitir si no se proporcionó.' },
           direccion: { type: 'string', description: 'Dirección del cliente. Omitir si no se proporcionó.' },
-          precioTotal: { description: 'Precio total manual en pesos. Omitir si se incluyen productos con precio (se calcula solo).' },
           productos: {
             type: 'array',
             description: 'Lista de productos del pedido. Siempre incluir si se mencionaron productos.',

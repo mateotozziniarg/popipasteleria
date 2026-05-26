@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { MessageSquare, X, Send, Loader2, Sparkles } from 'lucide-react'
+import { useLocation } from 'react-router-dom'
 import { sendChatMessage, ChatMessage } from '../api/chat'
 
 const TOOL_LABELS: Record<string, string> = {
@@ -19,6 +20,7 @@ const SUGERENCIAS = [
 ]
 
 export default function ChatWidget() {
+  const { pathname } = useLocation()
   const [open, setOpen] = useState(false)
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
@@ -62,6 +64,8 @@ export default function ChatWidget() {
     }
   }
 
+  if (pathname === '/chat') return null
+
   return (
     <>
       {/* Botón flotante */}
@@ -88,7 +92,7 @@ export default function ChatWidget() {
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white leading-tight">Popibot</p>
-              <p className="text-[10px] text-[#9CC6EA]">asistente IA · Gemini</p>
+              <p className="text-[10px] text-[#9CC6EA]">asistente IA · Groq</p>
             </div>
             {messages.length > 0 && (
               <button

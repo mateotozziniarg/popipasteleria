@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Menu, X, Zap, Calendar, ShoppingCart, Package, FlaskConical, Users, ChefHat, Plus, LogOut, Thermometer, Droplets, Receipt, CloudFog, CalendarDays, Sparkles } from 'lucide-react'
+import { Menu, X, Zap, Calendar, ShoppingCart, Package, FlaskConical, Users, ChefHat, Plus, LogOut, Thermometer, Droplets, Receipt, CloudFog, CalendarDays, Sparkles, MessageSquare } from 'lucide-react'
 import { clearToken } from '../api/token'
 
 const navItems = [
@@ -13,6 +13,7 @@ const navItems = [
   { label: 'Gastos', path: '/gastos', icon: Receipt },
   { label: 'Calendario', path: '/calendario', icon: CalendarDays },
   { label: 'Propuestas', path: '/propuestas', icon: Sparkles },
+  { label: 'Chat IA', path: '/chat', icon: MessageSquare },
 ]
 
 interface Clima {

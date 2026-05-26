@@ -15,6 +15,7 @@ import GastosPage from './pages/GastosPage'
 import CalendarioPage from './pages/CalendarioPage'
 import PropuestasPage from './pages/PropuestasPage'
 import PropuestaPage from './pages/PropuestaPage'
+import ChatPage from './pages/ChatPage'
 import CatWalker from './components/CatWalker'
 import ChatWidget from './components/ChatWidget'
 
@@ -45,6 +46,7 @@ export default function App() {
                     <Route path="/calendario" element={<CalendarioPage />} />
                     <Route path="/propuestas" element={<PropuestasPage />} />
                     <Route path="/propuestas/:id" element={<PropuestaPage />} />
+                    <Route path="/chat" element={<ChatPage />} />
                     <Route path="*" element={<NotFoundPage />} />
                   </Routes>
                 </div>
