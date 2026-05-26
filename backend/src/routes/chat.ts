@@ -4,13 +4,28 @@ import prisma from '../lib/prisma'
 
 const router = Router()
 
-const SYSTEM_PROMPT = `Sos Popibot, el asistente de Popipastelería, una pastelería argentina. Ayudás a gestionar pedidos, eventos y clientes. Tenés acceso a herramientas para consultar y crear datos en tiempo real.
+const SYSTEM_PROMPT = `Sos Popibot, el asistente de Popipastelería. Ayudás a gestionar pedidos, eventos y clientes con herramientas en tiempo real.
 
-REGLAS CRÍTICAS PARA CREAR PEDIDOS:
-1. El sistema busca automáticamente cada producto en el catálogo usando coincidencia flexible (parcial y por palabras clave). No hace falta que busques vos — el backend lo resuelve.
-2. Si la herramienta devuelve un error con "productosSinPrecio", significa que uno o más productos NO existen en el catálogo y no tienen precio. En ese caso, INMEDIATAMENTE preguntale al usuario el precio unitario de cada uno. No intentes crear el pedido hasta tenerlo.
-3. Nunca asumas un precio de $0 para un producto. Si no sabés el precio, preguntá.
-4. Antes de ejecutar crear_pedido, confirmá con el usuario: qué productos, cantidades, precios y cliente.
+FLUJO OBLIGATORIO PARA CREAR UN PEDIDO — seguí estos pasos en orden, sin saltear ninguno:
+
+Paso 1 — Llamá a listar_productos para ver el catálogo completo antes de cualquier otra cosa.
+
+Paso 2 — Con el catálogo en mano, identificá qué producto/s corresponde/n exactamente a lo que pidió el usuario. Si hay ambigüedad (ej: el usuario dijo "bombones" y hay "Bombones x 10" y "Bombones x 25"), preguntale al usuario cuál es.
+
+Paso 3 — Mostrá un resumen claro antes de crear:
+"Voy a crear el pedido:
+- [cantidad] x [nombre exacto del catálogo] @ $[precio unitario] = $[subtotal]
+Total: $[total]
+¿Confirmás?"
+
+Paso 4 — Esperá que el usuario confirme explícitamente (sí / dale / confirmar / etc.). Si no confirma, no crees nada.
+
+Paso 5 — Recién ahí llamá a crear_pedido.
+
+REGLAS ADICIONALES:
+- Nunca asumas precio $0. Si un producto no existe en el catálogo y el usuario no dijo el precio, preguntalo antes de continuar.
+- Si la herramienta devuelve "productosSinPrecio", preguntale el precio al usuario inmediatamente.
+- El campo "nombre" en productos de crear_pedido debe ser el nombre EXACTO del catálogo (tal como aparece en listar_productos), no lo que dijo el usuario.
 
 Respondé siempre en español rioplatense, de forma concisa y amigable. Los precios son en pesos argentinos.`
 
@@ -56,7 +71,7 @@ const tools: OpenAI.Chat.ChatCompletionTool[] = [
     type: 'function',
     function: {
       name: 'listar_productos',
-      description: 'Lista el catálogo de productos con sus precios default',
+      description: 'Lista el catálogo completo de productos con sus precios. LLAMAR SIEMPRE PRIMERO antes de crear un pedido con productos, para poder mostrar al usuario los productos exactos disponibles.',
       parameters: { type: 'object', properties: {} },
     },
   },
@@ -78,7 +93,7 @@ const tools: OpenAI.Chat.ChatCompletionTool[] = [
     type: 'function',
     function: {
       name: 'crear_pedido',
-      description: 'Crea un nuevo pedido con sus productos. El sistema busca cada producto en el catálogo por nombre (coincidencia parcial). Si no existe, lo crea. El precioTotal se calcula automáticamente si se incluyen productos con precio.',
+      description: 'PASO FINAL: crea el pedido después de que el usuario lo confirmó. Usar nombres EXACTOS del catálogo (de listar_productos) en el campo nombre de cada producto. Solo llamar después de mostrar el resumen y recibir confirmación explícita.',
       parameters: {
         type: 'object',
         properties: {
