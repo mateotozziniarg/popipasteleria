@@ -156,26 +156,27 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
           productos: { include: { producto: { select: { nombre: true } } } },
         },
         orderBy: { createdAt: 'desc' },
-        take: args.limite || 15,
+        take: Math.max(1, parseInt(String(args.limite)) || 15),
       })
       return {
         pedidos: pedidos.map(p => ({
           id: p.id,
           nombreCliente: p.nombreCliente,
-          precioTotal: parseFloat(p.precioTotal.toString()),
-          estadoPago: p.estadoPago,
-          estadoEntrega: p.estadoEntrega,
+          precioTotal: parseFloat(p.precioTotal?.toString() ?? '0'),
+          estadoPago: p.estadoPago ?? null,
+          estadoEntrega: p.estadoEntrega ?? null,
           fechaEntrega: p.fechaEntrega ? p.fechaEntrega.toISOString().split('T')[0] : null,
-          evento: p.evento?.nombre || null,
-          productos: p.productos.map(pp => pp.producto.nombre),
+          evento: p.evento?.nombre ?? null,
+          productos: p.productos.map(pp => pp.producto?.nombre ?? 'desconocido'),
         })),
       }
     }
 
     case 'buscar_clientes': {
+      const query = typeof args.query === 'string' ? args.query.trim() : ''
       const clientes = await prisma.cliente.findMany({
-        where: { nombre: { contains: args.query as string, mode: 'insensitive' } },
-        take: 10,
+        where: query.length > 0 ? { nombre: { contains: query, mode: 'insensitive' } } : undefined,
+        take: 20,
         select: { id: true, nombre: true, telefono: true, direccion: true },
       })
       return { clientes }
@@ -427,23 +428,42 @@ router.post('/', async (req: Request, res: Response) => {
     ]
 
     const toolsUsed: string[] = []
+    const MODEL = 'llama-3.3-70b-versatile'
 
-    let response = await groq.chat.completions.create({
-      model: 'llama-3.3-70b-versatile',
-      messages: chatMessages,
-      tools,
-      tool_choice: 'auto',
-      max_tokens: 1024,
-    })
+    async function callGroq(msgs: OpenAI.Chat.ChatCompletionMessageParam[], withTools = true) {
+      try {
+        return await groq.chat.completions.create({
+          model: MODEL,
+          messages: msgs,
+          ...(withTools ? { tools, tool_choice: 'auto' as const } : {}),
+          max_tokens: 1024,
+        })
+      } catch (err: any) {
+        if (withTools && (err?.code === 'tool_use_failed' || err?.status === 400)) {
+          // Groq generó una tool call malformada — reintentar sin tools
+          return groq.chat.completions.create({ model: MODEL, messages: msgs, max_tokens: 1024 })
+        }
+        throw err
+      }
+    }
 
-    while (response.choices[0].finish_reason === 'tool_calls') {
+    let response = await callGroq(chatMessages)
+
+    let iterations = 0
+    while (response.choices[0].finish_reason === 'tool_calls' && iterations < 6) {
+      iterations++
       const assistantMsg = response.choices[0].message
       chatMessages.push(assistantMsg)
 
       for (const call of (assistantMsg.tool_calls || []) as any[]) {
         toolsUsed.push(call.function.name)
-        const args = JSON.parse(call.function.arguments)
-        const result = await executeTool(call.function.name, args)
+        let result: Record<string, any>
+        try {
+          const args = JSON.parse(call.function.arguments)
+          result = await executeTool(call.function.name, args)
+        } catch (toolErr: any) {
+          result = { error: 'Error al ejecutar la herramienta', detalle: toolErr.message }
+        }
         chatMessages.push({
           role: 'tool',
           tool_call_id: call.id,
@@ -451,13 +471,7 @@ router.post('/', async (req: Request, res: Response) => {
         })
       }
 
-      response = await groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
-        messages: chatMessages,
-        tools,
-        tool_choice: 'auto',
-        max_tokens: 1024,
-      })
+      response = await callGroq(chatMessages)
     }
 
     const reply = response.choices[0].message.content || ''
