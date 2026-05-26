@@ -16,6 +16,7 @@ import CalendarioPage from './pages/CalendarioPage'
 import PropuestasPage from './pages/PropuestasPage'
 import PropuestaPage from './pages/PropuestaPage'
 import CatWalker from './components/CatWalker'
+import ChatWidget from './components/ChatWidget'
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
                 <Sidebar />
                 <BottomNav />
                 <CatWalker />
+                <ChatWidget />
               <div className="overflow-x-hidden pb-20 sm:pb-0">
                   <Routes>
                     <Route path="/" element={<WorkspacePage />} />

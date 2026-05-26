@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express'
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import prisma from '../lib/prisma'
 
 const router = Router()
 
-const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
 // GET /propuestas
 router.get('/', async (_req: Request, res: Response) => {
@@ -454,15 +454,13 @@ Generá sugerencias creativas para esta propuesta. Respondé ÚNICAMENTE con JSO
 
 Incluí 3-5 productos nuevos, nombres alternativos para cada combo existente, descripciones mejoradas para cada producto existente, y 4-6 ideas generales variadas.`
 
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 2048,
-      system:
+    const geminiModel = genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash',
+      systemInstruction:
         'Sos un asistente creativo para Popipastelería, una pastelería argentina. Tu tarea es generar sugerencias creativas para propuestas de pedidos. Las sugerencias deben ser originales, con precios en pesos argentinos y orientadas al mercado local. Respondés únicamente con JSON válido, sin explicaciones ni texto adicional.',
-      messages: [{ role: 'user', content: userPrompt }],
     })
-
-    const rawText = message.content[0].type === 'text' ? message.content[0].text : ''
+    const result = await geminiModel.generateContent(userPrompt)
+    const rawText = result.response.text()
     const jsonMatch = rawText.match(/\{[\s\S]*\}/)
     if (!jsonMatch) {
       res.status(500).json({ error: 'Respuesta de IA inválida' })
