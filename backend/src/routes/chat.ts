@@ -1,74 +1,98 @@
 import { Router, Request, Response } from 'express'
-import { GoogleGenerativeAI } from '@google/generative-ai'
+import OpenAI from 'openai'
 import prisma from '../lib/prisma'
 
 const router = Router()
 
-const functionDeclarations = [
+const SYSTEM_PROMPT =
+  'Sos Popibot, el asistente de Popipastelería, una pastelería argentina. Ayudás a gestionar pedidos, eventos y clientes. Tenés acceso a herramientas para consultar y crear datos en tiempo real. Cuando el usuario quiera crear algo (un pedido, etc.), mostrá un resumen de los datos que vas a guardar y pedí confirmación antes de ejecutar la herramienta. Respondé siempre en español rioplatense, de forma concisa y amigable. Los precios son en pesos argentinos.'
+
+const tools: OpenAI.Chat.ChatCompletionTool[] = [
   {
-    name: 'listar_eventos',
-    description: 'Lista todos los eventos de la pastelería con fechas, descripciones y métricas financieras (total esperado, cobrado, gastos)',
-    parameters: { type: 'object', properties: {} },
+    type: 'function',
+    function: {
+      name: 'listar_eventos',
+      description: 'Lista todos los eventos de la pastelería con fechas, descripciones y métricas financieras (total esperado, cobrado, gastos)',
+      parameters: { type: 'object', properties: {} },
+    },
   },
   {
-    name: 'listar_pedidos',
-    description: 'Lista pedidos con filtros opcionales. Devuelve los más recientes.',
-    parameters: {
-      type: 'object',
-      properties: {
-        estadoPago: { type: 'string', description: 'Filtrar por estado de pago: sin_seña, señado, pagado' },
-        estadoEntrega: { type: 'string', description: 'Filtrar por estado de entrega: pendiente, entregado' },
-        limite: { type: 'integer', description: 'Cantidad máxima de resultados (default 15)' },
+    type: 'function',
+    function: {
+      name: 'listar_pedidos',
+      description: 'Lista pedidos con filtros opcionales. Devuelve los más recientes.',
+      parameters: {
+        type: 'object',
+        properties: {
+          estadoPago: { type: 'string', description: 'Filtrar por estado de pago: sin_seña, señado, pagado' },
+          estadoEntrega: { type: 'string', description: 'Filtrar por estado de entrega: pendiente, entregado' },
+          limite: { type: 'integer', description: 'Cantidad máxima de resultados (default 15)' },
+        },
       },
     },
   },
   {
-    name: 'buscar_clientes',
-    description: 'Busca clientes por nombre parcial',
-    parameters: {
-      type: 'object',
-      properties: {
-        query: { type: 'string', description: 'Nombre o parte del nombre del cliente a buscar' },
+    type: 'function',
+    function: {
+      name: 'buscar_clientes',
+      description: 'Busca clientes por nombre parcial',
+      parameters: {
+        type: 'object',
+        properties: {
+          query: { type: 'string', description: 'Nombre o parte del nombre del cliente a buscar' },
+        },
+        required: ['query'],
       },
-      required: ['query'],
     },
   },
   {
-    name: 'listar_productos',
-    description: 'Lista el catálogo de productos con sus precios default',
-    parameters: { type: 'object', properties: {} },
-  },
-  {
-    name: 'obtener_evento',
-    description: 'Obtiene los detalles completos de un evento: pedidos, gastos y métricas financieras',
-    parameters: {
-      type: 'object',
-      properties: {
-        eventoId: { type: 'integer', description: 'ID del evento' },
-      },
-      required: ['eventoId'],
+    type: 'function',
+    function: {
+      name: 'listar_productos',
+      description: 'Lista el catálogo de productos con sus precios default',
+      parameters: { type: 'object', properties: {} },
     },
   },
   {
-    name: 'crear_pedido',
-    description: 'Crea un nuevo pedido en el sistema. Usá esta herramienta solo después de confirmar los datos con el usuario.',
-    parameters: {
-      type: 'object',
-      properties: {
-        nombreCliente: { type: 'string', description: 'Nombre completo del cliente' },
-        precioTotal: { type: 'number', description: 'Precio total en pesos argentinos' },
-        descripcion: { type: 'string', description: 'Descripción del pedido (productos, cantidades, etc.)' },
-        fechaEntrega: { type: 'string', description: 'Fecha de entrega en formato YYYY-MM-DD (opcional)' },
-        eventoId: { type: 'integer', description: 'ID del evento al que pertenece (opcional)' },
-        modalidadEntrega: { type: 'string', description: 'ENVIO o RETIRA (opcional)' },
+    type: 'function',
+    function: {
+      name: 'obtener_evento',
+      description: 'Obtiene los detalles completos de un evento: pedidos, gastos y métricas financieras',
+      parameters: {
+        type: 'object',
+        properties: {
+          eventoId: { type: 'integer', description: 'ID del evento' },
+        },
+        required: ['eventoId'],
       },
-      required: ['nombreCliente', 'precioTotal'],
     },
   },
   {
-    name: 'resumen_financiero',
-    description: 'Devuelve un resumen financiero global: total esperado, cobrado, pendiente de cobro y gastos totales',
-    parameters: { type: 'object', properties: {} },
+    type: 'function',
+    function: {
+      name: 'crear_pedido',
+      description: 'Crea un nuevo pedido en el sistema. Usá esta herramienta solo después de confirmar los datos con el usuario.',
+      parameters: {
+        type: 'object',
+        properties: {
+          nombreCliente: { type: 'string', description: 'Nombre completo del cliente' },
+          precioTotal: { type: 'number', description: 'Precio total en pesos argentinos' },
+          descripcion: { type: 'string', description: 'Descripción del pedido' },
+          fechaEntrega: { type: 'string', description: 'Fecha de entrega en formato YYYY-MM-DD (opcional)' },
+          eventoId: { type: 'integer', description: 'ID del evento al que pertenece (opcional)' },
+          modalidadEntrega: { type: 'string', description: 'ENVIO o RETIRA (opcional)' },
+        },
+        required: ['nombreCliente', 'precioTotal'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'resumen_financiero',
+      description: 'Devuelve un resumen financiero global: total esperado, cobrado, pendiente de cobro y gastos totales',
+      parameters: { type: 'object', properties: {} },
+    },
   },
 ]
 
@@ -109,7 +133,6 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
         },
         include: {
           evento: { select: { id: true, nombre: true } },
-          cliente: { select: { id: true, nombre: true } },
           productos: { include: { producto: { select: { nombre: true } } } },
         },
         orderBy: { createdAt: 'desc' },
@@ -156,10 +179,7 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
         where: { id: args.eventoId as number },
         include: {
           pedidos: {
-            include: {
-              productos: { include: { producto: { select: { nombre: true } } } },
-              cliente: { select: { nombre: true } },
-            },
+            include: { productos: { include: { producto: { select: { nombre: true } } } } },
           },
           gastos: { include: { materiaPrima: { select: { nombre: true } } } },
         },
@@ -178,7 +198,6 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
           totalCobrado,
           totalGastos,
           pendiente: totalEsperado - totalCobrado,
-          gananciaEstimada: totalEsperado - totalGastos,
           pedidos: evento.pedidos.map(p => ({
             id: p.id,
             nombreCliente: p.nombreCliente,
@@ -248,45 +267,54 @@ router.post('/', async (req: Request, res: Response) => {
   }
 
   try {
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-    const model = genAI.getGenerativeModel({
-      model: 'gemini-2.0-flash',
-      tools: [{ functionDeclarations }] as any,
-      toolConfig: { functionCallingConfig: { mode: 'AUTO' as any } },
-      systemInstruction:
-        'Sos Popibot, el asistente de Popipastelería, una pastelería argentina. Ayudás a gestionar pedidos, eventos y clientes. Tenés acceso a herramientas para consultar y crear datos en tiempo real. Cuando el usuario quiera crear algo (un pedido, etc.), mostrá un resumen de los datos que vas a guardar y pedí confirmación antes de ejecutar la herramienta. Respondé siempre en español rioplatense, de forma concisa y amigable. Los precios son en pesos argentinos.',
+    const groq = new OpenAI({
+      apiKey: process.env.GROQ_API_KEY,
+      baseURL: 'https://api.groq.com/openai/v1',
     })
 
-    const history = messages.slice(0, -1).map((m: { role: string; content: string }) => ({
-      role: m.role === 'user' ? 'user' : 'model',
-      parts: [{ text: m.content }],
-    }))
-
-    const lastMessage = messages[messages.length - 1] as { role: string; content: string }
-    const chat = model.startChat({ history })
+    const chatMessages: OpenAI.Chat.ChatCompletionMessageParam[] = [
+      { role: 'system', content: SYSTEM_PROMPT },
+      ...messages.map((m: { role: string; content: string }) => ({
+        role: (m.role === 'model' ? 'assistant' : m.role) as 'user' | 'assistant',
+        content: m.content,
+      })),
+    ]
 
     const toolsUsed: string[] = []
-    let response = await chat.sendMessage(lastMessage.content)
 
-    let funcCalls = response.response.functionCalls()
-    while (funcCalls && funcCalls.length > 0) {
-      const functionResultParts = await Promise.all(
-        funcCalls.map(async (call) => {
-          toolsUsed.push(call.name)
-          const result = await executeTool(call.name, call.args as Record<string, any>)
-          return {
-            functionResponse: {
-              name: call.name,
-              response: result,
-            },
-          }
+    let response = await groq.chat.completions.create({
+      model: 'llama-3.3-70b-versatile',
+      messages: chatMessages,
+      tools,
+      tool_choice: 'auto',
+      max_tokens: 1024,
+    })
+
+    while (response.choices[0].finish_reason === 'tool_calls') {
+      const assistantMsg = response.choices[0].message
+      chatMessages.push(assistantMsg)
+
+      for (const call of (assistantMsg.tool_calls || []) as any[]) {
+        toolsUsed.push(call.function.name)
+        const args = JSON.parse(call.function.arguments)
+        const result = await executeTool(call.function.name, args)
+        chatMessages.push({
+          role: 'tool',
+          tool_call_id: call.id,
+          content: JSON.stringify(result),
         })
-      )
-      response = await chat.sendMessage(functionResultParts as any)
-      funcCalls = response.response.functionCalls()
+      }
+
+      response = await groq.chat.completions.create({
+        model: 'llama-3.3-70b-versatile',
+        messages: chatMessages,
+        tools,
+        tool_choice: 'auto',
+        max_tokens: 1024,
+      })
     }
 
-    const reply = response.response.text()
+    const reply = response.choices[0].message.content || ''
     res.json({ reply, toolsUsed })
   } catch (error: any) {
     console.error('Error en chat:', error)

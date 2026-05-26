@@ -8,13 +8,13 @@
     "start": "npx prisma migrate deploy && node dist/index.js"
   },
   "dependencies": {
-    "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^6.8.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "jsonwebtoken": "^9.0.3"
+    "jsonwebtoken": "^9.0.3",
+    "openai": "^6.39.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
