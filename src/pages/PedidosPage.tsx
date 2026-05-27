@@ -351,8 +351,8 @@ export default function PedidosPage() {
   // Quick filters + search applied client-side on top of server-filtered data
   const filtered = useMemo(() => {
     let arr = pedidos.slice()
-    if (quickFilter === 'hoy')         arr = arr.filter(o => o.fechaEntrega ? toDateOnly(o.fechaEntrega) : undefined === today)
-    else if (quickFilter === 'manana') arr = arr.filter(o => o.fechaEntrega ? toDateOnly(o.fechaEntrega) : undefined === tomorrow)
+    if (quickFilter === 'hoy')         arr = arr.filter(o => o.fechaEntrega && toDateOnly(o.fechaEntrega) === today)
+    else if (quickFilter === 'manana') arr = arr.filter(o => o.fechaEntrega && toDateOnly(o.fechaEntrega) === tomorrow)
     else if (quickFilter === 'porEntregar') arr = arr.filter(o => o.estadoEntrega !== 'entregado')
     else if (quickFilter === 'porCobrar')   arr = arr.filter(o => o.estadoPago !== 'pagado')
 
@@ -386,8 +386,8 @@ export default function PedidosPage() {
   // Counts for chips
   const counts = {
     todos:       pedidos.length,
-    hoy:         pedidos.filter(o => o.fechaEntrega ? toDateOnly(o.fechaEntrega) : undefined === today).length,
-    manana:      pedidos.filter(o => o.fechaEntrega ? toDateOnly(o.fechaEntrega) : undefined === tomorrow).length,
+    hoy:         pedidos.filter(o => o.fechaEntrega && toDateOnly(o.fechaEntrega) === today).length,
+    manana:      pedidos.filter(o => o.fechaEntrega && toDateOnly(o.fechaEntrega) === tomorrow).length,
     porEntregar: pedidos.filter(o => o.estadoEntrega !== 'entregado').length,
     porCobrar:   pedidos.filter(o => o.estadoPago !== 'pagado').length,
   }
