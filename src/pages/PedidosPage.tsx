@@ -678,12 +678,14 @@ export default function PedidosPage() {
         /* ── TABLE VIEW ─────────────────────────────── */
         <div className="popi-table-card">
           {/* Table head */}
-          <div className="popi-table-thead hidden md:grid">
-            <span>Cliente</span>
-            <span>Descripción</span>
-            <span>Entrega</span>
-            <span>Pago</span>
-            <span className="text-right">Precio</span>
+          <div className="hidden md:block">
+            <div className="popi-table-thead">
+              <span>Cliente</span>
+              <span>Descripción</span>
+              <span>Entrega</span>
+              <span>Pago</span>
+              <span className="text-right">Precio</span>
+            </div>
           </div>
 
           {/* Grouped rows */}
@@ -728,8 +730,9 @@ export default function PedidosPage() {
 
                   return (
                     <div key={p.id}>
+                      <div className="hidden md:block">
                       <button
-                        className={`popi-table-row w-full hidden md:grid ${isExpanded ? 'expanded' : ''} ${hasPendingPago ? 'has-rose' : hasPendingEntrega ? 'has-amber' : ''}`}
+                        className={`popi-table-row w-full ${isExpanded ? 'expanded' : ''} ${hasPendingPago ? 'has-rose' : hasPendingEntrega ? 'has-amber' : ''}`}
                         onClick={() => setExpandedId(isExpanded ? null : p.id)}
                       >
                         {/* Cliente */}
@@ -784,6 +787,7 @@ export default function PedidosPage() {
                           />
                         </div>
                       </button>
+                      </div>
 
                       {/* Mobile card row */}
                       <div
@@ -802,15 +806,17 @@ export default function PedidosPage() {
                               </p>
                             </div>
                           </div>
-                          <div className="flex items-center gap-2 shrink-0">
+                          <div className="flex items-center gap-3 shrink-0">
                             <div className="text-right">
                               <p className="text-sm font-bold tabular-nums text-[var(--ink)]">{formatMonto(parseFloat(p.precioTotal))}</p>
                             </div>
-                            <ChevronDown
-                              size={15}
-                              className="text-[var(--ink-4)] transition-transform"
-                              style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
-                            />
+                            <div className="w-8 h-8 flex items-center justify-center rounded-full bg-[var(--cream-1)]">
+                              <ChevronDown
+                                size={18}
+                                className="text-[var(--ink-3)] transition-transform"
+                                style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                              />
+                            </div>
                           </div>
                         </div>
                         <div className="flex gap-1.5 mt-2">
