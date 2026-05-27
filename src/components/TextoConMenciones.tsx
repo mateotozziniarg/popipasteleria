@@ -99,33 +99,33 @@ export default function TextoConMenciones({ value, menciones, onChange, clientes
         onKeyDown={e => { if (e.key === 'Escape') setTrigger(null) }}
         placeholder={placeholder}
         rows={rows}
-        className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] resize-none transition-colors"
+        className="w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm text-[#2A1F1A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] resize-none transition-colors"
       />
       {trigger && haySugerencias && (
-        <div ref={dropdownRef} className="absolute z-30 bottom-full mb-1 left-0 right-0 bg-white border border-[#E5EAF1] rounded-xl shadow-xl max-h-52 overflow-y-auto">
+        <div ref={dropdownRef} className="absolute z-30 bottom-full mb-1 left-0 right-0 bg-white border border-[#E2D9CC] rounded-xl shadow-xl max-h-52 overflow-y-auto">
           {clientesSugeridos.map(c => (
             <button key={c.id} type="button"
               onMouseDown={e => { e.preventDefault(); handleSelect({ id: c.id, nombre: c.nombre }, 'CLIENTE') }}
-              className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#F7FAFC] flex items-center gap-2 transition-colors"
+              className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#FBF6EC] flex items-center gap-2 transition-colors"
             >
-              <AtSign size={13} className="text-[#9CC6EA] shrink-0" strokeWidth={2} />
-              <span className="text-[#1F2937] font-medium">{c.nombre}</span>
-              {c.telefono && <span className="text-[#6B7280] text-xs ml-auto">{c.telefono}</span>}
+              <AtSign size={13} className="text-[#B5A28A] shrink-0" strokeWidth={2} />
+              <span className="text-[#2A1F1A] font-medium">{c.nombre}</span>
+              {c.telefono && <span className="text-[#7A6A5A] text-xs ml-auto">{c.telefono}</span>}
             </button>
           ))}
           {pedidosSugeridos.map(p => (
             <button key={p.id} type="button"
               onMouseDown={e => { e.preventDefault(); handleSelect({ id: p.id, nombre: p.nombreCliente }, 'PEDIDO') }}
-              className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#F7FAFC] flex items-center gap-2 transition-colors"
+              className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#FBF6EC] flex items-center gap-2 transition-colors"
             >
-              <Hash size={13} className="text-[#9CC6EA] shrink-0" strokeWidth={2} />
-              <span className="text-[#1F2937] font-medium">{p.nombreCliente}</span>
-              <span className="text-[#6B7280] text-xs ml-auto">#{p.id}</span>
+              <Hash size={13} className="text-[#B5A28A] shrink-0" strokeWidth={2} />
+              <span className="text-[#2A1F1A] font-medium">{p.nombreCliente}</span>
+              <span className="text-[#7A6A5A] text-xs ml-auto">#{p.id}</span>
             </button>
           ))}
         </div>
       )}
-      <p className="text-[11px] text-[#9CC6EA] mt-1.5">
+      <p className="text-[11px] text-[#B5A28A] mt-1.5">
         Escribí <span className="font-medium">@</span> para mencionar un cliente o <span className="font-medium">#</span> para un pedido
       </p>
     </div>
@@ -155,7 +155,7 @@ export function RenderTextoConMenciones({ tarea, onClickPedido, className }: Ren
     const displayText = texto.slice(m.posicionInicio, m.posicionFin)
     if (m.tipo === 'CLIENTE' && m.cliente) {
       parts.push(
-        <span key={`m-${m.id}`} className="text-[#9CC6EA] font-semibold">
+        <span key={`m-${m.id}`} className="text-[#B5A28A] font-semibold">
           {displayText}
         </span>
       )
@@ -163,7 +163,7 @@ export function RenderTextoConMenciones({ tarea, onClickPedido, className }: Ren
       parts.push(
         <button key={`m-${m.id}`} type="button"
           onClick={() => onClickPedido?.(m.pedidoId!)}
-          className="text-[#9CC6EA] font-semibold hover:underline">
+          className="text-[#B5A28A] font-semibold hover:underline">
           {displayText}
         </button>
       )

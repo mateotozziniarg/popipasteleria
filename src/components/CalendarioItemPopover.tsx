@@ -12,7 +12,7 @@ const fmt = (n: number) =>
 
 const badgePago = (e: string) =>
   e === 'pagado' ? 'bg-emerald-100 text-emerald-700'
-  : e === 'señado' ? 'bg-[#CFE6F7] text-[#1F2937]'
+  : e === 'señado' ? 'bg-[#F1E4CC] text-[#2A1F1A]'
   : 'bg-rose-100 text-rose-600'
 
 const labelPago = (e: string) =>
@@ -58,15 +58,15 @@ function PedidoPopover({ pedido, onClose, onUpdated }: PedidoPopoverProps) {
       {/* Header info */}
       <div className="flex items-start gap-2 justify-between">
         <div className="min-w-0 flex-1">
-          <p className="font-semibold text-[#1F2937] text-sm">{pedido.nombreCliente}</p>
-          {pedido.eventoNombre && <p className="text-xs text-[#9CC6EA]">{pedido.eventoNombre}</p>}
+          <p className="font-semibold text-[#2A1F1A] text-sm">{pedido.nombreCliente}</p>
+          {pedido.eventoNombre && <p className="text-xs text-[#B5A28A]">{pedido.eventoNombre}</p>}
           {tel && (
-            <a href={`tel:${tel}`} className="text-xs text-[#6B7280] hover:text-[#1F2937] transition-colors">{tel}</a>
+            <a href={`tel:${tel}`} className="text-xs text-[#7A6A5A] hover:text-[#2A1F1A] transition-colors">{tel}</a>
           )}
         </div>
         <div className="flex gap-1.5 flex-wrap shrink-0">
           {pedido.modalidadEntrega && (
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${pedido.modalidadEntrega === 'ENVIO' ? 'bg-[#CFE6F7] text-[#1F2937]' : 'bg-[#F3F4F6] text-[#6B7280]'}`}>
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${pedido.modalidadEntrega === 'ENVIO' ? 'bg-[#F1E4CC] text-[#2A1F1A]' : 'bg-[#F6EFE1] text-[#7A6A5A]'}`}>
               {pedido.modalidadEntrega === 'ENVIO' ? 'Envío' : 'Retira'}
             </span>
           )}
@@ -83,8 +83,8 @@ function PedidoPopover({ pedido, onClose, onUpdated }: PedidoPopoverProps) {
       {pedido.productos.length > 0 && (
         <ul className="flex flex-col gap-0.5">
           {pedido.productos.map((pp, i) => (
-            <li key={i} className="text-xs text-[#6B7280] flex items-baseline gap-1.5">
-              <span className="font-semibold text-[#1F2937] shrink-0">{pp.cantidad}×</span>
+            <li key={i} className="text-xs text-[#7A6A5A] flex items-baseline gap-1.5">
+              <span className="font-semibold text-[#2A1F1A] shrink-0">{pp.cantidad}×</span>
               <span>{pp.nombre}</span>
             </li>
           ))}
@@ -93,15 +93,15 @@ function PedidoPopover({ pedido, onClose, onUpdated }: PedidoPopoverProps) {
 
       {/* Precio */}
       <div className="flex items-center justify-between">
-        <p className="text-lg font-bold text-[#1F2937]">{fmt(parseFloat(pedido.precioTotal))}</p>
+        <p className="text-lg font-bold text-[#2A1F1A]">{fmt(parseFloat(pedido.precioTotal))}</p>
         {pedido.montoSeña && pedido.estadoPago === 'señado' && (
-          <p className="text-xs text-[#6B7280]">Seña: {fmt(parseFloat(pedido.montoSeña))}</p>
+          <p className="text-xs text-[#7A6A5A]">Seña: {fmt(parseFloat(pedido.montoSeña))}</p>
         )}
       </div>
 
       {/* Acciones rápidas */}
       {(pendienteEntrega || pendientePago) && (
-        <div className="flex gap-2 flex-wrap pt-1 border-t border-[#E5EAF1]">
+        <div className="flex gap-2 flex-wrap pt-1 border-t border-[#E2D9CC]">
           {pendienteEntrega && (
             <button disabled={loading} onClick={marcarEntregado}
               className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium bg-amber-50 text-amber-700 rounded-xl hover:bg-amber-100 disabled:opacity-40 transition-colors">
@@ -160,21 +160,21 @@ function TareaPopover({ tarea, onClose, onUpdated, onEdit }: TareaPopoverProps) 
     <div className="flex flex-col gap-3">
       <div className="flex items-start gap-2">
         <button type="button" onClick={toggleCompletada} disabled={toggling}
-          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${completada ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-[#E5EAF1] hover:border-[#9CC6EA]'}`}>
+          className={`w-5 h-5 rounded-md border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors ${completada ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-[#E2D9CC] hover:border-[#B5A28A]'}`}>
           {completada && <Check size={11} strokeWidth={3} />}
         </button>
-        <p className={`text-sm leading-relaxed ${completada ? 'line-through text-[#6B7280]' : 'text-[#1F2937]'}`}>
+        <p className={`text-sm leading-relaxed ${completada ? 'line-through text-[#7A6A5A]' : 'text-[#2A1F1A]'}`}>
           <RenderTextoConMenciones tarea={tarea} />
         </p>
       </div>
 
-      <p className="text-xs text-[#9CC6EA]">
+      <p className="text-xs text-[#B5A28A]">
         {new Date(tarea.fecha).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
       </p>
 
-      <div className="flex gap-2 pt-1 border-t border-[#E5EAF1]">
+      <div className="flex gap-2 pt-1 border-t border-[#E2D9CC]">
         <button onClick={() => onEdit(tarea)}
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium bg-[#F7FAFC] text-[#1F2937] border border-[#E5EAF1] rounded-xl hover:bg-[#E5EAF1] transition-colors">
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium bg-[#FBF6EC] text-[#2A1F1A] border border-[#E2D9CC] rounded-xl hover:bg-[#E2D9CC] transition-colors">
           <Pencil size={12} strokeWidth={2} /> Editar
         </button>
         <button onClick={() => setConfirmDelete(true)}
@@ -245,13 +245,13 @@ export default function CalendarioItemPopover({ data, onClose, onUpdated, onEdit
     <div
       ref={ref}
       style={{ position: 'fixed', top, left, width: popoverW, zIndex: 200 }}
-      className="bg-white border border-[#E5EAF1] rounded-2xl shadow-xl p-4"
+      className="bg-white border border-[#E2D9CC] rounded-2xl shadow-xl p-4"
     >
       <div className="flex items-center justify-between mb-3">
-        <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">
+        <p className="text-xs font-semibold text-[#7A6A5A] uppercase tracking-wider">
           {data.tipo === 'pedido' ? 'Pedido' : 'Tarea'}
         </p>
-        <button onClick={onClose} className="text-[#6B7280] hover:text-[#1F2937] transition-colors">
+        <button onClick={onClose} className="text-[#7A6A5A] hover:text-[#2A1F1A] transition-colors">
           <X size={15} strokeWidth={2} />
         </button>
       </div>

@@ -109,17 +109,17 @@ export function TareaModal({ isOpen, editTarget, defaultFecha, clientes, pedidos
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" onClick={e => e.stopPropagation()}>
-        <div className="px-5 py-4 border-b border-[#E5EAF1]">
-          <h2 className="text-base font-semibold text-[#1F2937]">{editTarget ? 'Editar tarea' : 'Nueva tarea'}</h2>
+        <div className="px-5 py-4 border-b border-[#E2D9CC]">
+          <h2 className="text-base font-semibold text-[#2A1F1A]">{editTarget ? 'Editar tarea' : 'Nueva tarea'}</h2>
         </div>
         <form onSubmit={handleSubmit} className="px-5 py-4 flex flex-col gap-4">
           <div>
-            <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Fecha *</label>
+            <label className="block text-xs font-medium text-[#7A6A5A] mb-1.5">Fecha *</label>
             <input type="date" required value={fecha} onChange={e => setFecha(e.target.value)}
-              className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA]" />
+              className="w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#B5A28A]" />
           </div>
           <div>
-            <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Tarea *</label>
+            <label className="block text-xs font-medium text-[#7A6A5A] mb-1.5">Tarea *</label>
             <TextoConMenciones
               value={texto}
               menciones={menciones}
@@ -132,11 +132,11 @@ export function TareaModal({ isOpen, editTarget, defaultFecha, clientes, pedidos
           </div>
           <div className="flex gap-3 pt-1">
             <button type="button" onClick={onClose}
-              className="flex-1 py-2.5 text-sm text-[#6B7280] border border-[#E5EAF1] rounded-xl hover:bg-[#F7FAFC] transition-colors">
+              className="flex-1 py-2.5 text-sm text-[#7A6A5A] border border-[#E2D9CC] rounded-xl hover:bg-[#FBF6EC] transition-colors">
               Cancelar
             </button>
             <button type="submit" disabled={saving}
-              className="flex-1 py-2.5 text-sm font-semibold bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors">
+              className="flex-1 py-2.5 text-sm font-semibold bg-[#2A1F1A] text-white rounded-xl hover:bg-[#1A1310] disabled:opacity-40 transition-colors">
               {saving ? 'Guardando...' : editTarget ? 'Guardar cambios' : 'Crear tarea'}
             </button>
           </div>
@@ -163,7 +163,7 @@ function PedidoBadge({ pedido, onClick }: { pedido: CalendarioPedido; onClick: (
 function TareaBadge({ tarea, onClick }: { tarea: Tarea; onClick: (e: React.MouseEvent) => void }) {
   return (
     <button onClick={onClick}
-      className={`w-full text-left text-[10px] font-medium px-1.5 py-0.5 rounded-md truncate leading-tight flex items-center gap-1 transition-all hover:brightness-95 ${tarea.completada ? 'bg-[#F3F4F6] text-[#6B7280] opacity-60' : 'bg-[#F3F4F6] text-[#1F2937]'}`}>
+      className={`w-full text-left text-[10px] font-medium px-1.5 py-0.5 rounded-md truncate leading-tight flex items-center gap-1 transition-all hover:brightness-95 ${tarea.completada ? 'bg-[#F6EFE1] text-[#7A6A5A] opacity-60' : 'bg-[#F6EFE1] text-[#2A1F1A]'}`}>
       {tarea.completada && <Check size={9} strokeWidth={3} className="shrink-0" />}
       <span className={tarea.completada ? 'line-through' : ''}>{tarea.texto}</span>
     </button>
@@ -195,15 +195,15 @@ function DayCell({ date, pedidos, tareas, isCurrentMonth, compact = false, onCli
 
   return (
     <div
-      className={`${compact ? 'min-h-[90px]' : 'min-h-[110px]'} border-b border-r border-[#E5EAF1] p-1.5 flex flex-col gap-0.5 ${!isCurrentMonth ? 'bg-[#FAFBFC]' : 'bg-white'}`}
+      className={`${compact ? 'min-h-[90px]' : 'min-h-[110px]'} border-b border-r border-[#E2D9CC] p-1.5 flex flex-col gap-0.5 ${!isCurrentMonth ? 'bg-[#FAFBFC]' : 'bg-white'}`}
     >
       <button
         onClick={() => onClickDay(dateStr)}
         className={`text-xs font-semibold w-6 h-6 rounded-full flex items-center justify-center mb-0.5 transition-colors ${
           isToday
-            ? 'bg-[#9CC6EA] text-white'
+            ? 'bg-[#B5A28A] text-white'
             : isCurrentMonth
-            ? 'text-[#1F2937] hover:bg-[#F7FAFC]'
+            ? 'text-[#2A1F1A] hover:bg-[#FBF6EC]'
             : 'text-[#C4C9D4]'
         }`}
       >
@@ -218,7 +218,7 @@ function DayCell({ date, pedidos, tareas, isCurrentMonth, compact = false, onCli
           onClick={e => { const r = (e.currentTarget as HTMLElement).getBoundingClientRect(); onClickTarea(t, r) }} />
       ))}
       {overflow > 0 && (
-        <p className="text-[10px] text-[#9CC6EA] font-medium px-1">+{overflow} más</p>
+        <p className="text-[10px] text-[#B5A28A] font-medium px-1">+{overflow} más</p>
       )}
     </div>
   )
@@ -239,10 +239,10 @@ export interface WeekViewProps {
 export function WeekView({ days, pedidosByDay, tareasByDay, compact, onClickPedido, onClickTarea, onClickDay }: WeekViewProps) {
   const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
   return (
-    <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden">
-      <div className="grid grid-cols-7 border-b border-[#E5EAF1]">
+    <div className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden">
+      <div className="grid grid-cols-7 border-b border-[#E2D9CC]">
         {dayNames.map(d => (
-          <div key={d} className="text-center text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider py-2 border-r border-[#E5EAF1] last:border-r-0">
+          <div key={d} className="text-center text-[10px] font-semibold text-[#7A6A5A] uppercase tracking-wider py-2 border-r border-[#E2D9CC] last:border-r-0">
             {d}
           </div>
         ))}
@@ -251,7 +251,7 @@ export function WeekView({ days, pedidosByDay, tareasByDay, compact, onClickPedi
         {days.map((date, i) => {
           const key = getDateStr(date)
           return (
-            <div key={key} className={i < 6 ? 'border-r border-[#E5EAF1]' : ''}>
+            <div key={key} className={i < 6 ? 'border-r border-[#E2D9CC]' : ''}>
               <DayCell
                 date={date}
                 pedidos={pedidosByDay[key] ?? []}
@@ -359,42 +359,42 @@ export default function CalendarioPage() {
     <div className="max-w-7xl mx-auto px-4 pt-20 pb-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-5 flex-wrap">
-        <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center shrink-0">
-          <CalendarDays size={16} color="#1F2937" strokeWidth={2} />
+        <div className="w-8 h-8 rounded-xl bg-[#F1E4CC] flex items-center justify-center shrink-0">
+          <CalendarDays size={16} color="#2A1F1A" strokeWidth={2} />
         </div>
 
         <div className="flex items-center gap-1">
           <button onClick={navAnterior}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F7FAFC] text-[#6B7280] transition-colors">
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#FBF6EC] text-[#7A6A5A] transition-colors">
             <ChevronLeft size={16} strokeWidth={2} />
           </button>
-          <h1 className="text-base font-semibold text-[#1F2937] min-w-[160px] text-center">{titulo}</h1>
+          <h1 className="text-base font-semibold text-[#2A1F1A] min-w-[160px] text-center">{titulo}</h1>
           <button onClick={navSiguiente}
-            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#F7FAFC] text-[#6B7280] transition-colors">
+            className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-[#FBF6EC] text-[#7A6A5A] transition-colors">
             <ChevronRight size={16} strokeWidth={2} />
           </button>
         </div>
 
         <button onClick={navHoy}
-          className="text-xs font-medium text-[#6B7280] border border-[#E5EAF1] px-3 py-1.5 rounded-lg hover:bg-[#F7FAFC] transition-colors">
+          className="text-xs font-medium text-[#7A6A5A] border border-[#E2D9CC] px-3 py-1.5 rounded-lg hover:bg-[#FBF6EC] transition-colors">
           Hoy
         </button>
 
         {/* Vista toggle */}
-        <div className="flex gap-1 bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl p-1">
+        <div className="flex gap-1 bg-[#FBF6EC] border border-[#E2D9CC] rounded-xl p-1">
           <button onClick={() => setVista('mes')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${vista === 'mes' ? 'bg-white text-[#1F2937] shadow-sm' : 'text-[#6B7280]'}`}>
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${vista === 'mes' ? 'bg-white text-[#2A1F1A] shadow-sm' : 'text-[#7A6A5A]'}`}>
             <LayoutGrid size={13} strokeWidth={2} /> Mes
           </button>
           <button onClick={() => setVista('semana')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${vista === 'semana' ? 'bg-white text-[#1F2937] shadow-sm' : 'text-[#6B7280]'}`}>
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${vista === 'semana' ? 'bg-white text-[#2A1F1A] shadow-sm' : 'text-[#7A6A5A]'}`}>
             <Calendar size={13} strokeWidth={2} /> Semana
           </button>
         </div>
 
         <button
           onClick={() => setTareaModal({ isOpen: true, editTarget: null, defaultFecha: todayStr })}
-          className="ml-auto flex items-center gap-1.5 text-xs font-medium bg-[#1F2937] text-white px-3 py-2 rounded-xl hover:bg-[#374151] transition-colors shrink-0"
+          className="ml-auto flex items-center gap-1.5 text-xs font-medium bg-[#2A1F1A] text-white px-3 py-2 rounded-xl hover:bg-[#1A1310] transition-colors shrink-0"
         >
           <Plus size={13} strokeWidth={2.5} /> Nueva tarea
         </button>
@@ -413,11 +413,11 @@ export default function CalendarioPage() {
         />
       ) : (
         /* Vista mes */
-        <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden">
+        <div className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden">
           {/* Headers días */}
-          <div className="grid grid-cols-7 border-b border-[#E5EAF1]">
+          <div className="grid grid-cols-7 border-b border-[#E2D9CC]">
             {dayNames.map(d => (
-              <div key={d} className="text-center text-[10px] font-semibold text-[#6B7280] uppercase tracking-wider py-2 border-r border-[#E5EAF1] last:border-r-0">
+              <div key={d} className="text-center text-[10px] font-semibold text-[#7A6A5A] uppercase tracking-wider py-2 border-r border-[#E2D9CC] last:border-r-0">
                 {d}
               </div>
             ))}
@@ -429,7 +429,7 @@ export default function CalendarioPage() {
               const isCurrentMonth = date.getMonth() === anchor.getMonth()
               const col = i % 7
               return (
-                <div key={key} className={col < 6 ? 'border-r border-[#E5EAF1]' : ''}>
+                <div key={key} className={col < 6 ? 'border-r border-[#E2D9CC]' : ''}>
                   <DayCell
                     date={date}
                     pedidos={pedidosByDay[key] ?? []}

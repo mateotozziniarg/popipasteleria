@@ -17,10 +17,10 @@ const emptyForm: FormState = { nombre: '', descripcion: '', precioDefault: '' }
 const formatMonto = (n: number) =>
   n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 
-const inputClass = 'w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors'
-const labelClass = 'block text-sm font-medium text-[#1F2937] mb-1.5'
-const btnPrimary = 'bg-[#1F2937] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors flex items-center gap-2'
-const btnGhost = 'text-sm text-[#6B7280] hover:text-[#1F2937] transition-colors'
+const inputClass = 'w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm text-[#2A1F1A] placeholder-[#7A6A5A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] transition-colors'
+const labelClass = 'block text-sm font-medium text-[#2A1F1A] mb-1.5'
+const btnPrimary = 'bg-[#2A1F1A] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#1A1310] disabled:opacity-40 transition-colors flex items-center gap-2'
+const btnGhost = 'text-sm text-[#7A6A5A] hover:text-[#2A1F1A] transition-colors'
 
 export default function ProductosPage() {
   const [productos, setProductos] = useState<Producto[]>([])
@@ -97,10 +97,10 @@ export default function ProductosPage() {
     <div className="max-w-3xl mx-auto px-4 pt-20 pb-8">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center">
-            <Package size={16} color="#1F2937" strokeWidth={2} />
+          <div className="w-8 h-8 rounded-xl bg-[#F1E4CC] flex items-center justify-center">
+            <Package size={16} color="#2A1F1A" strokeWidth={2} />
           </div>
-          <h1 className="text-xl font-semibold text-[#1F2937]">Productos</h1>
+          <h1 className="text-xl font-semibold text-[#2A1F1A]">Productos</h1>
         </div>
         <button onClick={openCreate} className={btnPrimary}>
           <Plus size={14} strokeWidth={2.5} />
@@ -116,35 +116,35 @@ export default function ProductosPage() {
           titulo="Todavía no hay productos"
           descripcion="Cargá los productos de tu pastelería para agregarlos rápido a los pedidos."
           accion={
-            <button onClick={openCreate} className="bg-[#1F2937] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-[#374151] transition-colors">
+            <button onClick={openCreate} className="bg-[#2A1F1A] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-[#1A1310] transition-colors">
               Crear primer producto
             </button>
           }
         />
       ) : (
-        <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden">
+        <div className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-[#E5EAF1] text-xs text-[#6B7280] font-medium">
+              <tr className="border-b border-[#E2D9CC] text-xs text-[#7A6A5A] font-medium">
                 <th className="text-left px-4 py-3">Nombre</th>
                 <th className="text-left px-4 py-3 hidden sm:table-cell">Descripción</th>
                 <th className="text-right px-4 py-3">Precio</th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#F7FAFC]">
+            <tbody className="divide-y divide-[#FBF6EC]">
               {productos.map(p => (
-                <tr key={p.id} className="hover:bg-[#F7FAFC] transition-colors">
-                  <td className="px-4 py-3 font-medium text-[#1F2937]">{p.nombre}</td>
-                  <td className="px-4 py-3 text-[#6B7280] hidden sm:table-cell">{p.descripcion ?? '—'}</td>
-                  <td className="px-4 py-3 text-right font-semibold text-[#1F2937] whitespace-nowrap">
+                <tr key={p.id} className="hover:bg-[#FBF6EC] transition-colors">
+                  <td className="px-4 py-3 font-medium text-[#2A1F1A]">{p.nombre}</td>
+                  <td className="px-4 py-3 text-[#7A6A5A] hidden sm:table-cell">{p.descripcion ?? '—'}</td>
+                  <td className="px-4 py-3 text-right font-semibold text-[#2A1F1A] whitespace-nowrap">
                     {formatMonto(parseFloat(p.precioDefault))}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1 justify-end">
                       <button
                         onClick={() => openEdit(p)}
-                        className="flex items-center gap-1 text-xs text-[#6B7280] hover:text-[#1F2937] transition-colors px-2 py-1 rounded-lg hover:bg-[#F7FAFC]"
+                        className="flex items-center gap-1 text-xs text-[#7A6A5A] hover:text-[#2A1F1A] transition-colors px-2 py-1 rounded-lg hover:bg-[#FBF6EC]"
                       >
                         <Pencil size={12} strokeWidth={2} />
                         Editar
@@ -189,7 +189,7 @@ export default function ProductosPage() {
             </div>
             <div>
               <label className={labelClass}>
-                Descripción <span className="text-[#6B7280] font-normal">(opcional)</span>
+                Descripción <span className="text-[#7A6A5A] font-normal">(opcional)</span>
               </label>
               <input
                 className={inputClass}

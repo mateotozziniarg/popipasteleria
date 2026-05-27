@@ -47,10 +47,10 @@ const emptyForm = (eventoIdDefault: number | null): FormState => ({
   items: [],
 })
 
-const inputClass = 'w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white'
-const labelClass = 'block text-sm font-medium text-[#1F2937] mb-1.5'
-const btnPrimary = 'bg-[#1F2937] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors flex items-center gap-2'
-const btnGhost = 'text-sm text-[#6B7280] hover:text-[#1F2937] transition-colors px-3 py-2.5'
+const inputClass = 'w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm text-[#2A1F1A] placeholder-[#7A6A5A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] transition-colors bg-white'
+const labelClass = 'block text-sm font-medium text-[#2A1F1A] mb-1.5'
+const btnPrimary = 'bg-[#2A1F1A] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#1A1310] disabled:opacity-40 transition-colors flex items-center gap-2'
+const btnGhost = 'text-sm text-[#7A6A5A] hover:text-[#2A1F1A] transition-colors px-3 py-2.5'
 
 const formatMonto = (n: number) =>
   n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
@@ -85,27 +85,27 @@ function BuscadorProductos({
   return (
     <div ref={ref} className="relative">
       <input
-        className="w-full border-0 bg-transparent text-sm text-[#1F2937] placeholder-[#9CC6EA] focus:outline-none"
+        className="w-full border-0 bg-transparent text-sm text-[#2A1F1A] placeholder-[#B5A28A] focus:outline-none"
         placeholder="+ Agregar producto..."
         value={query}
         onChange={e => { setQuery(e.target.value); setOpen(true) }}
         onFocus={() => setOpen(true)}
       />
       {open && (filtrados.length > 0 || mostrarCrear) && (
-        <div className="absolute z-20 mt-1 left-0 right-0 bg-white border border-[#E5EAF1] rounded-xl shadow-lg max-h-48 overflow-y-auto">
+        <div className="absolute z-20 mt-1 left-0 right-0 bg-white border border-[#E2D9CC] rounded-xl shadow-lg max-h-48 overflow-y-auto">
           {filtrados.map(p => (
             <button key={p.id} type="button"
               onClick={() => { onAgregar({ productoId: p.id, nombre: p.nombre, cantidad: 1, precioUnitario: p.precioDefault }); setQuery(''); setOpen(false) }}
-              className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#F7FAFC] flex justify-between items-center transition-colors"
+              className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#FBF6EC] flex justify-between items-center transition-colors"
             >
-              <span className="text-[#1F2937]">{p.nombre}</span>
-              <span className="text-[#6B7280] text-xs">{formatMonto(parseFloat(p.precioDefault))}</span>
+              <span className="text-[#2A1F1A]">{p.nombre}</span>
+              <span className="text-[#7A6A5A] text-xs">{formatMonto(parseFloat(p.precioDefault))}</span>
             </button>
           ))}
           {mostrarCrear && (
             <button type="button"
               onClick={() => { onCrearYAgregar(query.trim()); setQuery(''); setOpen(false) }}
-              className="w-full text-left px-3 py-2.5 text-sm text-[#9CC6EA] hover:bg-[#F7FAFC] border-t border-[#E5EAF1] flex items-center gap-1.5 transition-colors"
+              className="w-full text-left px-3 py-2.5 text-sm text-[#B5A28A] hover:bg-[#FBF6EC] border-t border-[#E2D9CC] flex items-center gap-1.5 transition-colors"
             >
               <Plus size={13} strokeWidth={2.5} /> Crear "{query.trim()}"
             </button>
@@ -129,22 +129,22 @@ function MiniCrearProducto({ nombre, onConfirmar, onCancelar }: { nombre: string
   }
 
   return (
-    <div className="bg-[#F7FAFC] border border-[#CFE6F7] rounded-xl p-3 mt-2">
-      <p className="text-sm font-medium text-[#1F2937] mb-2.5">Crear producto "{nombre}"</p>
+    <div className="bg-[#FBF6EC] border border-[#F1E4CC] rounded-xl p-3 mt-2">
+      <p className="text-sm font-medium text-[#2A1F1A] mb-2.5">Crear producto "{nombre}"</p>
       <div className="flex gap-2 items-end">
         <div className="flex-1">
-          <label className="block text-xs text-[#6B7280] mb-1">Precio por defecto</label>
+          <label className="block text-xs text-[#7A6A5A] mb-1">Precio por defecto</label>
           <input type="number" min="0" step="0.01" autoFocus placeholder="0"
-            className="w-full border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
+            className="w-full border border-[#E2D9CC] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#B5A28A] transition-colors"
             value={precio} onChange={e => setPrecio(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleCrear() } }}
           />
         </div>
         <button type="button" disabled={saving || !precio} onClick={handleCrear}
-          className="bg-[#1F2937] text-white text-xs px-3 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors">
+          className="bg-[#2A1F1A] text-white text-xs px-3 py-2.5 rounded-xl hover:bg-[#1A1310] disabled:opacity-40 transition-colors">
           {saving ? '...' : 'Crear'}
         </button>
-        <button type="button" onClick={onCancelar} className="text-xs text-[#6B7280] hover:text-[#1F2937] px-2 py-2 transition-colors">Cancelar</button>
+        <button type="button" onClick={onCancelar} className="text-xs text-[#7A6A5A] hover:text-[#2A1F1A] px-2 py-2 transition-colors">Cancelar</button>
       </div>
     </div>
   )
@@ -172,14 +172,14 @@ function BuscadorCliente({
 
   if (seleccionado) {
     return (
-      <div className="flex items-center gap-2 border border-[#CFE6F7] rounded-xl px-3 py-2.5 bg-[#F7FAFC]">
-        <span className="text-sm font-medium text-[#1F2937] flex-1">{seleccionado.nombre}</span>
+      <div className="flex items-center gap-2 border border-[#F1E4CC] rounded-xl px-3 py-2.5 bg-[#FBF6EC]">
+        <span className="text-sm font-medium text-[#2A1F1A] flex-1">{seleccionado.nombre}</span>
         {seleccionado.telefono && (
-          <a href={`tel:${seleccionado.telefono}`} className="text-xs text-[#6B7280] hover:text-[#1F2937] transition-colors" onClick={e => e.stopPropagation()}>
+          <a href={`tel:${seleccionado.telefono}`} className="text-xs text-[#7A6A5A] hover:text-[#2A1F1A] transition-colors" onClick={e => e.stopPropagation()}>
             {seleccionado.telefono}
           </a>
         )}
-        <button type="button" onClick={onDeseleccionar} className="text-[#6B7280] hover:text-[#1F2937] transition-colors shrink-0">
+        <button type="button" onClick={onDeseleccionar} className="text-[#7A6A5A] hover:text-[#2A1F1A] transition-colors shrink-0">
           <X size={14} strokeWidth={2} />
         </button>
       </div>
@@ -196,20 +196,20 @@ function BuscadorCliente({
         value={query} onChange={e => { setQuery(e.target.value); setOpen(true) }} onFocus={() => setOpen(true)}
       />
       {open && (filtrados.length > 0 || mostrarCrear) && (
-        <div className="absolute z-20 mt-1 w-full bg-white border border-[#E5EAF1] rounded-xl shadow-lg max-h-48 overflow-y-auto">
+        <div className="absolute z-20 mt-1 w-full bg-white border border-[#E2D9CC] rounded-xl shadow-lg max-h-48 overflow-y-auto">
           {filtrados.map(c => (
             <button key={c.id} type="button"
               onClick={() => { onSeleccionar(c); setQuery(''); setOpen(false) }}
-              className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#F7FAFC] flex justify-between items-center transition-colors"
+              className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#FBF6EC] flex justify-between items-center transition-colors"
             >
-              <span className="text-[#1F2937]">{c.nombre}</span>
-              {c.telefono && <span className="text-[#6B7280] text-xs">{c.telefono}</span>}
+              <span className="text-[#2A1F1A]">{c.nombre}</span>
+              {c.telefono && <span className="text-[#7A6A5A] text-xs">{c.telefono}</span>}
             </button>
           ))}
           {mostrarCrear && (
             <button type="button"
               onClick={() => { onCrearYSeleccionar(query.trim()); setQuery(''); setOpen(false) }}
-              className="w-full text-left px-3 py-2.5 text-sm text-[#9CC6EA] hover:bg-[#F7FAFC] border-t border-[#E5EAF1] flex items-center gap-1.5 transition-colors"
+              className="w-full text-left px-3 py-2.5 text-sm text-[#B5A28A] hover:bg-[#FBF6EC] border-t border-[#E2D9CC] flex items-center gap-1.5 transition-colors"
             >
               <Plus size={13} strokeWidth={2.5} /> Crear "{query.trim()}"
             </button>
@@ -235,15 +235,15 @@ function MiniCrearCliente({ nombreInicial, onConfirmar, onCancelar }: { nombreIn
   }
 
   return (
-    <div className="bg-[#F7FAFC] border border-[#CFE6F7] rounded-xl p-3 mt-2 flex flex-col gap-2">
-      <p className="text-sm font-medium text-[#1F2937]">Nuevo cliente</p>
-      <input autoFocus className="w-full border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors" placeholder="Nombre *" value={nombre} onChange={e => setNombre(e.target.value)} />
-      <input className="w-full border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors" placeholder="Teléfono (opcional)" value={telefono} onChange={e => setTelefono(e.target.value)} />
-      <input className="w-full border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors" placeholder="Dirección (opcional)" value={direccion} onChange={e => setDireccion(e.target.value)} />
+    <div className="bg-[#FBF6EC] border border-[#F1E4CC] rounded-xl p-3 mt-2 flex flex-col gap-2">
+      <p className="text-sm font-medium text-[#2A1F1A]">Nuevo cliente</p>
+      <input autoFocus className="w-full border border-[#E2D9CC] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#B5A28A] transition-colors" placeholder="Nombre *" value={nombre} onChange={e => setNombre(e.target.value)} />
+      <input className="w-full border border-[#E2D9CC] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#B5A28A] transition-colors" placeholder="Teléfono (opcional)" value={telefono} onChange={e => setTelefono(e.target.value)} />
+      <input className="w-full border border-[#E2D9CC] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#B5A28A] transition-colors" placeholder="Dirección (opcional)" value={direccion} onChange={e => setDireccion(e.target.value)} />
       <div className="flex gap-2 justify-end">
-        <button type="button" onClick={onCancelar} className="text-xs text-[#6B7280] hover:text-[#1F2937] px-2 py-2 transition-colors">Cancelar</button>
+        <button type="button" onClick={onCancelar} className="text-xs text-[#7A6A5A] hover:text-[#2A1F1A] px-2 py-2 transition-colors">Cancelar</button>
         <button type="button" disabled={saving || !nombre} onClick={handleCrear}
-          className="bg-[#1F2937] text-white text-xs px-3 py-2 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors">
+          className="bg-[#2A1F1A] text-white text-xs px-3 py-2 rounded-xl hover:bg-[#1A1310] disabled:opacity-40 transition-colors">
           {saving ? '...' : 'Crear'}
         </button>
       </div>
@@ -404,15 +404,15 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg md:max-w-[860px] lg:max-w-[1160px] max-h-[90vh] flex flex-col border border-[#E5EAF1]" onClick={e => e.stopPropagation()}>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg md:max-w-[860px] lg:max-w-[1160px] max-h-[90vh] flex flex-col border border-[#E2D9CC]" onClick={e => e.stopPropagation()}>
 
         {/* Header */}
-        <div className="flex-none flex items-center justify-between px-5 md:px-6 lg:px-8 py-4 border-b-2 border-[#9CC6EA]">
-          <h2 className="font-semibold text-[#1F2937] text-base">
+        <div className="flex-none flex items-center justify-between px-5 md:px-6 lg:px-8 py-4 border-b-2 border-[#B5A28A]">
+          <h2 className="font-semibold text-[#2A1F1A] text-base">
             {editTarget ? 'Editar pedido' : 'Nuevo pedido'}
           </h2>
           <button type="button" onClick={onClose}
-            className="flex items-center justify-center w-7 h-7 rounded-lg text-[#6B7280] hover:text-[#1F2937] hover:bg-[#F7FAFC] transition-colors">
+            className="flex items-center justify-center w-7 h-7 rounded-lg text-[#7A6A5A] hover:text-[#2A1F1A] hover:bg-[#FBF6EC] transition-colors">
             <X size={15} strokeWidth={2} />
           </button>
         </div>
@@ -453,7 +453,7 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
                 {/* Evento */}
                 <div>
                   <label className={labelClass}>
-                    Evento <span className="text-[#6B7280] font-normal">(opcional)</span>
+                    Evento <span className="text-[#7A6A5A] font-normal">(opcional)</span>
                   </label>
                   <select className={inputClass}
                     value={form.eventoId ?? ''}
@@ -466,7 +466,7 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
                 {/* Fecha de entrega */}
                 <div>
                   <label className={labelClass}>
-                    Fecha de entrega <span className="text-[#6B7280] font-normal">(opcional)</span>
+                    Fecha de entrega <span className="text-[#7A6A5A] font-normal">(opcional)</span>
                   </label>
                   <input
                     type="date"
@@ -479,7 +479,7 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
                 {/* Modalidad de entrega */}
                 <div>
                   <label className={labelClass}>
-                    Modalidad <span className="text-[#6B7280] font-normal">(opcional)</span>
+                    Modalidad <span className="text-[#7A6A5A] font-normal">(opcional)</span>
                   </label>
                   <div className="flex gap-2">
                     <button
@@ -487,8 +487,8 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
                       onClick={() => setForm(f => ({ ...f, modalidadEntrega: f.modalidadEntrega === 'ENVIO' ? null : 'ENVIO' }))}
                       className={`flex-1 py-2.5 text-sm font-medium rounded-xl border transition-colors ${
                         form.modalidadEntrega === 'ENVIO'
-                          ? 'bg-[#CFE6F7] border-[#9CC6EA] text-[#1F2937]'
-                          : 'bg-white border-[#E5EAF1] text-[#6B7280] hover:bg-[#F7FAFC]'
+                          ? 'bg-[#F1E4CC] border-[#B5A28A] text-[#2A1F1A]'
+                          : 'bg-white border-[#E2D9CC] text-[#7A6A5A] hover:bg-[#FBF6EC]'
                       }`}
                     >
                       Envío
@@ -498,8 +498,8 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
                       onClick={() => setForm(f => ({ ...f, modalidadEntrega: f.modalidadEntrega === 'RETIRA' ? null : 'RETIRA' }))}
                       className={`flex-1 py-2.5 text-sm font-medium rounded-xl border transition-colors ${
                         form.modalidadEntrega === 'RETIRA'
-                          ? 'bg-[#F3F4F6] border-[#9CA3AF] text-[#1F2937]'
-                          : 'bg-white border-[#E5EAF1] text-[#6B7280] hover:bg-[#F7FAFC]'
+                          ? 'bg-[#F6EFE1] border-[#A89684] text-[#2A1F1A]'
+                          : 'bg-white border-[#E2D9CC] text-[#7A6A5A] hover:bg-[#FBF6EC]'
                       }`}
                     >
                       Retira
@@ -546,7 +546,7 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
                 {/* Notas */}
                 <div>
                   <label className={labelClass}>
-                    Notas <span className="text-[#6B7280] font-normal">(opcional)</span>
+                    Notas <span className="text-[#7A6A5A] font-normal">(opcional)</span>
                   </label>
                   <textarea className={`${inputClass} resize-none`} rows={3}
                     value={form.notas} onChange={e => setForm(f => ({ ...f, notas: e.target.value }))}
@@ -561,12 +561,12 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
                 {/* Tabla de productos */}
                 <div>
                   <label className={labelClass}>Productos</label>
-                  <div className="border border-[#E5EAF1] rounded-xl overflow-visible">
+                  <div className="border border-[#E2D9CC] rounded-xl overflow-visible">
                     {form.items.length > 0 && (
                       <div className="overflow-x-auto">
                         <table className="w-full">
                           <thead>
-                            <tr className="bg-[#F7FAFC] border-b border-[#E5EAF1] text-xs text-[#6B7280] font-medium">
+                            <tr className="bg-[#FBF6EC] border-b border-[#E2D9CC] text-xs text-[#7A6A5A] font-medium">
                               <th className="text-left px-3 py-2">Producto</th>
                               <th className="text-center px-2 py-2 w-16">Cant.</th>
                               <th className="text-right px-2 py-2 w-28">Precio u.</th>
@@ -574,32 +574,32 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
                               <th className="w-8 px-2 py-2" />
                             </tr>
                           </thead>
-                          <tbody className="divide-y divide-[#F7FAFC]">
+                          <tbody className="divide-y divide-[#FBF6EC]">
                             {form.items.map((item, idx) => (
                               <tr key={item.productoId} className="group">
-                                <td className="px-3 py-2 text-sm text-[#1F2937] max-w-[120px]">
+                                <td className="px-3 py-2 text-sm text-[#2A1F1A] max-w-[120px]">
                                   <span className="block truncate" title={item.nombre}>{item.nombre}</span>
                                 </td>
                                 <td className="px-2 py-1.5">
                                   <input type="number" min="1"
-                                    className="w-full text-center border border-[#E5EAF1] rounded-lg px-1.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
+                                    className="w-full text-center border border-[#E2D9CC] rounded-lg px-1.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#B5A28A] transition-colors"
                                     value={item.cantidad}
                                     onChange={e => actualizarItem(idx, 'cantidad', e.target.value)}
                                   />
                                 </td>
                                 <td className="px-2 py-1.5">
                                   <input type="number" min="0" step="0.01"
-                                    className="w-full text-right border border-[#E5EAF1] rounded-lg px-1.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
+                                    className="w-full text-right border border-[#E2D9CC] rounded-lg px-1.5 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#B5A28A] transition-colors"
                                     value={item.precioUnitario}
                                     onChange={e => actualizarItem(idx, 'precioUnitario', e.target.value)}
                                   />
                                 </td>
-                                <td className="px-3 py-2 text-right text-sm font-medium text-[#1F2937] whitespace-nowrap">
+                                <td className="px-3 py-2 text-right text-sm font-medium text-[#2A1F1A] whitespace-nowrap">
                                   {formatMonto(item.cantidad * (parseFloat(item.precioUnitario) || 0))}
                                 </td>
                                 <td className="px-2 py-2 text-center">
                                   <button type="button" onClick={() => quitarItem(idx)}
-                                    className="text-[#E5EAF1] hover:text-red-400 transition-colors">
+                                    className="text-[#E2D9CC] hover:text-red-400 transition-colors">
                                     <X size={14} strokeWidth={2} />
                                   </button>
                                 </td>
@@ -611,7 +611,7 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
                     )}
 
                     {/* Fila de búsqueda */}
-                    <div className={`px-3 py-2.5 ${form.items.length > 0 ? 'border-t border-[#E5EAF1]' : ''}`}>
+                    <div className={`px-3 py-2.5 ${form.items.length > 0 ? 'border-t border-[#E2D9CC]' : ''}`}>
                       <BuscadorProductos
                         productos={productos}
                         itemsActuales={form.items}
@@ -635,19 +635,19 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
                 </div>
 
                 {/* Total */}
-                <div className="border-t border-[#E5EAF1] pt-4">
+                <div className="border-t border-[#E2D9CC] pt-4">
                   {form.items.length > 0 && (
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-xs text-[#6B7280]">Total calculado</span>
-                      <span className="text-sm font-semibold text-[#1F2937]">{formatMonto(totalCalculado)}</span>
+                      <span className="text-xs text-[#7A6A5A]">Total calculado</span>
+                      <span className="text-sm font-semibold text-[#2A1F1A]">{formatMonto(totalCalculado)}</span>
                     </div>
                   )}
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-sm font-medium text-[#1F2937]">Precio total</label>
+                      <label className="text-sm font-medium text-[#2A1F1A]">Precio total</label>
                       {mostrarManual && (
                         <button type="button" onClick={resetToAuto}
-                          className="flex items-center gap-1 text-xs text-[#9CC6EA] hover:text-[#1F2937] transition-colors">
+                          className="flex items-center gap-1 text-xs text-[#B5A28A] hover:text-[#2A1F1A] transition-colors">
                           <RefreshCw size={11} strokeWidth={2} />
                           Usar calculado
                         </button>
@@ -666,7 +666,7 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
                       )}
                     </div>
                     {!form.precioManual && form.items.length > 0 && (
-                      <p className="text-xs text-[#6B7280] mt-1">Calculado automáticamente desde los productos</p>
+                      <p className="text-xs text-[#7A6A5A] mt-1">Calculado automáticamente desde los productos</p>
                     )}
                   </div>
                 </div>
@@ -711,7 +711,7 @@ export default function PedidoFormModal({ isOpen, onClose, onSaved, editTarget, 
           )}
 
           {/* Footer */}
-          <div className="flex-none px-5 md:px-6 lg:px-8 py-4 border-t border-[#E5EAF1]">
+          <div className="flex-none px-5 md:px-6 lg:px-8 py-4 border-t border-[#E2D9CC]">
             {error && (
               <p className="text-red-500 text-sm flex items-center gap-1.5 mb-3">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block" /> {error}

@@ -21,11 +21,17 @@ type QuickFilter = 'todos' | 'hoy' | 'manana' | 'porEntregar' | 'porCobrar'
 const formatMonto = (n: number) =>
   n.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })
 
+// Normaliza a YYYY-MM-DD sin importar si viene como DateTime completo de Prisma
+const toDateOnly = (iso: string) => iso.substring(0, 10)
+
+// Construye un Date a partir de una fecha sin que el timezone lo desplace un día
+const parseLocalDate = (iso: string) => new Date(toDateOnly(iso) + 'T12:00:00')
+
 const formatFecha = (iso: string) =>
-  new Date(iso + 'T00:00:00').toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
+  parseLocalDate(iso).toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' })
 
 const formatFechaDia = (iso: string) => {
-  const d = new Date(iso + 'T00:00:00')
+  const d = parseLocalDate(iso)
   return {
     day: d.toLocaleDateString('es-AR', { day: 'numeric' }),
     rest: d.toLocaleDateString('es-AR', { weekday: 'long', month: 'long' }),
@@ -42,8 +48,8 @@ function getTomorrowStr() {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-const esFechaHoy = (iso: string) => iso.substring(0, 10) === getTodayStr()
-const esFechaPasada = (iso: string) => iso.substring(0, 10) < getTodayStr()
+const esFechaHoy = (iso: string) => toDateOnly(iso) === getTodayStr()
+const esFechaPasada = (iso: string) => toDateOnly(iso) < getTodayStr()
 
 function toWhatsAppUrl(tel: string) {
   let digits = tel.replace(/\D/g, '')
@@ -345,8 +351,8 @@ export default function PedidosPage() {
   // Quick filters + search applied client-side on top of server-filtered data
   const filtered = useMemo(() => {
     let arr = pedidos.slice()
-    if (quickFilter === 'hoy')         arr = arr.filter(o => o.fechaEntrega?.substring(0,10) === today)
-    else if (quickFilter === 'manana') arr = arr.filter(o => o.fechaEntrega?.substring(0,10) === tomorrow)
+    if (quickFilter === 'hoy')         arr = arr.filter(o => o.fechaEntrega ? toDateOnly(o.fechaEntrega) : undefined === today)
+    else if (quickFilter === 'manana') arr = arr.filter(o => o.fechaEntrega ? toDateOnly(o.fechaEntrega) : undefined === tomorrow)
     else if (quickFilter === 'porEntregar') arr = arr.filter(o => o.estadoEntrega !== 'entregado')
     else if (quickFilter === 'porCobrar')   arr = arr.filter(o => o.estadoPago !== 'pagado')
 
@@ -360,8 +366,8 @@ export default function PedidosPage() {
       )
     }
     return arr.sort((a, b) => {
-      const fa = a.fechaEntrega ?? '9999'
-      const fb = b.fechaEntrega ?? '9999'
+      const fa = a.fechaEntrega ? toDateOnly(a.fechaEntrega) : '9999'
+      const fb = b.fechaEntrega ? toDateOnly(b.fechaEntrega) : '9999'
       return fa.localeCompare(fb)
     })
   }, [pedidos, quickFilter, searchQuery, today, tomorrow])
@@ -370,7 +376,7 @@ export default function PedidosPage() {
   const grouped = useMemo(() => {
     const map = new Map<string, PedidoConEvento[]>()
     for (const p of filtered) {
-      const key = p.fechaEntrega ?? 'sin-fecha'
+      const key = p.fechaEntrega ? toDateOnly(p.fechaEntrega) : 'sin-fecha'
       if (!map.has(key)) map.set(key, [])
       map.get(key)!.push(p)
     }
@@ -380,8 +386,8 @@ export default function PedidosPage() {
   // Counts for chips
   const counts = {
     todos:       pedidos.length,
-    hoy:         pedidos.filter(o => o.fechaEntrega?.substring(0,10) === today).length,
-    manana:      pedidos.filter(o => o.fechaEntrega?.substring(0,10) === tomorrow).length,
+    hoy:         pedidos.filter(o => o.fechaEntrega ? toDateOnly(o.fechaEntrega) : undefined === today).length,
+    manana:      pedidos.filter(o => o.fechaEntrega ? toDateOnly(o.fechaEntrega) : undefined === tomorrow).length,
     porEntregar: pedidos.filter(o => o.estadoEntrega !== 'entregado').length,
     porCobrar:   pedidos.filter(o => o.estadoPago !== 'pagado').length,
   }

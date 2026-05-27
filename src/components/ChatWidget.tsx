@@ -72,7 +72,7 @@ export default function ChatWidget() {
       <button
         onClick={() => setOpen(o => !o)}
         className={`fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-40 w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-all duration-200 ${
-          open ? 'bg-[#6B7280] rotate-0' : 'bg-[#1F2937] hover:bg-[#374151]'
+          open ? 'bg-[#7A6A5A] rotate-0' : 'bg-[#2A1F1A] hover:bg-[#1A1310]'
         }`}
         aria-label={open ? 'Cerrar chat' : 'Abrir chat'}
       >
@@ -84,20 +84,20 @@ export default function ChatWidget() {
 
       {/* Panel de chat */}
       {open && (
-        <div className="fixed bottom-40 right-4 sm:bottom-[4.5rem] sm:right-6 z-40 w-[calc(100vw-2rem)] max-w-[360px] h-[420px] sm:h-[460px] bg-white rounded-2xl shadow-2xl border border-[#E5EAF1] flex flex-col overflow-hidden">
+        <div className="fixed bottom-40 right-4 sm:bottom-[4.5rem] sm:right-6 z-40 w-[calc(100vw-2rem)] max-w-[360px] h-[420px] sm:h-[460px] bg-white rounded-2xl shadow-2xl border border-[#E2D9CC] flex flex-col overflow-hidden">
           {/* Header */}
-          <div className="flex items-center gap-2.5 px-4 py-3 bg-[#1F2937] shrink-0">
-            <div className="w-7 h-7 rounded-full bg-[#CFE6F7] flex items-center justify-center shrink-0">
-              <Sparkles size={13} color="#1F2937" strokeWidth={2} />
+          <div className="flex items-center gap-2.5 px-4 py-3 bg-[#2A1F1A] shrink-0">
+            <div className="w-7 h-7 rounded-full bg-[#F1E4CC] flex items-center justify-center shrink-0">
+              <Sparkles size={13} color="#2A1F1A" strokeWidth={2} />
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-semibold text-white leading-tight">Popibot</p>
-              <p className="text-[10px] text-[#9CC6EA]">asistente IA · Groq</p>
+              <p className="text-[10px] text-[#B5A28A]">asistente IA · Groq</p>
             </div>
             {messages.length > 0 && (
               <button
                 onClick={() => setMessages([])}
-                className="text-[#6B7280] hover:text-white text-[10px] transition-colors px-2 py-1 rounded-lg hover:bg-white/10"
+                className="text-[#7A6A5A] hover:text-white text-[10px] transition-colors px-2 py-1 rounded-lg hover:bg-white/10"
               >
                 limpiar
               </button>
@@ -108,7 +108,7 @@ export default function ChatWidget() {
           <div ref={scrollRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-2.5">
             {messages.length === 0 ? (
               <div className="py-4">
-                <p className="text-center text-xs text-[#6B7280] mb-4">
+                <p className="text-center text-xs text-[#7A6A5A] mb-4">
                   Hola! Soy Popibot. Puedo consultar eventos, pedidos, clientes y más.
                 </p>
                 <div className="flex flex-col gap-2">
@@ -116,7 +116,7 @@ export default function ChatWidget() {
                     <button
                       key={i}
                       onClick={() => handleSend(s)}
-                      className="text-left text-xs text-[#1F2937] bg-[#F7FAFC] border border-[#E5EAF1] hover:border-[#9CC6EA] hover:bg-[#EBF4FB] px-3 py-2 rounded-xl transition-colors"
+                      className="text-left text-xs text-[#2A1F1A] bg-[#FBF6EC] border border-[#E2D9CC] hover:border-[#B5A28A] hover:bg-[#EBF4FB] px-3 py-2 rounded-xl transition-colors"
                     >
                       {s}
                     </button>
@@ -129,8 +129,8 @@ export default function ChatWidget() {
                   <div
                     className={`max-w-[88%] px-3 py-2 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap break-words ${
                       msg.role === 'user'
-                        ? 'bg-[#1F2937] text-white rounded-tr-sm'
-                        : 'bg-[#F7FAFC] text-[#1F2937] border border-[#E5EAF1] rounded-tl-sm'
+                        ? 'bg-[#2A1F1A] text-white rounded-tr-sm'
+                        : 'bg-[#FBF6EC] text-[#2A1F1A] border border-[#E2D9CC] rounded-tl-sm'
                     }`}
                   >
                     {msg.content}
@@ -141,20 +141,20 @@ export default function ChatWidget() {
 
             {loading && (
               <div className="flex justify-start">
-                <div className="bg-[#F7FAFC] border border-[#E5EAF1] rounded-2xl rounded-tl-sm px-3 py-2 flex items-center gap-2">
-                  <Loader2 size={13} className="text-[#9CC6EA] animate-spin shrink-0" />
-                  <span className="text-xs text-[#6B7280]">{activeToolLabel}</span>
+                <div className="bg-[#FBF6EC] border border-[#E2D9CC] rounded-2xl rounded-tl-sm px-3 py-2 flex items-center gap-2">
+                  <Loader2 size={13} className="text-[#B5A28A] animate-spin shrink-0" />
+                  <span className="text-xs text-[#7A6A5A]">{activeToolLabel}</span>
                 </div>
               </div>
             )}
           </div>
 
           {/* Input */}
-          <div className="px-3 py-3 border-t border-[#E5EAF1] shrink-0">
+          <div className="px-3 py-3 border-t border-[#E2D9CC] shrink-0">
             <div className="flex items-center gap-2">
               <input
                 ref={inputRef}
-                className="flex-1 border border-[#E5EAF1] rounded-xl px-3 py-2 text-sm text-[#1F2937] placeholder-[#9CC6EA] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
+                className="flex-1 border border-[#E2D9CC] rounded-xl px-3 py-2 text-sm text-[#2A1F1A] placeholder-[#B5A28A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] transition-colors"
                 placeholder="Escribí un mensaje..."
                 value={input}
                 onChange={e => setInput(e.target.value)}
@@ -169,7 +169,7 @@ export default function ChatWidget() {
               <button
                 onClick={() => handleSend()}
                 disabled={!input.trim() || loading}
-                className="w-9 h-9 rounded-xl bg-[#1F2937] hover:bg-[#374151] flex items-center justify-center transition-colors disabled:opacity-40 shrink-0"
+                className="w-9 h-9 rounded-xl bg-[#2A1F1A] hover:bg-[#1A1310] flex items-center justify-center transition-colors disabled:opacity-40 shrink-0"
               >
                 <Send size={14} color="white" strokeWidth={2} />
               </button>

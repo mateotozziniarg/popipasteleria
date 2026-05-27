@@ -17,10 +17,10 @@ import Modal from '../components/Modal'
 import ConfirmModal from '../components/ConfirmModal'
 import LoadingSpinner from '../components/LoadingSpinner'
 
-const inputClass = 'w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] focus:border-[#9CC6EA] transition-colors'
-const labelClass = 'block text-sm font-medium text-[#1F2937] mb-1.5'
-const btnPrimary = 'bg-[#1F2937] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors flex items-center gap-2'
-const btnGhost = 'text-sm text-[#6B7280] hover:text-[#1F2937] transition-colors'
+const inputClass = 'w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm text-[#2A1F1A] placeholder-[#7A6A5A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] focus:border-[#B5A28A] transition-colors'
+const labelClass = 'block text-sm font-medium text-[#2A1F1A] mb-1.5'
+const btnPrimary = 'bg-[#2A1F1A] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#1A1310] disabled:opacity-40 transition-colors flex items-center gap-2'
+const btnGhost = 'text-sm text-[#7A6A5A] hover:text-[#2A1F1A] transition-colors'
 
 const estadoLabel: Record<EstadoPropuesta, string> = {
   BORRADOR: 'Borrador',
@@ -28,7 +28,7 @@ const estadoLabel: Record<EstadoPropuesta, string> = {
   CONFIRMADA: 'Confirmada',
 }
 const estadoClass: Record<EstadoPropuesta, string> = {
-  BORRADOR: 'bg-[#F7FAFC] text-[#6B7280] border border-[#E5EAF1]',
+  BORRADOR: 'bg-[#FBF6EC] text-[#7A6A5A] border border-[#E2D9CC]',
   PRESENTADA: 'bg-amber-50 text-amber-700 border border-amber-200',
   CONFIRMADA: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
 }
@@ -44,7 +44,7 @@ const categoriaClass: Record<CategoriaIdea, string> = {
   DECORACION: 'bg-purple-50 text-purple-600',
   PACKAGING: 'bg-blue-50 text-blue-600',
   PRECIO: 'bg-emerald-50 text-emerald-600',
-  OTRO: 'bg-[#F7FAFC] text-[#6B7280]',
+  OTRO: 'bg-[#FBF6EC] text-[#7A6A5A]',
 }
 
 const ESTADOS: EstadoPropuesta[] = ['BORRADOR', 'PRESENTADA', 'CONFIRMADA']
@@ -449,7 +449,7 @@ export default function PropuestaPage() {
       <div className="mb-6">
         <button
           onClick={() => navigate('/propuestas')}
-          className="text-xs text-[#6B7280] hover:text-[#1F2937] transition-colors mb-3 flex items-center gap-1"
+          className="text-xs text-[#7A6A5A] hover:text-[#2A1F1A] transition-colors mb-3 flex items-center gap-1"
         >
           ← Propuestas
         </button>
@@ -459,23 +459,23 @@ export default function PropuestaPage() {
             {editingNombre ? (
               <div className="flex items-center gap-2 flex-1">
                 <input
-                  className="text-xl font-semibold text-[#1F2937] border-b-2 border-[#9CC6EA] focus:outline-none bg-transparent flex-1"
+                  className="text-xl font-semibold text-[#2A1F1A] border-b-2 border-[#B5A28A] focus:outline-none bg-transparent flex-1"
                   value={nombreVal}
                   onChange={e => setNombreVal(e.target.value)}
                   onKeyDown={e => { if (e.key === 'Enter') saveNombre(); if (e.key === 'Escape') setEditingNombre(false) }}
                   autoFocus
                 />
-                <button onClick={saveNombre} disabled={savingField} className="text-[#9CC6EA] hover:text-[#1F2937]">
+                <button onClick={saveNombre} disabled={savingField} className="text-[#B5A28A] hover:text-[#2A1F1A]">
                   <Check size={16} strokeWidth={2.5} />
                 </button>
-                <button onClick={() => setEditingNombre(false)} className="text-[#6B7280] hover:text-[#1F2937]">
+                <button onClick={() => setEditingNombre(false)} className="text-[#7A6A5A] hover:text-[#2A1F1A]">
                   <X size={15} strokeWidth={2} />
                 </button>
               </div>
             ) : (
               <button
                 onClick={startEditNombre}
-                className="text-xl font-semibold text-[#1F2937] hover:text-[#6B7280] transition-colors text-left truncate group flex items-center gap-2"
+                className="text-xl font-semibold text-[#2A1F1A] hover:text-[#7A6A5A] transition-colors text-left truncate group flex items-center gap-2"
               >
                 {propuesta.nombre}
                 <Pencil size={13} strokeWidth={2} className="opacity-0 group-hover:opacity-50 transition-opacity shrink-0" />
@@ -492,12 +492,12 @@ export default function PropuestaPage() {
                 <ChevronDown size={11} strokeWidth={2.5} />
               </button>
               {estadoOpen && (
-                <div className="absolute top-full left-0 mt-1 bg-white border border-[#E5EAF1] rounded-xl shadow-lg z-20 min-w-[140px] py-1 overflow-hidden">
+                <div className="absolute top-full left-0 mt-1 bg-white border border-[#E2D9CC] rounded-xl shadow-lg z-20 min-w-[140px] py-1 overflow-hidden">
                   {ESTADOS.map(e => (
                     <button
                       key={e}
                       onClick={() => changeEstado(e)}
-                      className={`w-full text-left text-sm px-3 py-2 hover:bg-[#F7FAFC] transition-colors ${propuesta.estado === e ? 'font-semibold text-[#1F2937]' : 'text-[#6B7280]'}`}
+                      className={`w-full text-left text-sm px-3 py-2 hover:bg-[#FBF6EC] transition-colors ${propuesta.estado === e ? 'font-semibold text-[#2A1F1A]' : 'text-[#7A6A5A]'}`}
                     >
                       {estadoLabel[e]}
                     </button>
@@ -520,7 +520,7 @@ export default function PropuestaPage() {
             <button
               onClick={iaDrawerOpen ? () => setIaDrawerOpen(true) : handleGenerarIA}
               disabled={iaLoading}
-              className="flex items-center gap-1.5 text-sm font-medium text-[#1F2937] bg-[#CFE6F7] hover:bg-[#9CC6EA] px-3 py-2 rounded-xl transition-colors disabled:opacity-60"
+              className="flex items-center gap-1.5 text-sm font-medium text-[#2A1F1A] bg-[#F1E4CC] hover:bg-[#B5A28A] px-3 py-2 rounded-xl transition-colors disabled:opacity-60"
             >
               {iaLoading ? <LoadingSpinner inline /> : <Sparkles size={14} strokeWidth={2} />}
               {iaLoading ? 'Generando ideas...' : 'Generar ideas con IA'}
@@ -536,28 +536,28 @@ export default function PropuestaPage() {
       </div>
 
       {/* Temática y descripción */}
-      <div className="bg-white border border-[#E5EAF1] rounded-2xl p-5 mb-4">
+      <div className="bg-white border border-[#E2D9CC] rounded-2xl p-5 mb-4">
         <div className="mb-4">
-          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Temática</p>
+          <p className="text-xs font-semibold text-[#7A6A5A] uppercase tracking-wider mb-2">Temática</p>
           {editingTematica ? (
             <div className="flex items-center gap-2">
               <input
-                className="flex-1 border border-[#E5EAF1] rounded-xl px-3 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA]"
+                className="flex-1 border border-[#E2D9CC] rounded-xl px-3 py-2 text-sm text-[#2A1F1A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A]"
                 value={tematicaVal}
                 onChange={e => setTematicaVal(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') saveTematica(); if (e.key === 'Escape') setEditingTematica(false) }}
                 placeholder="Ej: Mundial de fútbol"
                 autoFocus
               />
-              <button onClick={saveTematica} disabled={savingField} className="text-[#9CC6EA] hover:text-[#1F2937]"><Check size={16} /></button>
-              <button onClick={() => setEditingTematica(false)} className="text-[#6B7280] hover:text-[#1F2937]"><X size={15} /></button>
+              <button onClick={saveTematica} disabled={savingField} className="text-[#B5A28A] hover:text-[#2A1F1A]"><Check size={16} /></button>
+              <button onClick={() => setEditingTematica(false)} className="text-[#7A6A5A] hover:text-[#2A1F1A]"><X size={15} /></button>
             </div>
           ) : (
             <button
               onClick={startEditTematica}
-              className="text-sm text-[#1F2937] hover:text-[#6B7280] transition-colors text-left group flex items-center gap-2 w-full"
+              className="text-sm text-[#2A1F1A] hover:text-[#7A6A5A] transition-colors text-left group flex items-center gap-2 w-full"
             >
-              <span className={propuesta.tematica ? '' : 'text-[#9CC6EA] italic'}>
+              <span className={propuesta.tematica ? '' : 'text-[#B5A28A] italic'}>
                 {propuesta.tematica || 'Agregar temática...'}
               </span>
               <Pencil size={12} strokeWidth={2} className="opacity-0 group-hover:opacity-50 transition-opacity shrink-0" />
@@ -565,11 +565,11 @@ export default function PropuestaPage() {
           )}
         </div>
         <div>
-          <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-2">Descripción</p>
+          <p className="text-xs font-semibold text-[#7A6A5A] uppercase tracking-wider mb-2">Descripción</p>
           {editingDescripcion ? (
             <div className="flex flex-col gap-2">
               <textarea
-                className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] resize-none"
+                className="w-full border border-[#E2D9CC] rounded-xl px-3 py-2 text-sm text-[#2A1F1A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] resize-none"
                 value={descripcionVal}
                 onChange={e => setDescripcionVal(e.target.value)}
                 rows={3}
@@ -577,10 +577,10 @@ export default function PropuestaPage() {
                 autoFocus
               />
               <div className="flex gap-2">
-                <button onClick={saveDescripcion} disabled={savingField} className="text-xs text-[#1F2937] bg-[#CFE6F7] hover:bg-[#9CC6EA] px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                <button onClick={saveDescripcion} disabled={savingField} className="text-xs text-[#2A1F1A] bg-[#F1E4CC] hover:bg-[#B5A28A] px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
                   <Check size={12} /> Guardar
                 </button>
-                <button onClick={() => setEditingDescripcion(false)} className="text-xs text-[#6B7280] hover:text-[#1F2937] px-3 py-1.5 rounded-lg hover:bg-[#F7FAFC] transition-colors">
+                <button onClick={() => setEditingDescripcion(false)} className="text-xs text-[#7A6A5A] hover:text-[#2A1F1A] px-3 py-1.5 rounded-lg hover:bg-[#FBF6EC] transition-colors">
                   Cancelar
                 </button>
               </div>
@@ -588,9 +588,9 @@ export default function PropuestaPage() {
           ) : (
             <button
               onClick={startEditDescripcion}
-              className="text-sm text-[#1F2937] hover:text-[#6B7280] transition-colors text-left group flex items-start gap-2 w-full"
+              className="text-sm text-[#2A1F1A] hover:text-[#7A6A5A] transition-colors text-left group flex items-start gap-2 w-full"
             >
-              <span className={`whitespace-pre-wrap ${propuesta.descripcion ? '' : 'text-[#9CC6EA] italic'}`}>
+              <span className={`whitespace-pre-wrap ${propuesta.descripcion ? '' : 'text-[#B5A28A] italic'}`}>
                 {propuesta.descripcion || 'Agregar descripción...'}
               </span>
               <Pencil size={12} strokeWidth={2} className="opacity-0 group-hover:opacity-50 transition-opacity shrink-0 mt-0.5" />
@@ -600,18 +600,18 @@ export default function PropuestaPage() {
       </div>
 
       {/* Productos */}
-      <div className="bg-white border border-[#E5EAF1] rounded-2xl p-5 mb-4">
+      <div className="bg-white border border-[#E2D9CC] rounded-2xl p-5 mb-4">
         <div className="flex items-center gap-2 mb-4">
-          <Package size={15} color="#9CC6EA" strokeWidth={2} />
-          <h2 className="text-sm font-semibold text-[#1F2937]">Productos</h2>
-          <span className="text-xs text-[#6B7280] ml-auto">{propuesta.productos.length} producto{propuesta.productos.length !== 1 ? 's' : ''}</span>
+          <Package size={15} color="#B5A28A" strokeWidth={2} />
+          <h2 className="text-sm font-semibold text-[#2A1F1A]">Productos</h2>
+          <span className="text-xs text-[#7A6A5A] ml-auto">{propuesta.productos.length} producto{propuesta.productos.length !== 1 ? 's' : ''}</span>
         </div>
 
         {propuesta.productos.length > 0 && (
           <div className="mb-3 overflow-x-auto">
             <table className="w-full text-sm min-w-[500px]">
               <thead>
-                <tr className="text-xs text-[#6B7280] border-b border-[#E5EAF1]">
+                <tr className="text-xs text-[#7A6A5A] border-b border-[#E2D9CC]">
                   <th className="text-left py-2 pr-3 font-medium">Nombre</th>
                   <th className="text-left py-2 pr-3 font-medium">Descripción</th>
                   <th className="text-left py-2 pr-3 font-medium w-24">Precio</th>
@@ -622,32 +622,32 @@ export default function PropuestaPage() {
               <tbody>
                 {propuesta.productos.map(prod => (
                   editingProdId === prod.id ? (
-                    <tr key={prod.id} className="border-b border-[#E5EAF1]">
+                    <tr key={prod.id} className="border-b border-[#E2D9CC]">
                       <td className="py-2 pr-2">
-                        <input className="w-full border border-[#9CC6EA] rounded-lg px-2 py-1 text-sm focus:outline-none" value={editProd.nombre} onChange={e => setEditProd(f => ({ ...f, nombre: e.target.value }))} />
+                        <input className="w-full border border-[#B5A28A] rounded-lg px-2 py-1 text-sm focus:outline-none" value={editProd.nombre} onChange={e => setEditProd(f => ({ ...f, nombre: e.target.value }))} />
                       </td>
                       <td className="py-2 pr-2">
-                        <input className="w-full border border-[#E5EAF1] rounded-lg px-2 py-1 text-sm focus:outline-none" value={editProd.descripcion} onChange={e => setEditProd(f => ({ ...f, descripcion: e.target.value }))} placeholder="Descripción" />
+                        <input className="w-full border border-[#E2D9CC] rounded-lg px-2 py-1 text-sm focus:outline-none" value={editProd.descripcion} onChange={e => setEditProd(f => ({ ...f, descripcion: e.target.value }))} placeholder="Descripción" />
                       </td>
                       <td className="py-2 pr-2">
-                        <input type="number" className="w-full border border-[#E5EAF1] rounded-lg px-2 py-1 text-sm focus:outline-none" value={editProd.precio} onChange={e => setEditProd(f => ({ ...f, precio: e.target.value }))} placeholder="$" />
+                        <input type="number" className="w-full border border-[#E2D9CC] rounded-lg px-2 py-1 text-sm focus:outline-none" value={editProd.precio} onChange={e => setEditProd(f => ({ ...f, precio: e.target.value }))} placeholder="$" />
                       </td>
                       <td className="py-2 pr-2">
-                        <input className="w-full border border-[#E5EAF1] rounded-lg px-2 py-1 text-sm focus:outline-none" value={editProd.notas} onChange={e => setEditProd(f => ({ ...f, notas: e.target.value }))} placeholder="Notas" />
+                        <input className="w-full border border-[#E2D9CC] rounded-lg px-2 py-1 text-sm focus:outline-none" value={editProd.notas} onChange={e => setEditProd(f => ({ ...f, notas: e.target.value }))} placeholder="Notas" />
                       </td>
                       <td className="py-2">
                         <div className="flex items-center gap-1">
-                          <button onClick={saveEditProd} disabled={savingProd} className="text-[#9CC6EA] hover:text-[#1F2937]"><Check size={14} /></button>
-                          <button onClick={() => setEditingProdId(null)} className="text-[#6B7280] hover:text-[#1F2937]"><X size={14} /></button>
+                          <button onClick={saveEditProd} disabled={savingProd} className="text-[#B5A28A] hover:text-[#2A1F1A]"><Check size={14} /></button>
+                          <button onClick={() => setEditingProdId(null)} className="text-[#7A6A5A] hover:text-[#2A1F1A]"><X size={14} /></button>
                         </div>
                       </td>
                     </tr>
                   ) : (
-                    <tr key={prod.id} className="border-b border-[#E5EAF1] hover:bg-[#F7FAFC] cursor-pointer group" onClick={() => startEditProd(prod)}>
-                      <td className="py-2.5 pr-3 font-medium text-[#1F2937]">{prod.nombre}</td>
-                      <td className="py-2.5 pr-3 text-[#6B7280]">{prod.descripcion || <span className="italic text-[#9CC6EA]">—</span>}</td>
-                      <td className="py-2.5 pr-3 text-[#1F2937]">{prod.precio ? formatPrecio(prod.precio) : <span className="italic text-[#9CC6EA]">—</span>}</td>
-                      <td className="py-2.5 pr-3 text-[#6B7280]">{prod.notas || <span className="italic text-[#9CC6EA]">—</span>}</td>
+                    <tr key={prod.id} className="border-b border-[#E2D9CC] hover:bg-[#FBF6EC] cursor-pointer group" onClick={() => startEditProd(prod)}>
+                      <td className="py-2.5 pr-3 font-medium text-[#2A1F1A]">{prod.nombre}</td>
+                      <td className="py-2.5 pr-3 text-[#7A6A5A]">{prod.descripcion || <span className="italic text-[#B5A28A]">—</span>}</td>
+                      <td className="py-2.5 pr-3 text-[#2A1F1A]">{prod.precio ? formatPrecio(prod.precio) : <span className="italic text-[#B5A28A]">—</span>}</td>
+                      <td className="py-2.5 pr-3 text-[#7A6A5A]">{prod.notas || <span className="italic text-[#B5A28A]">—</span>}</td>
                       <td className="py-2.5">
                         <button
                           onClick={e => { e.stopPropagation(); setConfirmDeleteProd(prod.id) }}
@@ -667,27 +667,27 @@ export default function PropuestaPage() {
         {/* Fila agregar */}
         <div className="flex items-center gap-2 flex-wrap pt-1">
           <input
-            className="flex-1 min-w-[120px] border border-[#E5EAF1] rounded-xl px-3 py-2 text-sm text-[#1F2937] placeholder-[#9CC6EA] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA]"
+            className="flex-1 min-w-[120px] border border-[#E2D9CC] rounded-xl px-3 py-2 text-sm text-[#2A1F1A] placeholder-[#B5A28A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A]"
             placeholder="Nombre del producto"
             value={addProd.nombre}
             onChange={e => setAddProd(f => ({ ...f, nombre: e.target.value }))}
             onKeyDown={e => { if (e.key === 'Enter') handleAddProd() }}
           />
           <input
-            className="flex-1 min-w-[100px] border border-[#E5EAF1] rounded-xl px-3 py-2 text-sm text-[#1F2937] placeholder-[#9CC6EA] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA]"
+            className="flex-1 min-w-[100px] border border-[#E2D9CC] rounded-xl px-3 py-2 text-sm text-[#2A1F1A] placeholder-[#B5A28A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A]"
             placeholder="Descripción"
             value={addProd.descripcion}
             onChange={e => setAddProd(f => ({ ...f, descripcion: e.target.value }))}
           />
           <input
             type="number"
-            className="w-24 border border-[#E5EAF1] rounded-xl px-3 py-2 text-sm text-[#1F2937] placeholder-[#9CC6EA] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA]"
+            className="w-24 border border-[#E2D9CC] rounded-xl px-3 py-2 text-sm text-[#2A1F1A] placeholder-[#B5A28A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A]"
             placeholder="Precio"
             value={addProd.precio}
             onChange={e => setAddProd(f => ({ ...f, precio: e.target.value }))}
           />
           <input
-            className="flex-1 min-w-[100px] border border-[#E5EAF1] rounded-xl px-3 py-2 text-sm text-[#1F2937] placeholder-[#9CC6EA] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA]"
+            className="flex-1 min-w-[100px] border border-[#E2D9CC] rounded-xl px-3 py-2 text-sm text-[#2A1F1A] placeholder-[#B5A28A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A]"
             placeholder="Notas"
             value={addProd.notas}
             onChange={e => setAddProd(f => ({ ...f, notas: e.target.value }))}
@@ -695,21 +695,21 @@ export default function PropuestaPage() {
           <button
             onClick={handleAddProd}
             disabled={!addProd.nombre.trim() || addingProd}
-            className="w-9 h-9 rounded-xl bg-[#CFE6F7] hover:bg-[#9CC6EA] flex items-center justify-center transition-colors disabled:opacity-40 shrink-0"
+            className="w-9 h-9 rounded-xl bg-[#F1E4CC] hover:bg-[#B5A28A] flex items-center justify-center transition-colors disabled:opacity-40 shrink-0"
           >
-            {addingProd ? <LoadingSpinner inline /> : <Plus size={16} strokeWidth={2.5} color="#1F2937" />}
+            {addingProd ? <LoadingSpinner inline /> : <Plus size={16} strokeWidth={2.5} color="#2A1F1A" />}
           </button>
         </div>
       </div>
 
       {/* Combos */}
-      <div className="bg-white border border-[#E5EAF1] rounded-2xl p-5 mb-4">
+      <div className="bg-white border border-[#E2D9CC] rounded-2xl p-5 mb-4">
         <div className="flex items-center gap-2 mb-4">
-          <Layers size={15} color="#9CC6EA" strokeWidth={2} />
-          <h2 className="text-sm font-semibold text-[#1F2937]">Combos</h2>
+          <Layers size={15} color="#B5A28A" strokeWidth={2} />
+          <h2 className="text-sm font-semibold text-[#2A1F1A]">Combos</h2>
           <button
             onClick={openAddCombo}
-            className="ml-auto flex items-center gap-1.5 text-xs font-medium text-[#1F2937] bg-[#CFE6F7] hover:bg-[#9CC6EA] px-3 py-1.5 rounded-lg transition-colors"
+            className="ml-auto flex items-center gap-1.5 text-xs font-medium text-[#2A1F1A] bg-[#F1E4CC] hover:bg-[#B5A28A] px-3 py-1.5 rounded-lg transition-colors"
           >
             <Plus size={12} strokeWidth={2.5} />
             Nuevo combo
@@ -717,15 +717,15 @@ export default function PropuestaPage() {
         </div>
 
         {propuesta.combos.length === 0 ? (
-          <p className="text-sm text-[#9CC6EA] italic text-center py-4">Sin combos todavía</p>
+          <p className="text-sm text-[#B5A28A] italic text-center py-4">Sin combos todavía</p>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2">
             {propuesta.combos.map(combo => (
-              <div key={combo.id} className="border border-[#E5EAF1] rounded-xl p-4">
+              <div key={combo.id} className="border border-[#E2D9CC] rounded-xl p-4">
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <p className="font-semibold text-sm text-[#1F2937]">{combo.nombre}</p>
+                  <p className="font-semibold text-sm text-[#2A1F1A]">{combo.nombre}</p>
                   <div className="flex items-center gap-1 shrink-0">
-                    <button onClick={() => openEditCombo(combo)} className="text-[#6B7280] hover:text-[#1F2937] p-1 rounded-lg hover:bg-[#F7FAFC] transition-colors">
+                    <button onClick={() => openEditCombo(combo)} className="text-[#7A6A5A] hover:text-[#2A1F1A] p-1 rounded-lg hover:bg-[#FBF6EC] transition-colors">
                       <Pencil size={13} strokeWidth={2} />
                     </button>
                     <button onClick={() => setConfirmDeleteCombo(combo.id)} className="text-red-300 hover:text-red-500 p-1 rounded-lg hover:bg-red-50 transition-colors">
@@ -737,20 +737,20 @@ export default function PropuestaPage() {
                   <p className="text-sm font-semibold text-emerald-600 mb-2">{formatPrecio(combo.precioCombo)}</p>
                 )}
                 {combo.descripcion && (
-                  <p className="text-xs text-[#6B7280] mb-2">{combo.descripcion}</p>
+                  <p className="text-xs text-[#7A6A5A] mb-2">{combo.descripcion}</p>
                 )}
                 {combo.productos.length > 0 ? (
                   <ul className="space-y-1">
                     {combo.productos.map(cp => (
-                      <li key={cp.id} className="text-xs text-[#6B7280] flex items-center gap-1.5">
-                        <span className="w-1 h-1 rounded-full bg-[#9CC6EA] shrink-0" />
+                      <li key={cp.id} className="text-xs text-[#7A6A5A] flex items-center gap-1.5">
+                        <span className="w-1 h-1 rounded-full bg-[#B5A28A] shrink-0" />
                         {cp.producto.nombre}
-                        {cp.cantidad > 1 && <span className="text-[#9CC6EA] font-medium">×{cp.cantidad}</span>}
+                        {cp.cantidad > 1 && <span className="text-[#B5A28A] font-medium">×{cp.cantidad}</span>}
                       </li>
                     ))}
                   </ul>
                 ) : (
-                  <p className="text-xs text-[#9CC6EA] italic">Sin productos</p>
+                  <p className="text-xs text-[#B5A28A] italic">Sin productos</p>
                 )}
               </div>
             ))}
@@ -759,10 +759,10 @@ export default function PropuestaPage() {
       </div>
 
       {/* Ideas */}
-      <div className="bg-white border border-[#E5EAF1] rounded-2xl p-5 mb-4">
+      <div className="bg-white border border-[#E2D9CC] rounded-2xl p-5 mb-4">
         <div className="flex items-center gap-2 mb-4">
-          <Lightbulb size={15} color="#9CC6EA" strokeWidth={2} />
-          <h2 className="text-sm font-semibold text-[#1F2937]">Ideas</h2>
+          <Lightbulb size={15} color="#B5A28A" strokeWidth={2} />
+          <h2 className="text-sm font-semibold text-[#2A1F1A]">Ideas</h2>
         </div>
 
         {/* Por categoría */}
@@ -779,8 +779,8 @@ export default function PropuestaPage() {
                   <ul className="space-y-1.5">
                     {ideas.map(idea => (
                       <li key={idea.id} className="flex items-start gap-2 group">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#9CC6EA] mt-1.5 shrink-0" />
-                        <span className="text-sm text-[#1F2937] flex-1">{idea.texto}</span>
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#B5A28A] mt-1.5 shrink-0" />
+                        <span className="text-sm text-[#2A1F1A] flex-1">{idea.texto}</span>
                         <button
                           onClick={() => handleDeleteIdea(idea.id)}
                           className="opacity-0 group-hover:opacity-100 text-red-300 hover:text-red-500 transition-all shrink-0"
@@ -797,20 +797,20 @@ export default function PropuestaPage() {
         )}
 
         {propuesta.ideas.length === 0 && (
-          <p className="text-sm text-[#9CC6EA] italic mb-3">Sin ideas todavía</p>
+          <p className="text-sm text-[#B5A28A] italic mb-3">Sin ideas todavía</p>
         )}
 
         {/* Agregar idea */}
-        <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-[#E5EAF1]">
+        <div className="flex items-center gap-2 flex-wrap pt-1 border-t border-[#E2D9CC]">
           <input
-            className="flex-1 min-w-[200px] border border-[#E5EAF1] rounded-xl px-3 py-2 text-sm text-[#1F2937] placeholder-[#9CC6EA] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA]"
+            className="flex-1 min-w-[200px] border border-[#E2D9CC] rounded-xl px-3 py-2 text-sm text-[#2A1F1A] placeholder-[#B5A28A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A]"
             placeholder="Nueva idea..."
             value={addIdea_.texto}
             onChange={e => setAddIdea_(f => ({ ...f, texto: e.target.value }))}
             onKeyDown={e => { if (e.key === 'Enter') handleAddIdea() }}
           />
           <select
-            className="border border-[#E5EAF1] rounded-xl px-3 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] bg-white"
+            className="border border-[#E2D9CC] rounded-xl px-3 py-2 text-sm text-[#2A1F1A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] bg-white"
             value={addIdea_.categoria}
             onChange={e => setAddIdea_(f => ({ ...f, categoria: e.target.value as CategoriaIdea }))}
           >
@@ -821,9 +821,9 @@ export default function PropuestaPage() {
           <button
             onClick={handleAddIdea}
             disabled={!addIdea_.texto.trim() || addingIdea}
-            className="w-9 h-9 rounded-xl bg-[#CFE6F7] hover:bg-[#9CC6EA] flex items-center justify-center transition-colors disabled:opacity-40 shrink-0"
+            className="w-9 h-9 rounded-xl bg-[#F1E4CC] hover:bg-[#B5A28A] flex items-center justify-center transition-colors disabled:opacity-40 shrink-0"
           >
-            {addingIdea ? <LoadingSpinner inline /> : <Plus size={16} strokeWidth={2.5} color="#1F2937" />}
+            {addingIdea ? <LoadingSpinner inline /> : <Plus size={16} strokeWidth={2.5} color="#2A1F1A" />}
           </button>
         </div>
       </div>
@@ -844,7 +844,7 @@ export default function PropuestaPage() {
             </div>
             <div className="flex gap-3">
               <div className="flex-1">
-                <label className={labelClass}>Descripción <span className="text-[#6B7280] font-normal">(opcional)</span></label>
+                <label className={labelClass}>Descripción <span className="text-[#7A6A5A] font-normal">(opcional)</span></label>
                 <input
                   className={inputClass}
                   value={comboForm.descripcion}
@@ -878,15 +878,15 @@ export default function PropuestaPage() {
                           onChange={() => toggleComboProducto(prod.id)}
                           className="rounded"
                         />
-                        <label htmlFor={`prod-${prod.id}`} className="flex-1 text-sm text-[#1F2937] cursor-pointer">
+                        <label htmlFor={`prod-${prod.id}`} className="flex-1 text-sm text-[#2A1F1A] cursor-pointer">
                           {prod.nombre}
-                          {prod.precio && <span className="text-[#6B7280] ml-1">{formatPrecio(prod.precio)}</span>}
+                          {prod.precio && <span className="text-[#7A6A5A] ml-1">{formatPrecio(prod.precio)}</span>}
                         </label>
                         {sel && (
                           <div className="flex items-center gap-1">
-                            <button onClick={() => setComboProdCantidad(prod.id, sel.cantidad - 1)} className="w-6 h-6 rounded-lg bg-[#F7FAFC] hover:bg-[#E5EAF1] text-[#1F2937] text-xs font-bold flex items-center justify-center">−</button>
-                            <span className="w-6 text-center text-sm font-medium text-[#1F2937]">{sel.cantidad}</span>
-                            <button onClick={() => setComboProdCantidad(prod.id, sel.cantidad + 1)} className="w-6 h-6 rounded-lg bg-[#F7FAFC] hover:bg-[#E5EAF1] text-[#1F2937] text-xs font-bold flex items-center justify-center">+</button>
+                            <button onClick={() => setComboProdCantidad(prod.id, sel.cantidad - 1)} className="w-6 h-6 rounded-lg bg-[#FBF6EC] hover:bg-[#E2D9CC] text-[#2A1F1A] text-xs font-bold flex items-center justify-center">−</button>
+                            <span className="w-6 text-center text-sm font-medium text-[#2A1F1A]">{sel.cantidad}</span>
+                            <button onClick={() => setComboProdCantidad(prod.id, sel.cantidad + 1)} className="w-6 h-6 rounded-lg bg-[#FBF6EC] hover:bg-[#E2D9CC] text-[#2A1F1A] text-xs font-bold flex items-center justify-center">+</button>
                           </div>
                         )}
                       </div>
@@ -913,7 +913,7 @@ export default function PropuestaPage() {
       {convertirOpen && (
         <Modal title="Convertir en evento" onClose={() => setConvertirOpen(false)}>
           <div className="flex flex-col gap-4">
-            <p className="text-sm text-[#6B7280]">
+            <p className="text-sm text-[#7A6A5A]">
               Se creará un evento basado en esta propuesta. Los productos sin registro en el catálogo serán agregados automáticamente.
             </p>
             <div>
@@ -978,22 +978,22 @@ export default function PropuestaPage() {
       {iaDrawerOpen && iaSugerencias && (
         <>
           <div className="fixed inset-0 z-40 bg-black/20" onClick={() => setIaDrawerOpen(false)} />
-          <div className="fixed top-0 right-0 h-full z-50 w-full max-w-md bg-white border-l border-[#E5EAF1] shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5EAF1] shrink-0">
+          <div className="fixed top-0 right-0 h-full z-50 w-full max-w-md bg-white border-l border-[#E2D9CC] shadow-2xl flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-[#E2D9CC] shrink-0">
               <div className="flex items-center gap-2">
-                <Sparkles size={16} color="#9CC6EA" strokeWidth={2} />
-                <h3 className="font-semibold text-[#1F2937] text-sm">Sugerencias de IA</h3>
+                <Sparkles size={16} color="#B5A28A" strokeWidth={2} />
+                <h3 className="font-semibold text-[#2A1F1A] text-sm">Sugerencias de IA</h3>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleGenerarIA}
                   disabled={iaLoading}
-                  className="flex items-center gap-1.5 text-xs text-[#6B7280] hover:text-[#1F2937] px-2.5 py-1.5 rounded-lg hover:bg-[#F7FAFC] transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 text-xs text-[#7A6A5A] hover:text-[#2A1F1A] px-2.5 py-1.5 rounded-lg hover:bg-[#FBF6EC] transition-colors disabled:opacity-50"
                 >
                   {iaLoading ? <LoadingSpinner inline /> : <RefreshCw size={12} strokeWidth={2} />}
                   Regenerar
                 </button>
-                <button onClick={() => setIaDrawerOpen(false)} className="text-[#6B7280] hover:text-[#1F2937] w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#F7FAFC] transition-colors">
+                <button onClick={() => setIaDrawerOpen(false)} className="text-[#7A6A5A] hover:text-[#2A1F1A] w-7 h-7 flex items-center justify-center rounded-lg hover:bg-[#FBF6EC] transition-colors">
                   <X size={15} strokeWidth={2} />
                 </button>
               </div>
@@ -1003,30 +1003,30 @@ export default function PropuestaPage() {
               {/* Productos nuevos */}
               {iaSugerencias.productosNuevos.length > 0 && (
                 <section>
-                  <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">Productos nuevos sugeridos</p>
+                  <p className="text-xs font-semibold text-[#7A6A5A] uppercase tracking-wider mb-3">Productos nuevos sugeridos</p>
                   <div className="space-y-2.5">
                     {iaSugerencias.productosNuevos.map((prod, i) => {
                       const key = `prod-nuevo-${i}`
                       const usado = iaUsados.has(key)
                       return (
-                        <div key={i} className={`border rounded-xl p-3.5 ${usado ? 'border-emerald-200 bg-emerald-50' : 'border-[#E5EAF1]'}`}>
+                        <div key={i} className={`border rounded-xl p-3.5 ${usado ? 'border-emerald-200 bg-emerald-50' : 'border-[#E2D9CC]'}`}>
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm text-[#1F2937]">{prod.nombre}</p>
-                              {prod.descripcion && <p className="text-xs text-[#6B7280] mt-0.5">{prod.descripcion}</p>}
+                              <p className="font-medium text-sm text-[#2A1F1A]">{prod.nombre}</p>
+                              {prod.descripcion && <p className="text-xs text-[#7A6A5A] mt-0.5">{prod.descripcion}</p>}
                               <div className="flex items-center gap-2 mt-1">
                                 {prod.precioSugerido > 0 && (
                                   <span className="text-xs font-medium text-emerald-600">
                                     {prod.precioSugerido.toLocaleString('es-AR', { style: 'currency', currency: 'ARS', maximumFractionDigits: 0 })}
                                   </span>
                                 )}
-                                {prod.notas && <span className="text-xs text-[#9CC6EA]">{prod.notas}</span>}
+                                {prod.notas && <span className="text-xs text-[#B5A28A]">{prod.notas}</span>}
                               </div>
                             </div>
                             {!usado && (
                               <button
                                 onClick={() => iaAgregarProducto(prod, key)}
-                                className="text-xs font-medium text-[#1F2937] bg-[#CFE6F7] hover:bg-[#9CC6EA] px-2.5 py-1.5 rounded-lg transition-colors shrink-0"
+                                className="text-xs font-medium text-[#2A1F1A] bg-[#F1E4CC] hover:bg-[#B5A28A] px-2.5 py-1.5 rounded-lg transition-colors shrink-0"
                               >
                                 Agregar
                               </button>
@@ -1043,25 +1043,25 @@ export default function PropuestaPage() {
               {/* Nombres para combos */}
               {iaSugerencias.nombresCombo.length > 0 && (
                 <section>
-                  <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">Nombres sugeridos para combos</p>
+                  <p className="text-xs font-semibold text-[#7A6A5A] uppercase tracking-wider mb-3">Nombres sugeridos para combos</p>
                   <div className="space-y-3">
                     {iaSugerencias.nombresCombo.map((item, i) => {
                       const combo = propuesta.combos.find(c => c.id === item.comboId)
                       if (!combo) return null
                       return (
-                        <div key={i} className="border border-[#E5EAF1] rounded-xl p-3.5">
-                          <p className="text-xs text-[#6B7280] mb-2">Para: <span className="font-medium text-[#1F2937]">{combo.nombre}</span></p>
+                        <div key={i} className="border border-[#E2D9CC] rounded-xl p-3.5">
+                          <p className="text-xs text-[#7A6A5A] mb-2">Para: <span className="font-medium text-[#2A1F1A]">{combo.nombre}</span></p>
                           <div className="space-y-1.5">
                             {item.nombresSugeridos.map((nombre, j) => {
                               const key = `combo-nombre-${i}-${j}`
                               const usado = iaUsados.has(key)
                               return (
                                 <div key={j} className="flex items-center justify-between gap-2">
-                                  <span className="text-sm text-[#1F2937] flex-1">{nombre}</span>
+                                  <span className="text-sm text-[#2A1F1A] flex-1">{nombre}</span>
                                   {!usado ? (
                                     <button
                                       onClick={() => iaUsarNombreCombo(item.comboId, nombre, key)}
-                                      className="text-xs text-[#6B7280] hover:text-[#1F2937] px-2 py-1 rounded-lg hover:bg-[#F7FAFC] transition-colors shrink-0"
+                                      className="text-xs text-[#7A6A5A] hover:text-[#2A1F1A] px-2 py-1 rounded-lg hover:bg-[#FBF6EC] transition-colors shrink-0"
                                     >
                                       Usar
                                     </button>
@@ -1082,7 +1082,7 @@ export default function PropuestaPage() {
               {/* Descripciones para productos */}
               {iaSugerencias.descripcionesProducto.length > 0 && (
                 <section>
-                  <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">Descripciones sugeridas</p>
+                  <p className="text-xs font-semibold text-[#7A6A5A] uppercase tracking-wider mb-3">Descripciones sugeridas</p>
                   <div className="space-y-2.5">
                     {iaSugerencias.descripcionesProducto.map((item, i) => {
                       const prod = propuesta.productos.find(p => p.id === item.productoId)
@@ -1090,13 +1090,13 @@ export default function PropuestaPage() {
                       const key = `desc-${i}`
                       const usado = iaUsados.has(key)
                       return (
-                        <div key={i} className={`border rounded-xl p-3.5 ${usado ? 'border-emerald-200 bg-emerald-50' : 'border-[#E5EAF1]'}`}>
-                          <p className="text-xs text-[#6B7280] mb-1">Para: <span className="font-medium text-[#1F2937]">{prod.nombre}</span></p>
-                          <p className="text-sm text-[#1F2937] mb-2">{item.descripcion}</p>
+                        <div key={i} className={`border rounded-xl p-3.5 ${usado ? 'border-emerald-200 bg-emerald-50' : 'border-[#E2D9CC]'}`}>
+                          <p className="text-xs text-[#7A6A5A] mb-1">Para: <span className="font-medium text-[#2A1F1A]">{prod.nombre}</span></p>
+                          <p className="text-sm text-[#2A1F1A] mb-2">{item.descripcion}</p>
                           {!usado ? (
                             <button
                               onClick={() => iaUsarDescripcion(item.productoId, item.descripcion, key)}
-                              className="text-xs text-[#6B7280] hover:text-[#1F2937] px-2 py-1 rounded-lg hover:bg-[#F7FAFC] transition-colors"
+                              className="text-xs text-[#7A6A5A] hover:text-[#2A1F1A] px-2 py-1 rounded-lg hover:bg-[#FBF6EC] transition-colors"
                             >
                               Usar esta descripción
                             </button>
@@ -1113,21 +1113,21 @@ export default function PropuestaPage() {
               {/* Ideas generales */}
               {iaSugerencias.ideasGenerales.length > 0 && (
                 <section>
-                  <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">Ideas generales</p>
+                  <p className="text-xs font-semibold text-[#7A6A5A] uppercase tracking-wider mb-3">Ideas generales</p>
                   <div className="space-y-2">
                     {iaSugerencias.ideasGenerales.map((idea, i) => {
                       const key = `idea-gen-${i}`
                       const usado = iaUsados.has(key)
                       return (
-                        <div key={i} className={`flex items-start gap-3 p-3 rounded-xl border ${usado ? 'border-emerald-200 bg-emerald-50' : 'border-[#E5EAF1]'}`}>
+                        <div key={i} className={`flex items-start gap-3 p-3 rounded-xl border ${usado ? 'border-emerald-200 bg-emerald-50' : 'border-[#E2D9CC]'}`}>
                           <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full shrink-0 mt-0.5 ${categoriaClass[idea.categoria as CategoriaIdea] || categoriaClass.OTRO}`}>
                             {categoriaLabel[idea.categoria as CategoriaIdea] || idea.categoria}
                           </span>
-                          <p className="text-sm text-[#1F2937] flex-1">{idea.texto}</p>
+                          <p className="text-sm text-[#2A1F1A] flex-1">{idea.texto}</p>
                           {!usado ? (
                             <button
                               onClick={() => iaAgregarIdea({ texto: idea.texto, categoria: (idea.categoria as CategoriaIdea) || 'OTRO' }, key)}
-                              className="text-xs text-[#6B7280] hover:text-[#1F2937] px-2 py-1 rounded-lg hover:bg-[#F7FAFC] transition-colors shrink-0"
+                              className="text-xs text-[#7A6A5A] hover:text-[#2A1F1A] px-2 py-1 rounded-lg hover:bg-[#FBF6EC] transition-colors shrink-0"
                             >
                               Agregar
                             </button>

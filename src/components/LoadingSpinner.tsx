@@ -26,11 +26,11 @@ export default function LoadingSpinner({ fullscreen = false, inline = false }: P
       <ChefHat
         size={48}
         strokeWidth={1.5}
-        color="#9CC6EA"
+        color="#B5A28A"
         className="animate-bounce"
         style={{ animationDuration: '0.75s' }}
       />
-      <p className="mt-3 text-xs text-[#6B7280] tracking-wide">Cargando...</p>
+      <p className="mt-3 text-xs text-[#7A6A5A] tracking-wide">Cargando...</p>
     </div>
   )
 }

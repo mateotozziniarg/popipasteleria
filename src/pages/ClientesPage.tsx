@@ -30,10 +30,10 @@ interface FormState {
 
 const emptyForm: FormState = { nombre: '', telefono: '', direccion: '', notas: '' }
 
-const inputClass = 'w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors'
-const labelClass = 'block text-sm font-medium text-[#1F2937] mb-1.5'
-const btnPrimary = 'bg-[#1F2937] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors flex items-center gap-2'
-const btnGhost = 'text-sm text-[#6B7280] hover:text-[#1F2937] transition-colors'
+const inputClass = 'w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm text-[#2A1F1A] placeholder-[#7A6A5A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] transition-colors'
+const labelClass = 'block text-sm font-medium text-[#2A1F1A] mb-1.5'
+const btnPrimary = 'bg-[#2A1F1A] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#1A1310] disabled:opacity-40 transition-colors flex items-center gap-2'
+const btnGhost = 'text-sm text-[#7A6A5A] hover:text-[#2A1F1A] transition-colors'
 
 export default function ClientesPage() {
   const [clientes, setClientes] = useState<Cliente[]>([])
@@ -120,10 +120,10 @@ export default function ClientesPage() {
     <div className="max-w-3xl mx-auto px-4 pt-20 pb-8">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center">
-            <Users size={16} color="#1F2937" strokeWidth={2} />
+          <div className="w-8 h-8 rounded-xl bg-[#F1E4CC] flex items-center justify-center">
+            <Users size={16} color="#2A1F1A" strokeWidth={2} />
           </div>
-          <h1 className="text-xl font-semibold text-[#1F2937]">Clientes</h1>
+          <h1 className="text-xl font-semibold text-[#2A1F1A]">Clientes</h1>
         </div>
         <button onClick={openCreate} className={btnPrimary}>
           <Plus size={14} strokeWidth={2.5} />
@@ -139,7 +139,7 @@ export default function ClientesPage() {
           titulo="Todavía no hay clientes"
           descripcion="Registrá tus clientes para asociarlos a los pedidos fácilmente."
           accion={
-            <button onClick={openCreate} className="bg-[#1F2937] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-[#374151] transition-colors">
+            <button onClick={openCreate} className="bg-[#2A1F1A] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-[#1A1310] transition-colors">
               Agregar primer cliente
             </button>
           }
@@ -147,35 +147,35 @@ export default function ClientesPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
           {clientes.map(c => (
-            <div key={c.id} className="bg-white border border-[#E5EAF1] rounded-2xl p-4 flex flex-col gap-3">
+            <div key={c.id} className="bg-white border border-[#E2D9CC] rounded-2xl p-4 flex flex-col gap-3">
               {/* Header: nombre + acciones secundarias */}
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
-                  <p className="font-semibold text-[#1F2937] truncate">{c.nombre}</p>
+                  <p className="font-semibold text-[#2A1F1A] truncate">{c.nombre}</p>
                   {c.telefono && (
-                    <p className="text-sm text-[#6B7280] mt-0.5 font-medium">{c.telefono}</p>
+                    <p className="text-sm text-[#7A6A5A] mt-0.5 font-medium">{c.telefono}</p>
                   )}
                   {c.direccion && (
-                    <span className="flex items-center gap-1 text-xs text-[#6B7280] mt-1">
+                    <span className="flex items-center gap-1 text-xs text-[#7A6A5A] mt-1">
                       <MapPin size={11} strokeWidth={2} />
                       {c.direccion}
                     </span>
                   )}
                   {c.notas && (
-                    <p className="text-xs text-[#6B7280] mt-1 italic">{c.notas}</p>
+                    <p className="text-xs text-[#7A6A5A] mt-1 italic">{c.notas}</p>
                   )}
                 </div>
                 <div className="flex gap-1 shrink-0">
                   <button
                     onClick={() => openEdit(c)}
-                    className="p-1.5 rounded-lg text-[#9CC6EA] hover:text-[#1F2937] hover:bg-[#F7FAFC] transition-colors"
+                    className="p-1.5 rounded-lg text-[#B5A28A] hover:text-[#2A1F1A] hover:bg-[#FBF6EC] transition-colors"
                     title="Editar"
                   >
                     <Pencil size={15} strokeWidth={2} />
                   </button>
                   <button
                     onClick={() => setConfirmTarget(c)}
-                    className="p-1.5 rounded-lg text-[#9CC6EA] hover:text-red-500 hover:bg-red-50 transition-colors"
+                    className="p-1.5 rounded-lg text-[#B5A28A] hover:text-red-500 hover:bg-red-50 transition-colors"
                     title="Eliminar"
                   >
                     <Trash2 size={15} strokeWidth={2} />
@@ -189,7 +189,7 @@ export default function ClientesPage() {
                   <a
                     href={`tel:${c.telefono}`}
                     onClick={e => e.stopPropagation()}
-                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#F7FAFC] border border-[#E5EAF1] text-[#1F2937] hover:bg-[#E5EAF1] transition-colors"
+                    className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#FBF6EC] border border-[#E2D9CC] text-[#2A1F1A] hover:bg-[#E2D9CC] transition-colors"
                   >
                     <Phone size={18} strokeWidth={2} />
                   </a>
@@ -234,7 +234,7 @@ export default function ClientesPage() {
             </div>
             <div>
               <label className={labelClass}>
-                Teléfono <span className="text-[#6B7280] font-normal">(opcional)</span>
+                Teléfono <span className="text-[#7A6A5A] font-normal">(opcional)</span>
               </label>
               <input
                 className={inputClass}
@@ -242,13 +242,13 @@ export default function ClientesPage() {
                 onChange={e => setForm(f => ({ ...f, telefono: e.target.value }))}
                 placeholder="11 2345-6789"
               />
-              <p className="text-xs text-[#6B7280] mt-1.5 leading-relaxed">
-                Sin el 0 ni código de país — ej: <span className="font-mono font-medium text-[#1F2937]">11 2345-6789</span> o <span className="font-mono font-medium text-[#1F2937]">351 456-7890</span>. El +54 9 se agrega solo al abrir WhatsApp.
+              <p className="text-xs text-[#7A6A5A] mt-1.5 leading-relaxed">
+                Sin el 0 ni código de país — ej: <span className="font-mono font-medium text-[#2A1F1A]">11 2345-6789</span> o <span className="font-mono font-medium text-[#2A1F1A]">351 456-7890</span>. El +54 9 se agrega solo al abrir WhatsApp.
               </p>
             </div>
             <div>
               <label className={labelClass}>
-                Dirección <span className="text-[#6B7280] font-normal">(opcional)</span>
+                Dirección <span className="text-[#7A6A5A] font-normal">(opcional)</span>
               </label>
               <input
                 className={inputClass}
@@ -259,7 +259,7 @@ export default function ClientesPage() {
             </div>
             <div>
               <label className={labelClass}>
-                Notas <span className="text-[#6B7280] font-normal">(opcional)</span>
+                Notas <span className="text-[#7A6A5A] font-normal">(opcional)</span>
               </label>
               <textarea
                 className={`${inputClass} resize-none`}

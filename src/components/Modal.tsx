@@ -22,12 +22,12 @@ export default function Modal({ title, onClose, children }: Props) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={onClose}>
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-[#E5EAF1]" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E5EAF1]">
-          <h2 className="font-semibold text-[#1F2937] text-base">{title}</h2>
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-[#E2D9CC]" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#E2D9CC]">
+          <h2 className="font-semibold text-[#2A1F1A] text-base">{title}</h2>
           <button
             onClick={onClose}
-            className="flex items-center justify-center w-7 h-7 rounded-lg text-[#6B7280] hover:text-[#1F2937] hover:bg-[#F7FAFC] transition-colors"
+            className="flex items-center justify-center w-7 h-7 rounded-lg text-[#7A6A5A] hover:text-[#2A1F1A] hover:bg-[#FBF6EC] transition-colors"
           >
             <X size={15} strokeWidth={2} />
           </button>

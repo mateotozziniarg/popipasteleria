@@ -49,7 +49,7 @@ function BuscadorMpSimple({ materias, value, onChange, onCrearNueva }: BuscadorM
   return (
     <div ref={ref} className="relative">
       <input
-        className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors"
+        className="w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm text-[#2A1F1A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] transition-colors"
         placeholder="Buscar o escribir nombre..."
         value={query}
         onChange={e => { setQuery(e.target.value); setOpen(true); if (!e.target.value) onChange(null) }}
@@ -57,23 +57,23 @@ function BuscadorMpSimple({ materias, value, onChange, onCrearNueva }: BuscadorM
       />
       {value && (
         <button type="button" onClick={() => { onChange(null); setQuery('') }}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CC6EA] hover:text-[#6B7280] text-xs">✕</button>
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B5A28A] hover:text-[#7A6A5A] text-xs">✕</button>
       )}
       {open && (filtradas.length > 0 || mostrarCrear) && (
-        <div className="absolute z-20 mt-1 w-full bg-white border border-[#E5EAF1] rounded-xl shadow-lg max-h-48 overflow-y-auto">
+        <div className="absolute z-20 mt-1 w-full bg-white border border-[#E2D9CC] rounded-xl shadow-lg max-h-48 overflow-y-auto">
           {filtradas.map(m => (
             <button key={m.id} type="button"
               onClick={() => { onChange(m); setQuery(m.nombre); setOpen(false) }}
-              className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#F7FAFC] flex justify-between items-center transition-colors"
+              className="w-full text-left px-3 py-2.5 text-sm hover:bg-[#FBF6EC] flex justify-between items-center transition-colors"
             >
-              <span className="text-[#1F2937]">{m.nombre}</span>
-              <span className="text-[#6B7280] text-xs">{formatMonto(parseFloat(m.precioDefault))}</span>
+              <span className="text-[#2A1F1A]">{m.nombre}</span>
+              <span className="text-[#7A6A5A] text-xs">{formatMonto(parseFloat(m.precioDefault))}</span>
             </button>
           ))}
           {mostrarCrear && (
             <button type="button"
               onClick={() => { onCrearNueva(query.trim()); setOpen(false) }}
-              className="w-full text-left px-3 py-2.5 text-sm text-[#9CC6EA] hover:bg-[#F7FAFC] border-t border-[#E5EAF1] flex items-center gap-1.5 transition-colors"
+              className="w-full text-left px-3 py-2.5 text-sm text-[#B5A28A] hover:bg-[#FBF6EC] border-t border-[#E2D9CC] flex items-center gap-1.5 transition-colors"
             >
               <Plus size={13} strokeWidth={2.5} /> Crear "{query.trim()}"
             </button>
@@ -97,22 +97,22 @@ function MiniCrearMp({ nombre, onConfirmar, onCancelar }: { nombre: string; onCo
   }
 
   return (
-    <div className="bg-[#F7FAFC] border border-[#CFE6F7] rounded-xl p-3 mt-1">
-      <p className="text-sm font-medium text-[#1F2937] mb-2.5">Crear "{nombre}"</p>
+    <div className="bg-[#FBF6EC] border border-[#F1E4CC] rounded-xl p-3 mt-1">
+      <p className="text-sm font-medium text-[#2A1F1A] mb-2.5">Crear "{nombre}"</p>
       <div className="flex gap-2 items-end">
         <div className="flex-1">
-          <label className="block text-xs text-[#6B7280] mb-1">Precio por defecto</label>
+          <label className="block text-xs text-[#7A6A5A] mb-1">Precio por defecto</label>
           <input type="number" min="0" step="0.01" autoFocus placeholder="0"
-            className="w-full border border-[#E5EAF1] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA]"
+            className="w-full border border-[#E2D9CC] rounded-xl px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#B5A28A]"
             value={precio} onChange={e => setPrecio(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleCrear() } }}
           />
         </div>
         <button type="button" disabled={saving || !precio} onClick={handleCrear}
-          className="bg-[#1F2937] text-white text-xs px-3 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors">
+          className="bg-[#2A1F1A] text-white text-xs px-3 py-2.5 rounded-xl hover:bg-[#1A1310] disabled:opacity-40 transition-colors">
           {saving ? '...' : 'Crear'}
         </button>
-        <button type="button" onClick={onCancelar} className="text-xs text-[#6B7280] hover:text-[#1F2937] px-2 py-2">Cancelar</button>
+        <button type="button" onClick={onCancelar} className="text-xs text-[#7A6A5A] hover:text-[#2A1F1A] px-2 py-2">Cancelar</button>
       </div>
     </div>
   )
@@ -210,28 +210,28 @@ function GastoModal({ isOpen, editTarget, materias, eventos, onClose, onSaved, o
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30" onClick={onClose}>
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md" onClick={e => e.stopPropagation()}>
-        <div className="px-5 py-4 border-b border-[#E5EAF1]">
-          <h2 className="text-base font-semibold text-[#1F2937]">{editTarget ? 'Editar gasto' : 'Nuevo gasto'}</h2>
+        <div className="px-5 py-4 border-b border-[#E2D9CC]">
+          <h2 className="text-base font-semibold text-[#2A1F1A]">{editTarget ? 'Editar gasto' : 'Nuevo gasto'}</h2>
         </div>
         <form onSubmit={handleSubmit} className="px-5 py-4 flex flex-col gap-4">
           {/* Fecha + monto */}
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Fecha *</label>
+              <label className="block text-xs font-medium text-[#7A6A5A] mb-1.5">Fecha *</label>
               <input type="date" required value={form.fecha} onChange={e => setField('fecha', e.target.value)}
-                className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA]" />
+                className="w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#B5A28A]" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Monto *</label>
+              <label className="block text-xs font-medium text-[#7A6A5A] mb-1.5">Monto *</label>
               <input type="number" min="0" step="0.01" required placeholder="0"
                 value={form.monto} onChange={e => setField('monto', e.target.value)}
-                className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA]" />
+                className="w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#B5A28A]" />
             </div>
           </div>
 
           {/* Materia prima */}
           <div>
-            <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Materia prima (opcional)</label>
+            <label className="block text-xs font-medium text-[#7A6A5A] mb-1.5">Materia prima (opcional)</label>
             {crearMpNombre ? (
               <MiniCrearMp nombre={crearMpNombre}
                 onConfirmar={mp => { onNuevaMateria(mp); setField('materiaPrima', mp); if (!form.monto) setField('monto', mp.precioDefault); setCrearMpNombre(null) }}
@@ -247,19 +247,19 @@ function GastoModal({ isOpen, editTarget, materias, eventos, onClose, onSaved, o
 
           {/* Descripción */}
           <div>
-            <label className="block text-xs font-medium text-[#6B7280] mb-1.5">
+            <label className="block text-xs font-medium text-[#7A6A5A] mb-1.5">
               Descripción {!form.materiaPrima && <span className="text-rose-500">*</span>}
             </label>
             <input type="text" placeholder={form.materiaPrima ? 'Opcional' : 'Ej: Cajas de packaging, Transporte...'}
               value={form.descripcion} onChange={e => setField('descripcion', e.target.value)}
-              className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA]" />
+              className="w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#B5A28A]" />
           </div>
 
           {/* Evento */}
           <div>
-            <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Evento (opcional)</label>
+            <label className="block text-xs font-medium text-[#7A6A5A] mb-1.5">Evento (opcional)</label>
             <select value={form.eventoId} onChange={e => setField('eventoId', e.target.value)}
-              className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] bg-white">
+              className="w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#B5A28A] bg-white">
               <option value="">Sin evento</option>
               {eventos.map(ev => (
                 <option key={ev.id} value={ev.id}>{ev.nombre}</option>
@@ -269,19 +269,19 @@ function GastoModal({ isOpen, editTarget, materias, eventos, onClose, onSaved, o
 
           {/* Notas */}
           <div>
-            <label className="block text-xs font-medium text-[#6B7280] mb-1.5">Notas (opcional)</label>
+            <label className="block text-xs font-medium text-[#7A6A5A] mb-1.5">Notas (opcional)</label>
             <input type="text" placeholder="Notas adicionales..."
               value={form.notas} onChange={e => setField('notas', e.target.value)}
-              className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#9CC6EA]" />
+              className="w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#B5A28A]" />
           </div>
 
           <div className="flex gap-3 pt-1">
             <button type="button" onClick={onClose}
-              className="flex-1 py-2.5 text-sm text-[#6B7280] border border-[#E5EAF1] rounded-xl hover:bg-[#F7FAFC] transition-colors">
+              className="flex-1 py-2.5 text-sm text-[#7A6A5A] border border-[#E2D9CC] rounded-xl hover:bg-[#FBF6EC] transition-colors">
               Cancelar
             </button>
             <button type="submit" disabled={saving}
-              className="flex-1 py-2.5 text-sm font-semibold bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors">
+              className="flex-1 py-2.5 text-sm font-semibold bg-[#2A1F1A] text-white rounded-xl hover:bg-[#1A1310] disabled:opacity-40 transition-colors">
               {saving ? 'Guardando...' : editTarget ? 'Guardar cambios' : 'Registrar gasto'}
             </button>
           </div>
@@ -337,18 +337,18 @@ export default function GastosPage() {
     <div className="max-w-4xl mx-auto px-4 pt-20 pb-8">
       {/* Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center shrink-0">
-          <Receipt size={16} color="#1F2937" strokeWidth={2} />
+        <div className="w-8 h-8 rounded-xl bg-[#F1E4CC] flex items-center justify-center shrink-0">
+          <Receipt size={16} color="#2A1F1A" strokeWidth={2} />
         </div>
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-semibold text-[#1F2937]">Gastos</h1>
+          <h1 className="text-xl font-semibold text-[#2A1F1A]">Gastos</h1>
           {!loading && gastos.length > 0 && (
-            <p className="text-xs text-[#6B7280]">{gastos.length} registros · {formatMonto(totalGastos)} total</p>
+            <p className="text-xs text-[#7A6A5A]">{gastos.length} registros · {formatMonto(totalGastos)} total</p>
           )}
         </div>
         <button
           onClick={() => { setEditTarget(null); setModalOpen(true) }}
-          className="flex items-center gap-1.5 text-xs font-medium bg-[#1F2937] text-white px-3 py-2 rounded-xl hover:bg-[#374151] transition-colors shrink-0"
+          className="flex items-center gap-1.5 text-xs font-medium bg-[#2A1F1A] text-white px-3 py-2 rounded-xl hover:bg-[#1A1310] transition-colors shrink-0"
         >
           <Plus size={13} strokeWidth={2.5} /> Nuevo gasto
         </button>
@@ -358,20 +358,20 @@ export default function GastosPage() {
         <LoadingSpinner />
       ) : gastos.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-center">
-          <Receipt size={32} className="text-[#E5EAF1] mb-4" strokeWidth={1.5} />
-          <p className="text-base font-semibold text-[#1F2937]">Sin gastos registrados</p>
-          <p className="text-sm text-[#6B7280] mt-1">Registrá tus primeros gastos para llevar el control.</p>
+          <Receipt size={32} className="text-[#E2D9CC] mb-4" strokeWidth={1.5} />
+          <p className="text-base font-semibold text-[#2A1F1A]">Sin gastos registrados</p>
+          <p className="text-sm text-[#7A6A5A] mt-1">Registrá tus primeros gastos para llevar el control.</p>
         </div>
       ) : (
-        <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden">
+        <div className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#E5EAF1] bg-[#F7FAFC]">
-                  <th className="text-left text-xs font-medium text-[#6B7280] px-4 py-3">Fecha</th>
-                  <th className="text-left text-xs font-medium text-[#6B7280] px-4 py-3">Descripción</th>
-                  <th className="text-left text-xs font-medium text-[#6B7280] px-4 py-3 hidden sm:table-cell">Evento</th>
-                  <th className="text-right text-xs font-medium text-[#6B7280] px-4 py-3">Monto</th>
+                <tr className="border-b border-[#E2D9CC] bg-[#FBF6EC]">
+                  <th className="text-left text-xs font-medium text-[#7A6A5A] px-4 py-3">Fecha</th>
+                  <th className="text-left text-xs font-medium text-[#7A6A5A] px-4 py-3">Descripción</th>
+                  <th className="text-left text-xs font-medium text-[#7A6A5A] px-4 py-3 hidden sm:table-cell">Evento</th>
+                  <th className="text-right text-xs font-medium text-[#7A6A5A] px-4 py-3">Monto</th>
                   <th className="px-4 py-3" />
                 </tr>
               </thead>
@@ -379,36 +379,36 @@ export default function GastosPage() {
                 {gastos.map(g => {
                   const label = g.materiaPrima?.nombre ?? g.descripcion ?? '—'
                   return (
-                    <tr key={g.id} className="border-b border-[#E5EAF1] last:border-0 hover:bg-[#FAFBFC] transition-colors group">
-                      <td className="px-4 py-3 text-sm text-[#6B7280] whitespace-nowrap">{formatFecha(g.fecha)}</td>
+                    <tr key={g.id} className="border-b border-[#E2D9CC] last:border-0 hover:bg-[#FAFBFC] transition-colors group">
+                      <td className="px-4 py-3 text-sm text-[#7A6A5A] whitespace-nowrap">{formatFecha(g.fecha)}</td>
                       <td className="px-4 py-3">
-                        <p className="text-sm font-medium text-[#1F2937] truncate max-w-[200px]">{label}</p>
+                        <p className="text-sm font-medium text-[#2A1F1A] truncate max-w-[200px]">{label}</p>
                         {g.notas && (
                           <div className="flex items-center gap-1 mt-0.5">
                             <StickyNote size={10} className="text-amber-400 shrink-0" />
-                            <p className="text-xs text-[#6B7280] truncate max-w-[180px]">{g.notas}</p>
+                            <p className="text-xs text-[#7A6A5A] truncate max-w-[180px]">{g.notas}</p>
                           </div>
                         )}
                       </td>
                       <td className="px-4 py-3 hidden sm:table-cell">
                         {g.evento ? (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-[#CFE6F7] text-[#1F2937] font-medium">{g.evento.nombre}</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-[#F1E4CC] text-[#2A1F1A] font-medium">{g.evento.nombre}</span>
                         ) : (
-                          <span className="text-xs px-2 py-0.5 rounded-full bg-[#F3F4F6] text-[#6B7280]">Sin evento</span>
+                          <span className="text-xs px-2 py-0.5 rounded-full bg-[#F6EFE1] text-[#7A6A5A]">Sin evento</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <span className="text-sm font-bold text-[#1F2937] whitespace-nowrap">{formatMonto(parseFloat(g.monto))}</span>
+                        <span className="text-sm font-bold text-[#2A1F1A] whitespace-nowrap">{formatMonto(parseFloat(g.monto))}</span>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-1">
                           <button onClick={() => { setEditTarget(g); setModalOpen(true) }}
-                            className="p-2 rounded-xl text-[#9CC6EA] hover:text-[#1F2937] hover:bg-[#F7FAFC] transition-colors"
+                            className="p-2 rounded-xl text-[#B5A28A] hover:text-[#2A1F1A] hover:bg-[#FBF6EC] transition-colors"
                             title="Editar">
                             <Pencil size={15} strokeWidth={2} />
                           </button>
                           <button onClick={() => setConfirmId(g.id)}
-                            className="p-2 rounded-xl text-[#9CC6EA] hover:text-red-500 hover:bg-red-50 transition-colors"
+                            className="p-2 rounded-xl text-[#B5A28A] hover:text-red-500 hover:bg-red-50 transition-colors"
                             title="Eliminar">
                             <Trash2 size={15} strokeWidth={2} />
                           </button>
@@ -420,9 +420,9 @@ export default function GastosPage() {
               </tbody>
             </table>
           </div>
-          <div className="flex items-center justify-end gap-3 px-4 py-3 border-t border-[#E5EAF1] bg-[#F7FAFC]">
-            <span className="text-xs text-[#6B7280]">Total</span>
-            <span className="text-sm font-bold text-[#1F2937]">{formatMonto(totalGastos)}</span>
+          <div className="flex items-center justify-end gap-3 px-4 py-3 border-t border-[#E2D9CC] bg-[#FBF6EC]">
+            <span className="text-xs text-[#7A6A5A]">Total</span>
+            <span className="text-sm font-bold text-[#2A1F1A]">{formatMonto(totalGastos)}</span>
           </div>
         </div>
       )}

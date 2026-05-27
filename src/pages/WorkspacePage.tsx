@@ -21,7 +21,7 @@ const etiquetaPago: Record<EstadoPago, string> = { sin_seña: 'Pendiente', seña
 
 const badgePago = (e: EstadoPago) =>
   e === 'pagado' ? 'bg-emerald-50 text-emerald-700'
-  : e === 'señado' ? 'bg-[#CFE6F7] text-[#1F2937]'
+  : e === 'señado' ? 'bg-[#F1E4CC] text-[#2A1F1A]'
   : 'bg-rose-50 text-rose-600'
 
 const badgeEntrega = (e: 'pendiente' | 'entregado') =>
@@ -162,13 +162,13 @@ function formatMontoCorto(n: number): string {
 function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { name: string; value: number; color: string }[]; label?: string }) {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-white border border-[#E5EAF1] rounded-xl shadow-lg px-3 py-2.5 text-xs">
-      <p className="font-semibold text-[#1F2937] mb-1.5">{label}</p>
+    <div className="bg-white border border-[#E2D9CC] rounded-xl shadow-lg px-3 py-2.5 text-xs">
+      <p className="font-semibold text-[#2A1F1A] mb-1.5">{label}</p>
       {payload.map(entry => (
-        <p key={entry.name} className="flex items-center gap-2 text-[#6B7280] leading-relaxed">
+        <p key={entry.name} className="flex items-center gap-2 text-[#7A6A5A] leading-relaxed">
           <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: entry.color }} />
           {entry.name}:{' '}
-          <span className="font-semibold text-[#1F2937]">{formatMonto(entry.value)}</span>
+          <span className="font-semibold text-[#2A1F1A]">{formatMonto(entry.value)}</span>
         </p>
       ))}
     </div>
@@ -371,24 +371,24 @@ export default function WorkspacePage() {
     <div className="max-w-7xl mx-auto px-4 pt-20 pb-8">
 
       {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl p-1 w-fit">
+      <div className="flex gap-1 mb-6 bg-[#FBF6EC] border border-[#E2D9CC] rounded-xl p-1 w-fit">
         <button
           onClick={() => setActiveTab('hoy')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'hoy' ? 'bg-white text-[#1F2937] shadow-sm' : 'text-[#6B7280] hover:text-[#1F2937]'}`}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'hoy' ? 'bg-white text-[#2A1F1A] shadow-sm' : 'text-[#7A6A5A] hover:text-[#2A1F1A]'}`}
         >
           <Zap size={14} strokeWidth={2} />
           Hoy
         </button>
         <button
           onClick={() => setActiveTab('finanzas')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'finanzas' ? 'bg-white text-[#1F2937] shadow-sm' : 'text-[#6B7280] hover:text-[#1F2937]'}`}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'finanzas' ? 'bg-white text-[#2A1F1A] shadow-sm' : 'text-[#7A6A5A] hover:text-[#2A1F1A]'}`}
         >
           <BarChart2 size={14} strokeWidth={2} />
           Finanzas
         </button>
         <button
           onClick={() => setActiveTab('calendario')}
-          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'calendario' ? 'bg-white text-[#1F2937] shadow-sm' : 'text-[#6B7280] hover:text-[#1F2937]'}`}
+          className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${activeTab === 'calendario' ? 'bg-white text-[#2A1F1A] shadow-sm' : 'text-[#7A6A5A] hover:text-[#2A1F1A]'}`}
         >
           <CalendarDays size={14} strokeWidth={2} />
           Calendario
@@ -400,12 +400,12 @@ export default function WorkspacePage() {
         <>
           {/* Header */}
           <div className="flex items-center gap-2.5 mb-6">
-            <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center">
-              <Zap size={16} color="#1F2937" strokeWidth={2} />
+            <div className="w-8 h-8 rounded-xl bg-[#F1E4CC] flex items-center justify-center">
+              <Zap size={16} color="#2A1F1A" strokeWidth={2} />
             </div>
             <div>
-              <h1 className="text-xl font-semibold text-[#1F2937]">Buen día</h1>
-              <p className="text-xs text-[#6B7280]">{hoyCapitalizado}</p>
+              <h1 className="text-xl font-semibold text-[#2A1F1A]">Buen día</h1>
+              <p className="text-xs text-[#7A6A5A]">{hoyCapitalizado}</p>
             </div>
             {!loading && (pendientesAmbos.length > 0 || pendientesEntregaSolo.length > 0 || pendientesCobroSolo.length > 0) && (
               <div className="ml-auto flex gap-2 flex-wrap justify-end">
@@ -415,7 +415,7 @@ export default function WorkspacePage() {
                   </span>
                 )}
                 {enviosPendientes > 0 && (
-                  <span className="text-xs bg-[#CFE6F7] text-[#1F2937] px-2.5 py-1 rounded-full font-medium">
+                  <span className="text-xs bg-[#F1E4CC] text-[#2A1F1A] px-2.5 py-1 rounded-full font-medium">
                     {enviosPendientes} {enviosPendientes === 1 ? 'envío' : 'envíos'}
                   </span>
                 )}
@@ -445,8 +445,8 @@ export default function WorkspacePage() {
           ) : allClear ? (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <div className="text-5xl mb-4">🎉</div>
-              <p className="text-lg font-semibold text-[#1F2937]">Todo al día</p>
-              <p className="text-sm text-[#6B7280] mt-1 max-w-xs">
+              <p className="text-lg font-semibold text-[#2A1F1A]">Todo al día</p>
+              <p className="text-sm text-[#7A6A5A] mt-1 max-w-xs">
                 No hay pedidos pendientes de entrega ni de cobro. ¡A seguir cocinando!
               </p>
             </div>
@@ -457,11 +457,11 @@ export default function WorkspacePage() {
               {pendientesAmbos.length > 0 && (
                 <section>
                   <div className="flex items-center gap-2 mb-3">
-                    <PackageCheck size={14} color="#9CC6EA" strokeWidth={2} />
-                    <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">
+                    <PackageCheck size={14} color="#B5A28A" strokeWidth={2} />
+                    <p className="text-xs font-semibold text-[#7A6A5A] uppercase tracking-wider">
                       Pendiente de entrega y cobro
                     </p>
-                    <span className="ml-auto text-xs text-[#6B7280]">
+                    <span className="ml-auto text-xs text-[#7A6A5A]">
                       {pendientesAmbos.length} · {formatMonto(pendientesAmbos.reduce((s, p) => s + parseFloat(p.precioTotal), 0))}
                     </span>
                   </div>
@@ -469,22 +469,22 @@ export default function WorkspacePage() {
                     {pendientesAmbos.map(p => {
                       const tel = p.telefono ?? p.cliente?.telefono ?? null
                       return (
-                        <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl p-3 flex flex-col gap-2">
+                        <div key={p.id} className="bg-white border border-[#E2D9CC] rounded-2xl p-3 flex flex-col gap-2">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-semibold text-[#1F2937] text-sm truncate">{p.nombreCliente}</p>
+                                <p className="font-semibold text-[#2A1F1A] text-sm truncate">{p.nombreCliente}</p>
                                 {p.modalidadEntrega && (
-                                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${p.modalidadEntrega === 'ENVIO' ? 'bg-[#CFE6F7] text-[#1F2937]' : 'bg-[#F3F4F6] text-[#6B7280]'}`}>
+                                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${p.modalidadEntrega === 'ENVIO' ? 'bg-[#F1E4CC] text-[#2A1F1A]' : 'bg-[#F6EFE1] text-[#7A6A5A]'}`}>
                                     {p.modalidadEntrega === 'ENVIO' ? 'Envío' : 'Retira'}
                                   </span>
                                 )}
                               </div>
-                              {p.evento && <p className="text-xs text-[#9CC6EA] font-medium truncate">{p.evento.nombre}</p>}
+                              {p.evento && <p className="text-xs text-[#B5A28A] font-medium truncate">{p.evento.nombre}</p>}
                               {p.fechaEntrega && (
                                 <div className="flex items-center gap-1.5 mt-0.5">
-                                  <Calendar size={11} className={`shrink-0 ${esPasada(p.fechaEntrega) ? 'text-red-400' : 'text-[#9CC6EA]'}`} strokeWidth={2} />
-                                  <span className={`text-xs font-medium ${esPasada(p.fechaEntrega) ? 'text-red-500' : 'text-[#6B7280]'}`}>
+                                  <Calendar size={11} className={`shrink-0 ${esPasada(p.fechaEntrega) ? 'text-red-400' : 'text-[#B5A28A]'}`} strokeWidth={2} />
+                                  <span className={`text-xs font-medium ${esPasada(p.fechaEntrega) ? 'text-red-500' : 'text-[#7A6A5A]'}`}>
                                     {formatFechaCorta(p.fechaEntrega)}
                                   </span>
                                   {esHoy(p.fechaEntrega) && (
@@ -508,14 +508,14 @@ export default function WorkspacePage() {
                           {p.productos.length > 0 ? (
                             <ul className="flex flex-col gap-0.5">
                               {p.productos.map(pp => (
-                                <li key={pp.id} className="text-xs text-[#6B7280] flex items-baseline gap-1.5">
-                                  <span className="font-semibold text-[#1F2937] shrink-0">{pp.cantidad}×</span>
+                                <li key={pp.id} className="text-xs text-[#7A6A5A] flex items-baseline gap-1.5">
+                                  <span className="font-semibold text-[#2A1F1A] shrink-0">{pp.cantidad}×</span>
                                   <span className="truncate">{pp.producto.nombre}</span>
                                 </li>
                               ))}
                             </ul>
                           ) : p.descripcion ? (
-                            <p className="text-xs text-[#6B7280] italic truncate">"{p.descripcion}"</p>
+                            <p className="text-xs text-[#7A6A5A] italic truncate">"{p.descripcion}"</p>
                           ) : null}
                           {p.notas && (
                             <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 flex gap-2 items-start">
@@ -525,33 +525,33 @@ export default function WorkspacePage() {
                           )}
 
                           <div className="flex items-center justify-between gap-2">
-                            <p className="text-xl font-bold text-[#1F2937]">{formatMonto(parseFloat(p.precioTotal))}</p>
+                            <p className="text-xl font-bold text-[#2A1F1A]">{formatMonto(parseFloat(p.precioTotal))}</p>
                             <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${badgePago(p.estadoPago)}`}>
                               {etiquetaPago[p.estadoPago]}
                             </span>
                           </div>
 
                           {p.montoSeña && p.estadoPago === 'señado' && (
-                            <p className="text-xs text-[#6B7280]">
+                            <p className="text-xs text-[#7A6A5A]">
                               Seña: {formatMonto(parseFloat(p.montoSeña))} · Resta: {formatMonto(parseFloat(p.precioTotal) - parseFloat(p.montoSeña))}
                             </p>
                           )}
 
                           {cobrandoId === p.id && (
-                            <div className="bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl p-2.5 flex flex-col gap-2.5">
-                              <p className="text-xs font-semibold text-[#1F2937]">¿Cuánto cobró?</p>
+                            <div className="bg-[#FBF6EC] border border-[#E2D9CC] rounded-xl p-2.5 flex flex-col gap-2.5">
+                              <p className="text-xs font-semibold text-[#2A1F1A]">¿Cuánto cobró?</p>
                               <input
                                 type="number" min="0" step="0.01" autoFocus
                                 placeholder="Monto..."
                                 value={cobrarMonto}
                                 onChange={e => setCobrarMonto(e.target.value)}
-                                className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
+                                className="w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm text-[#2A1F1A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] transition-colors bg-white"
                               />
                               {cobrarMonto && parseFloat(cobrarMonto) > 0 && (() => {
                                 const pagado = (p.montoSeña ? parseFloat(p.montoSeña) : 0) + parseFloat(cobrarMonto)
                                 const total = parseFloat(p.precioTotal)
                                 return (
-                                  <p className="text-xs text-[#6B7280]">
+                                  <p className="text-xs text-[#7A6A5A]">
                                     {pagado >= total
                                       ? '✓ Cubre el total — quedará pagado'
                                       : `Resta ${formatMonto(total - pagado)} tras registrar`}
@@ -560,12 +560,12 @@ export default function WorkspacePage() {
                               })()}
                               <div className="flex gap-2">
                                 <button type="button" onClick={() => { setCobrandoId(null); setCobrarMonto('') }}
-                                  className="flex-1 py-2.5 text-sm text-[#6B7280] hover:text-[#1F2937] bg-white border border-[#E5EAF1] rounded-xl hover:bg-[#F7FAFC] transition-colors">
+                                  className="flex-1 py-2.5 text-sm text-[#7A6A5A] hover:text-[#2A1F1A] bg-white border border-[#E2D9CC] rounded-xl hover:bg-[#FBF6EC] transition-colors">
                                   Cancelar
                                 </button>
                                 <button type="button" disabled={!cobrarMonto || parseFloat(cobrarMonto) <= 0}
                                   onClick={() => handleCobrar(p)}
-                                  className="flex-1 py-2.5 text-sm font-semibold bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors">
+                                  className="flex-1 py-2.5 text-sm font-semibold bg-[#2A1F1A] text-white rounded-xl hover:bg-[#1A1310] disabled:opacity-40 transition-colors">
                                   Guardar
                                 </button>
                               </div>
@@ -575,7 +575,7 @@ export default function WorkspacePage() {
                           <div className="flex flex-col gap-2 mt-auto pt-1">
                             <div className="flex gap-2">
                               <button onClick={() => setViewTarget(p)}
-                                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#F7FAFC] border border-[#E5EAF1] text-[#1F2937] rounded-xl hover:bg-[#E5EAF1] transition-colors">
+                                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#FBF6EC] border border-[#E2D9CC] text-[#2A1F1A] rounded-xl hover:bg-[#E2D9CC] transition-colors">
                                 Ver
                               </button>
                               <button onClick={() => setConfirmEntregarTarget(p)}
@@ -592,7 +592,7 @@ export default function WorkspacePage() {
                                   Cobrar
                                 </button>
                                 <button onClick={() => setConfirmPagarTarget(p)}
-                                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] transition-colors">
+                                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#2A1F1A] text-white rounded-xl hover:bg-[#1A1310] transition-colors">
                                   <CheckCircle2 size={14} strokeWidth={2} />
                                   Pagado
                                 </button>
@@ -610,11 +610,11 @@ export default function WorkspacePage() {
               {pendientesEntregaSolo.length > 0 && (
                 <section>
                   <div className="flex items-center gap-2 mb-3">
-                    <PackageCheck size={14} color="#9CC6EA" strokeWidth={2} />
-                    <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">
+                    <PackageCheck size={14} color="#B5A28A" strokeWidth={2} />
+                    <p className="text-xs font-semibold text-[#7A6A5A] uppercase tracking-wider">
                       Pendiente de entrega
                     </p>
-                    <span className="ml-auto text-xs text-[#6B7280]">
+                    <span className="ml-auto text-xs text-[#7A6A5A]">
                       {pendientesEntregaSolo.length} · {formatMonto(pendientesEntregaSolo.reduce((s, p) => s + parseFloat(p.precioTotal), 0))}
                     </span>
                   </div>
@@ -622,22 +622,22 @@ export default function WorkspacePage() {
                     {pendientesEntregaSolo.map(p => {
                       const tel = p.telefono ?? p.cliente?.telefono ?? null
                       return (
-                        <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl p-3 flex flex-col gap-2">
+                        <div key={p.id} className="bg-white border border-[#E2D9CC] rounded-2xl p-3 flex flex-col gap-2">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-semibold text-[#1F2937] text-sm truncate">{p.nombreCliente}</p>
+                                <p className="font-semibold text-[#2A1F1A] text-sm truncate">{p.nombreCliente}</p>
                                 {p.modalidadEntrega && (
-                                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${p.modalidadEntrega === 'ENVIO' ? 'bg-[#CFE6F7] text-[#1F2937]' : 'bg-[#F3F4F6] text-[#6B7280]'}`}>
+                                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${p.modalidadEntrega === 'ENVIO' ? 'bg-[#F1E4CC] text-[#2A1F1A]' : 'bg-[#F6EFE1] text-[#7A6A5A]'}`}>
                                     {p.modalidadEntrega === 'ENVIO' ? 'Envío' : 'Retira'}
                                   </span>
                                 )}
                               </div>
-                              {p.evento && <p className="text-xs text-[#9CC6EA] font-medium truncate">{p.evento.nombre}</p>}
+                              {p.evento && <p className="text-xs text-[#B5A28A] font-medium truncate">{p.evento.nombre}</p>}
                               {p.fechaEntrega && (
                                 <div className="flex items-center gap-1.5 mt-0.5">
-                                  <Calendar size={11} className={`shrink-0 ${esPasada(p.fechaEntrega) ? 'text-red-400' : 'text-[#9CC6EA]'}`} strokeWidth={2} />
-                                  <span className={`text-xs font-medium ${esPasada(p.fechaEntrega) ? 'text-red-500' : 'text-[#6B7280]'}`}>
+                                  <Calendar size={11} className={`shrink-0 ${esPasada(p.fechaEntrega) ? 'text-red-400' : 'text-[#B5A28A]'}`} strokeWidth={2} />
+                                  <span className={`text-xs font-medium ${esPasada(p.fechaEntrega) ? 'text-red-500' : 'text-[#7A6A5A]'}`}>
                                     {formatFechaCorta(p.fechaEntrega)}
                                   </span>
                                   {esHoy(p.fechaEntrega) && (
@@ -661,14 +661,14 @@ export default function WorkspacePage() {
                           {p.productos.length > 0 ? (
                             <ul className="flex flex-col gap-0.5">
                               {p.productos.map(pp => (
-                                <li key={pp.id} className="text-xs text-[#6B7280] flex items-baseline gap-1.5">
-                                  <span className="font-semibold text-[#1F2937] shrink-0">{pp.cantidad}×</span>
+                                <li key={pp.id} className="text-xs text-[#7A6A5A] flex items-baseline gap-1.5">
+                                  <span className="font-semibold text-[#2A1F1A] shrink-0">{pp.cantidad}×</span>
                                   <span className="truncate">{pp.producto.nombre}</span>
                                 </li>
                               ))}
                             </ul>
                           ) : p.descripcion ? (
-                            <p className="text-xs text-[#6B7280] italic truncate">"{p.descripcion}"</p>
+                            <p className="text-xs text-[#7A6A5A] italic truncate">"{p.descripcion}"</p>
                           ) : null}
                           {p.notas && (
                             <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 flex gap-2 items-start">
@@ -678,7 +678,7 @@ export default function WorkspacePage() {
                           )}
 
                           <div className="flex items-center justify-between gap-2">
-                            <p className="text-xl font-bold text-[#1F2937]">{formatMonto(parseFloat(p.precioTotal))}</p>
+                            <p className="text-xl font-bold text-[#2A1F1A]">{formatMonto(parseFloat(p.precioTotal))}</p>
                             <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${badgePago(p.estadoPago)}`}>
                               {etiquetaPago[p.estadoPago]}
                             </span>
@@ -686,7 +686,7 @@ export default function WorkspacePage() {
 
                           <div className="flex gap-2 mt-auto pt-1">
                             <button onClick={() => setViewTarget(p)}
-                              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#F7FAFC] border border-[#E5EAF1] text-[#1F2937] rounded-xl hover:bg-[#E5EAF1] transition-colors">
+                              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#FBF6EC] border border-[#E2D9CC] text-[#2A1F1A] rounded-xl hover:bg-[#E2D9CC] transition-colors">
                               Ver
                             </button>
                             <button onClick={() => setConfirmEntregarTarget(p)}
@@ -706,11 +706,11 @@ export default function WorkspacePage() {
               {pendientesCobroSolo.length > 0 && (
                 <section>
                   <div className="flex items-center gap-2 mb-3">
-                    <Banknote size={14} color="#9CC6EA" strokeWidth={2} />
-                    <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">
+                    <Banknote size={14} color="#B5A28A" strokeWidth={2} />
+                    <p className="text-xs font-semibold text-[#7A6A5A] uppercase tracking-wider">
                       Pendiente de cobro
                     </p>
-                    <span className="ml-auto text-xs text-[#6B7280]">
+                    <span className="ml-auto text-xs text-[#7A6A5A]">
                       {pendientesCobroSolo.length} · {formatMonto(pendientesCobroSolo.reduce((s, p) => s + parseFloat(p.precioTotal), 0))}
                     </span>
                   </div>
@@ -718,22 +718,22 @@ export default function WorkspacePage() {
                     {pendientesCobroSolo.map(p => {
                       const tel = p.telefono ?? p.cliente?.telefono ?? null
                       return (
-                        <div key={p.id} className="bg-white border border-[#E5EAF1] rounded-2xl p-3 flex flex-col gap-2">
+                        <div key={p.id} className="bg-white border border-[#E2D9CC] rounded-2xl p-3 flex flex-col gap-2">
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0 flex-1">
                               <div className="flex items-center gap-2 flex-wrap">
-                                <p className="font-semibold text-[#1F2937] text-sm truncate">{p.nombreCliente}</p>
+                                <p className="font-semibold text-[#2A1F1A] text-sm truncate">{p.nombreCliente}</p>
                                 {p.modalidadEntrega && (
-                                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${p.modalidadEntrega === 'ENVIO' ? 'bg-[#CFE6F7] text-[#1F2937]' : 'bg-[#F3F4F6] text-[#6B7280]'}`}>
+                                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${p.modalidadEntrega === 'ENVIO' ? 'bg-[#F1E4CC] text-[#2A1F1A]' : 'bg-[#F6EFE1] text-[#7A6A5A]'}`}>
                                     {p.modalidadEntrega === 'ENVIO' ? 'Envío' : 'Retira'}
                                   </span>
                                 )}
                               </div>
-                              {p.evento && <p className="text-xs text-[#9CC6EA] font-medium truncate">{p.evento.nombre}</p>}
+                              {p.evento && <p className="text-xs text-[#B5A28A] font-medium truncate">{p.evento.nombre}</p>}
                               {p.fechaEntrega && (
                                 <div className="flex items-center gap-1.5 mt-0.5">
-                                  <Calendar size={11} className={`shrink-0 ${esPasada(p.fechaEntrega) ? 'text-red-400' : 'text-[#9CC6EA]'}`} strokeWidth={2} />
-                                  <span className={`text-xs font-medium ${esPasada(p.fechaEntrega) ? 'text-red-500' : 'text-[#6B7280]'}`}>
+                                  <Calendar size={11} className={`shrink-0 ${esPasada(p.fechaEntrega) ? 'text-red-400' : 'text-[#B5A28A]'}`} strokeWidth={2} />
+                                  <span className={`text-xs font-medium ${esPasada(p.fechaEntrega) ? 'text-red-500' : 'text-[#7A6A5A]'}`}>
                                     {formatFechaCorta(p.fechaEntrega)}
                                   </span>
                                   {esHoy(p.fechaEntrega) && (
@@ -757,14 +757,14 @@ export default function WorkspacePage() {
                           {p.productos.length > 0 ? (
                             <ul className="flex flex-col gap-0.5">
                               {p.productos.map(pp => (
-                                <li key={pp.id} className="text-xs text-[#6B7280] flex items-baseline gap-1.5">
-                                  <span className="font-semibold text-[#1F2937] shrink-0">{pp.cantidad}×</span>
+                                <li key={pp.id} className="text-xs text-[#7A6A5A] flex items-baseline gap-1.5">
+                                  <span className="font-semibold text-[#2A1F1A] shrink-0">{pp.cantidad}×</span>
                                   <span className="truncate">{pp.producto.nombre}</span>
                                 </li>
                               ))}
                             </ul>
                           ) : p.descripcion ? (
-                            <p className="text-xs text-[#6B7280] italic truncate">"{p.descripcion}"</p>
+                            <p className="text-xs text-[#7A6A5A] italic truncate">"{p.descripcion}"</p>
                           ) : null}
                           {p.notas && (
                             <div className="bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5 flex gap-2 items-start">
@@ -774,33 +774,33 @@ export default function WorkspacePage() {
                           )}
 
                           <div className="flex items-center justify-between gap-2">
-                            <p className="text-xl font-bold text-[#1F2937]">{formatMonto(parseFloat(p.precioTotal))}</p>
+                            <p className="text-xl font-bold text-[#2A1F1A]">{formatMonto(parseFloat(p.precioTotal))}</p>
                             <span className={`text-xs px-2.5 py-1 rounded-full font-medium shrink-0 ${badgeEntrega(p.estadoEntrega)}`}>
                               {p.estadoEntrega === 'entregado' ? 'Entregado' : 'Sin entregar'}
                             </span>
                           </div>
 
                           {p.montoSeña && p.estadoPago === 'señado' && (
-                            <p className="text-xs text-[#6B7280]">
+                            <p className="text-xs text-[#7A6A5A]">
                               Seña: {formatMonto(parseFloat(p.montoSeña))} · Resta: {formatMonto(parseFloat(p.precioTotal) - parseFloat(p.montoSeña))}
                             </p>
                           )}
 
                           {cobrandoId === p.id && (
-                            <div className="bg-[#F7FAFC] border border-[#E5EAF1] rounded-xl p-2.5 flex flex-col gap-2.5">
-                              <p className="text-xs font-semibold text-[#1F2937]">¿Cuánto cobró?</p>
+                            <div className="bg-[#FBF6EC] border border-[#E2D9CC] rounded-xl p-2.5 flex flex-col gap-2.5">
+                              <p className="text-xs font-semibold text-[#2A1F1A]">¿Cuánto cobró?</p>
                               <input
                                 type="number" min="0" step="0.01" autoFocus
                                 placeholder="Monto..."
                                 value={cobrarMonto}
                                 onChange={e => setCobrarMonto(e.target.value)}
-                                className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
+                                className="w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm text-[#2A1F1A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] transition-colors bg-white"
                               />
                               {cobrarMonto && parseFloat(cobrarMonto) > 0 && (() => {
                                 const pagado = (p.montoSeña ? parseFloat(p.montoSeña) : 0) + parseFloat(cobrarMonto)
                                 const total = parseFloat(p.precioTotal)
                                 return (
-                                  <p className="text-xs text-[#6B7280]">
+                                  <p className="text-xs text-[#7A6A5A]">
                                     {pagado >= total
                                       ? '✓ Cubre el total — quedará pagado'
                                       : `Resta ${formatMonto(total - pagado)} tras registrar`}
@@ -809,12 +809,12 @@ export default function WorkspacePage() {
                               })()}
                               <div className="flex gap-2">
                                 <button type="button" onClick={() => { setCobrandoId(null); setCobrarMonto('') }}
-                                  className="flex-1 py-2.5 text-sm text-[#6B7280] hover:text-[#1F2937] bg-white border border-[#E5EAF1] rounded-xl hover:bg-[#F7FAFC] transition-colors">
+                                  className="flex-1 py-2.5 text-sm text-[#7A6A5A] hover:text-[#2A1F1A] bg-white border border-[#E2D9CC] rounded-xl hover:bg-[#FBF6EC] transition-colors">
                                   Cancelar
                                 </button>
                                 <button type="button" disabled={!cobrarMonto || parseFloat(cobrarMonto) <= 0}
                                   onClick={() => handleCobrar(p)}
-                                  className="flex-1 py-2.5 text-sm font-semibold bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors">
+                                  className="flex-1 py-2.5 text-sm font-semibold bg-[#2A1F1A] text-white rounded-xl hover:bg-[#1A1310] disabled:opacity-40 transition-colors">
                                   Guardar
                                 </button>
                               </div>
@@ -823,7 +823,7 @@ export default function WorkspacePage() {
 
                           <div className="flex gap-2 mt-auto pt-1">
                             <button onClick={() => setViewTarget(p)}
-                              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#F7FAFC] border border-[#E5EAF1] text-[#1F2937] rounded-xl hover:bg-[#E5EAF1] transition-colors">
+                              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#FBF6EC] border border-[#E2D9CC] text-[#2A1F1A] rounded-xl hover:bg-[#E2D9CC] transition-colors">
                               Ver
                             </button>
                             {cobrandoId !== p.id && (
@@ -835,7 +835,7 @@ export default function WorkspacePage() {
                             )}
                             {cobrandoId !== p.id && (
                               <button onClick={() => setConfirmPagarTarget(p)}
-                                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#1F2937] text-white rounded-xl hover:bg-[#374151] transition-colors">
+                                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium bg-[#2A1F1A] text-white rounded-xl hover:bg-[#1A1310] transition-colors">
                                 <CheckCircle2 size={14} strokeWidth={2} />
                                 Pagado
                               </button>
@@ -858,10 +858,10 @@ export default function WorkspacePage() {
         <>
           {/* Header */}
           <div className="flex items-center gap-2.5 mb-6">
-            <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center">
-              <BarChart2 size={16} color="#1F2937" strokeWidth={2} />
+            <div className="w-8 h-8 rounded-xl bg-[#F1E4CC] flex items-center justify-center">
+              <BarChart2 size={16} color="#2A1F1A" strokeWidth={2} />
             </div>
-            <h1 className="text-xl font-semibold text-[#1F2937]">Finanzas</h1>
+            <h1 className="text-xl font-semibold text-[#2A1F1A]">Finanzas</h1>
           </div>
 
           {/* Period selector */}
@@ -870,7 +870,7 @@ export default function WorkspacePage() {
               <button
                 key={p}
                 onClick={() => setPeriodo(p)}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${periodo === p ? 'bg-[#1F2937] text-white' : 'bg-white border border-[#E5EAF1] text-[#6B7280] hover:text-[#1F2937] hover:border-[#9CC6EA]'}`}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${periodo === p ? 'bg-[#2A1F1A] text-white' : 'bg-white border border-[#E2D9CC] text-[#7A6A5A] hover:text-[#2A1F1A] hover:border-[#B5A28A]'}`}
               >
                 {periodoLabels[p]}
               </button>
@@ -880,21 +880,21 @@ export default function WorkspacePage() {
           {periodo === 'personalizado' && (
             <div className="flex gap-3 mb-4 flex-wrap">
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-[#6B7280] font-medium">Desde</label>
+                <label className="text-xs text-[#7A6A5A] font-medium">Desde</label>
                 <input
                   type="date"
                   value={customDesde}
                   onChange={e => setCustomDesde(e.target.value)}
-                  className="border border-[#E5EAF1] rounded-xl px-3 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] bg-white"
+                  className="border border-[#E2D9CC] rounded-xl px-3 py-2 text-sm text-[#2A1F1A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] bg-white"
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-[#6B7280] font-medium">Hasta</label>
+                <label className="text-xs text-[#7A6A5A] font-medium">Hasta</label>
                 <input
                   type="date"
                   value={customHasta}
                   onChange={e => setCustomHasta(e.target.value)}
-                  className="border border-[#E5EAF1] rounded-xl px-3 py-2 text-sm text-[#1F2937] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] bg-white"
+                  className="border border-[#E2D9CC] rounded-xl px-3 py-2 text-sm text-[#2A1F1A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] bg-white"
                 />
               </div>
             </div>
@@ -922,52 +922,52 @@ export default function WorkspacePage() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
 
                   {/* Cobrado */}
-                  <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden flex flex-col">
+                  <div className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden flex flex-col">
                     <div className="h-1.5 bg-emerald-400 w-full" />
                     <div className="p-4 flex flex-col gap-1 flex-1">
-                      <p className="text-xs text-[#6B7280] font-medium">Cobrado</p>
-                      <p className="text-2xl font-bold text-[#1F2937] leading-tight">{formatMonto(resumen.totalIngresosCobrados)}</p>
+                      <p className="text-xs text-[#7A6A5A] font-medium">Cobrado</p>
+                      <p className="text-2xl font-bold text-[#2A1F1A] leading-tight">{formatMonto(resumen.totalIngresosCobrados)}</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <TrendBadge curr={resumen.totalIngresosCobrados} prev={resumen.periodoAnterior.totalIngresosCobrados} />
-                        <span className="text-xs text-[#9CC6EA]">vs anterior</span>
+                        <span className="text-xs text-[#B5A28A]">vs anterior</span>
                       </div>
                       {resumen.totalIngresosEsperados > 0 && (
                         <div className="mt-2">
-                          <div className="w-full bg-[#E5EAF1] rounded-full h-2">
+                          <div className="w-full bg-[#E2D9CC] rounded-full h-2">
                             <div className="bg-emerald-400 h-2 rounded-full transition-all" style={{ width: `${cobradoPct.toFixed(1)}%` }} />
                           </div>
-                          <p className="text-[11px] text-[#6B7280] mt-1">{cobradoPct.toFixed(0)}% del esperado</p>
+                          <p className="text-[11px] text-[#7A6A5A] mt-1">{cobradoPct.toFixed(0)}% del esperado</p>
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Esperado */}
-                  <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden flex flex-col">
-                    <div className="h-1.5 bg-[#9CC6EA] w-full" />
+                  <div className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden flex flex-col">
+                    <div className="h-1.5 bg-[#B5A28A] w-full" />
                     <div className="p-4 flex flex-col gap-1 flex-1">
-                      <p className="text-xs text-[#6B7280] font-medium">Esperado</p>
-                      <p className="text-2xl font-bold text-[#1F2937] leading-tight">{formatMonto(resumen.totalIngresosEsperados)}</p>
+                      <p className="text-xs text-[#7A6A5A] font-medium">Esperado</p>
+                      <p className="text-2xl font-bold text-[#2A1F1A] leading-tight">{formatMonto(resumen.totalIngresosEsperados)}</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <TrendBadge curr={resumen.totalIngresosEsperados} prev={resumen.periodoAnterior.totalIngresosEsperados} />
-                        <span className="text-xs text-[#9CC6EA]">vs anterior</span>
+                        <span className="text-xs text-[#B5A28A]">vs anterior</span>
                       </div>
-                      <p className="text-[11px] text-[#6B7280] mt-auto pt-2">
+                      <p className="text-[11px] text-[#7A6A5A] mt-auto pt-2">
                         {resumen.cantidadPedidos} pedido{resumen.cantidadPedidos !== 1 ? 's' : ''}
                       </p>
                     </div>
                   </div>
 
                   {/* Pendiente */}
-                  <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden flex flex-col">
+                  <div className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden flex flex-col">
                     <div className="h-1.5 bg-amber-400 w-full" />
                     <div className="p-4 flex flex-col gap-1 flex-1">
-                      <p className="text-xs text-[#6B7280] font-medium">Pendiente</p>
-                      <p className="text-2xl font-bold text-[#1F2937] leading-tight">
+                      <p className="text-xs text-[#7A6A5A] font-medium">Pendiente</p>
+                      <p className="text-2xl font-bold text-[#2A1F1A] leading-tight">
                         {formatMonto(resumen.totalIngresosEsperados - resumen.totalIngresosCobrados)}
                       </p>
                       {resumen.cantidadPedidosPendientes > 0 && (
-                        <p className="text-[11px] text-[#6B7280] mt-auto pt-2">
+                        <p className="text-[11px] text-[#7A6A5A] mt-auto pt-2">
                           {resumen.cantidadPedidosPendientes} sin cobrar
                         </p>
                       )}
@@ -975,55 +975,55 @@ export default function WorkspacePage() {
                   </div>
 
                   {/* Gastos */}
-                  <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden flex flex-col">
+                  <div className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden flex flex-col">
                     <div className="h-1.5 bg-rose-400 w-full" />
                     <div className="p-4 flex flex-col gap-1 flex-1">
-                      <p className="text-xs text-[#6B7280] font-medium">Gastos</p>
-                      <p className="text-2xl font-bold text-[#1F2937] leading-tight">{formatMonto(resumen.totalGastos)}</p>
+                      <p className="text-xs text-[#7A6A5A] font-medium">Gastos</p>
+                      <p className="text-2xl font-bold text-[#2A1F1A] leading-tight">{formatMonto(resumen.totalGastos)}</p>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <TrendBadge curr={resumen.totalGastos} prev={resumen.periodoAnterior.totalGastos} positiveIsGood={false} />
-                        <span className="text-xs text-[#9CC6EA]">vs anterior</span>
+                        <span className="text-xs text-[#B5A28A]">vs anterior</span>
                       </div>
                       {resumen.totalIngresosEsperados > 0 && (
                         <div className="mt-2">
-                          <div className="w-full bg-[#E5EAF1] rounded-full h-2">
+                          <div className="w-full bg-[#E2D9CC] rounded-full h-2">
                             <div className="bg-rose-400 h-2 rounded-full transition-all" style={{ width: `${gastosPct.toFixed(1)}%` }} />
                           </div>
-                          <p className="text-[11px] text-[#6B7280] mt-1">{gastosPct.toFixed(0)}% del esperado</p>
+                          <p className="text-[11px] text-[#7A6A5A] mt-1">{gastosPct.toFixed(0)}% del esperado</p>
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Margen neto */}
-                  <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden flex flex-col">
+                  <div className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden flex flex-col">
                     <div className={`h-1.5 w-full ${resumen.margenNeto >= 0 ? 'bg-emerald-400' : 'bg-rose-400'}`} />
                     <div className="p-4 flex flex-col gap-1 flex-1">
-                      <p className="text-xs text-[#6B7280] font-medium">Margen neto</p>
+                      <p className="text-xs text-[#7A6A5A] font-medium">Margen neto</p>
                       <p className={`text-2xl font-bold leading-tight ${resumen.margenNeto >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
                         {formatMonto(resumen.margenNeto)}
                       </p>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <TrendBadge curr={resumen.margenNeto} prev={resumen.periodoAnterior.margenNeto} />
-                        <span className="text-xs text-[#9CC6EA]">vs anterior</span>
+                        <span className="text-xs text-[#B5A28A]">vs anterior</span>
                       </div>
-                      <p className="text-[11px] text-[#6B7280] mt-auto pt-2">Cobrado − Gastos</p>
+                      <p className="text-[11px] text-[#7A6A5A] mt-auto pt-2">Cobrado − Gastos</p>
                     </div>
                   </div>
 
                   {/* Margen esperado */}
-                  <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden flex flex-col">
+                  <div className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden flex flex-col">
                     <div className={`h-1.5 w-full ${resumen.margenEsperado >= 0 ? 'bg-indigo-400' : 'bg-rose-400'}`} />
                     <div className="p-4 flex flex-col gap-1 flex-1">
-                      <p className="text-xs text-[#6B7280] font-medium">Margen esperado</p>
+                      <p className="text-xs text-[#7A6A5A] font-medium">Margen esperado</p>
                       <p className={`text-2xl font-bold leading-tight ${resumen.margenEsperado >= 0 ? 'text-indigo-600' : 'text-rose-500'}`}>
                         {formatMonto(resumen.margenEsperado)}
                       </p>
                       <div className="flex items-center gap-1.5 mt-0.5">
                         <TrendBadge curr={resumen.margenEsperado} prev={resumen.periodoAnterior.margenEsperado} />
-                        <span className="text-xs text-[#9CC6EA]">vs anterior</span>
+                        <span className="text-xs text-[#B5A28A]">vs anterior</span>
                       </div>
-                      <p className="text-[11px] text-[#6B7280] mt-auto pt-2">Esperado − Gastos</p>
+                      <p className="text-[11px] text-[#7A6A5A] mt-auto pt-2">Esperado − Gastos</p>
                     </div>
                   </div>
 
@@ -1031,34 +1031,34 @@ export default function WorkspacePage() {
 
                 {/* ── Gráfico comparativo ── */}
                 <section>
-                  <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider mb-3">
+                  <p className="text-xs font-semibold text-[#7A6A5A] uppercase tracking-wider mb-3">
                     Este período vs anterior
                   </p>
-                  <div className="bg-white border border-[#E5EAF1] rounded-2xl p-4">
+                  <div className="bg-white border border-[#E2D9CC] rounded-2xl p-4">
                     <ResponsiveContainer width="100%" height={220}>
                       <BarChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }} barGap={2} barCategoryGap="28%">
-                        <CartesianGrid strokeDasharray="3 3" stroke="#E5EAF1" vertical={false} />
+                        <CartesianGrid strokeDasharray="3 3" stroke="#E2D9CC" vertical={false} />
                         <XAxis
                           dataKey="name"
-                          tick={{ fontSize: 11, fill: '#6B7280' }}
+                          tick={{ fontSize: 11, fill: '#7A6A5A' }}
                           axisLine={false}
                           tickLine={false}
                         />
                         <YAxis
-                          tick={{ fontSize: 11, fill: '#6B7280' }}
+                          tick={{ fontSize: 11, fill: '#7A6A5A' }}
                           axisLine={false}
                           tickLine={false}
                           tickFormatter={formatMontoCorto}
                           width={60}
                         />
-                        <RechartsTooltip content={<ChartTooltip />} cursor={{ fill: '#F7FAFC' }} />
+                        <RechartsTooltip content={<ChartTooltip />} cursor={{ fill: '#FBF6EC' }} />
                         <Legend
                           iconType="circle"
                           iconSize={7}
-                          wrapperStyle={{ fontSize: 11, color: '#6B7280', paddingTop: 12 }}
+                          wrapperStyle={{ fontSize: 11, color: '#7A6A5A', paddingTop: 12 }}
                         />
-                        <Bar dataKey="actual" name="Este período" fill="#9CC6EA" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="anterior" name="Período anterior" fill="#E5EAF1" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="actual" name="Este período" fill="#B5A28A" radius={[4, 4, 0, 0]} />
+                        <Bar dataKey="anterior" name="Período anterior" fill="#E2D9CC" radius={[4, 4, 0, 0]} />
                       </BarChart>
                     </ResponsiveContainer>
                   </div>
@@ -1067,30 +1067,30 @@ export default function WorkspacePage() {
                 {/* ── Gastos recientes ── */}
                 <section>
                   <div className="flex items-center justify-between mb-3">
-                    <p className="text-xs font-semibold text-[#6B7280] uppercase tracking-wider">Gastos recientes</p>
+                    <p className="text-xs font-semibold text-[#7A6A5A] uppercase tracking-wider">Gastos recientes</p>
                     <button
                       onClick={() => navigate('/gastos')}
-                      className="text-xs text-[#9CC6EA] hover:text-[#1F2937] font-medium transition-colors"
+                      className="text-xs text-[#B5A28A] hover:text-[#2A1F1A] font-medium transition-colors"
                     >
                       Ver todos →
                     </button>
                   </div>
                   {gastosRecientes.length === 0 ? (
-                    <p className="text-sm text-[#6B7280] py-4">No hay gastos en este período.</p>
+                    <p className="text-sm text-[#7A6A5A] py-4">No hay gastos en este período.</p>
                   ) : (
-                    <div className="bg-white border border-[#E5EAF1] rounded-2xl overflow-hidden">
+                    <div className="bg-white border border-[#E2D9CC] rounded-2xl overflow-hidden">
                       {gastosRecientes.map((g, idx) => (
-                        <div key={g.id} className={`flex items-center gap-3 px-4 py-3 ${idx < gastosRecientes.length - 1 ? 'border-b border-[#E5EAF1]' : ''}`}>
+                        <div key={g.id} className={`flex items-center gap-3 px-4 py-3 ${idx < gastosRecientes.length - 1 ? 'border-b border-[#E2D9CC]' : ''}`}>
                           <div className="w-7 h-7 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">
                             <Receipt size={13} className="text-rose-400" strokeWidth={2} />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-[#1F2937] truncate">
+                            <p className="text-sm font-medium text-[#2A1F1A] truncate">
                               {g.materiaPrima?.nombre ?? g.descripcion ?? '—'}
                             </p>
-                            <p className="text-xs text-[#6B7280]">
+                            <p className="text-xs text-[#7A6A5A]">
                               {new Date(g.fecha).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })}
-                              {g.evento && <span className="ml-1.5 text-[#9CC6EA]">· {g.evento.nombre}</span>}
+                              {g.evento && <span className="ml-1.5 text-[#B5A28A]">· {g.evento.nombre}</span>}
                             </p>
                           </div>
                           <p className="text-sm font-semibold text-rose-500 shrink-0">{formatMonto(parseFloat(g.monto))}</p>
@@ -1104,7 +1104,7 @@ export default function WorkspacePage() {
             )
           })() : (
             periodo === 'personalizado' && (!customDesde || !customHasta) ? (
-              <p className="text-sm text-[#6B7280] py-4">Seleccioná un rango de fechas para ver el resumen.</p>
+              <p className="text-sm text-[#7A6A5A] py-4">Seleccioná un rango de fechas para ver el resumen.</p>
             ) : null
           )}
         </>
@@ -1121,16 +1121,16 @@ export default function WorkspacePage() {
         return (
           <>
             <div className="flex items-center gap-2.5 mb-5 flex-wrap">
-              <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center shrink-0">
-                <CalendarDays size={16} color="#1F2937" strokeWidth={2} />
+              <div className="w-8 h-8 rounded-xl bg-[#F1E4CC] flex items-center justify-center shrink-0">
+                <CalendarDays size={16} color="#2A1F1A" strokeWidth={2} />
               </div>
               <div>
-                <h1 className="text-xl font-semibold text-[#1F2937]">Esta semana</h1>
-                <p className="text-xs text-[#6B7280]">{calWeekTitle}</p>
+                <h1 className="text-xl font-semibold text-[#2A1F1A]">Esta semana</h1>
+                <p className="text-xs text-[#7A6A5A]">{calWeekTitle}</p>
               </div>
               <button
                 onClick={() => setCalTareaModal({ isOpen: true, editTarget: null, defaultFecha: todayStr })}
-                className="ml-auto flex items-center gap-1.5 text-xs font-medium bg-[#1F2937] text-white px-3 py-2 rounded-xl hover:bg-[#374151] transition-colors shrink-0"
+                className="ml-auto flex items-center gap-1.5 text-xs font-medium bg-[#2A1F1A] text-white px-3 py-2 rounded-xl hover:bg-[#1A1310] transition-colors shrink-0"
               >
                 <Plus size={13} strokeWidth={2.5} /> Nueva tarea
               </button>
@@ -1153,7 +1153,7 @@ export default function WorkspacePage() {
             <div className="flex justify-end mt-3">
               <button
                 onClick={() => navigate('/calendario')}
-                className="text-xs text-[#9CC6EA] hover:text-[#1F2937] font-medium transition-colors"
+                className="text-xs text-[#B5A28A] hover:text-[#2A1F1A] font-medium transition-colors"
               >
                 Ver calendario completo →
               </button>

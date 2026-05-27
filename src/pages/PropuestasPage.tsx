@@ -6,10 +6,10 @@ import Modal from '../components/Modal'
 import LoadingSpinner from '../components/LoadingSpinner'
 import EmptyState from '../components/EmptyState'
 
-const inputClass = 'w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] focus:border-[#9CC6EA] transition-colors'
-const labelClass = 'block text-sm font-medium text-[#1F2937] mb-1.5'
-const btnPrimary = 'bg-[#1F2937] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors flex items-center gap-2'
-const btnGhost = 'text-sm text-[#6B7280] hover:text-[#1F2937] transition-colors'
+const inputClass = 'w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm text-[#2A1F1A] placeholder-[#7A6A5A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] focus:border-[#B5A28A] transition-colors'
+const labelClass = 'block text-sm font-medium text-[#2A1F1A] mb-1.5'
+const btnPrimary = 'bg-[#2A1F1A] text-white text-sm px-4 py-2.5 rounded-xl hover:bg-[#1A1310] disabled:opacity-40 transition-colors flex items-center gap-2'
+const btnGhost = 'text-sm text-[#7A6A5A] hover:text-[#2A1F1A] transition-colors'
 
 const estadoLabel: Record<EstadoPropuesta, string> = {
   BORRADOR: 'Borrador',
@@ -18,7 +18,7 @@ const estadoLabel: Record<EstadoPropuesta, string> = {
 }
 
 const estadoClass: Record<EstadoPropuesta, string> = {
-  BORRADOR: 'bg-[#F7FAFC] text-[#6B7280] border border-[#E5EAF1]',
+  BORRADOR: 'bg-[#FBF6EC] text-[#7A6A5A] border border-[#E2D9CC]',
   PRESENTADA: 'bg-amber-50 text-amber-700 border border-amber-200',
   CONFIRMADA: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
 }
@@ -72,10 +72,10 @@ export default function PropuestasPage() {
     <div className="max-w-3xl mx-auto px-4 pt-20 pb-8">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-[#CFE6F7] flex items-center justify-center">
-            <Sparkles size={16} color="#1F2937" strokeWidth={2} />
+          <div className="w-8 h-8 rounded-xl bg-[#F1E4CC] flex items-center justify-center">
+            <Sparkles size={16} color="#2A1F1A" strokeWidth={2} />
           </div>
-          <h1 className="text-xl font-semibold text-[#1F2937]">Propuestas</h1>
+          <h1 className="text-xl font-semibold text-[#2A1F1A]">Propuestas</h1>
         </div>
         <button onClick={openCreate} className={btnPrimary}>
           <Plus size={14} strokeWidth={2.5} />
@@ -91,7 +91,7 @@ export default function PropuestasPage() {
           titulo="Todavía no hay propuestas"
           descripcion="Creá tu primera propuesta para diseñar pedidos con ayuda de IA."
           accion={
-            <button onClick={openCreate} className="bg-[#1F2937] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-[#374151] transition-colors">
+            <button onClick={openCreate} className="bg-[#2A1F1A] text-white text-sm font-medium px-5 py-2.5 rounded-xl hover:bg-[#1A1310] transition-colors">
               Crear primera propuesta
             </button>
           }
@@ -102,33 +102,33 @@ export default function PropuestasPage() {
             <div
               key={p.id}
               onClick={() => navigate(`/propuestas/${p.id}`)}
-              className="bg-white border border-[#E5EAF1] rounded-2xl px-5 py-4 cursor-pointer hover:border-[#9CC6EA] hover:shadow-sm transition-all group"
+              className="bg-white border border-[#E2D9CC] rounded-2xl px-5 py-4 cursor-pointer hover:border-[#B5A28A] hover:shadow-sm transition-all group"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-semibold text-[#1F2937] truncate">{p.nombre}</p>
+                    <p className="font-semibold text-[#2A1F1A] truncate">{p.nombre}</p>
                     <span className={`text-[11px] font-medium px-2 py-0.5 rounded-full ${estadoClass[p.estado]}`}>
                       {estadoLabel[p.estado]}
                     </span>
                   </div>
                   {p.tematica && (
-                    <p className="text-xs text-[#6B7280] mt-0.5">{p.tematica}</p>
+                    <p className="text-xs text-[#7A6A5A] mt-0.5">{p.tematica}</p>
                   )}
                   <div className="flex items-center gap-3 mt-2">
                     <div className="flex items-center gap-1">
-                      <Package size={11} color="#9CC6EA" strokeWidth={2} />
-                      <span className="text-xs text-[#6B7280]">{p._count.productos} productos</span>
+                      <Package size={11} color="#B5A28A" strokeWidth={2} />
+                      <span className="text-xs text-[#7A6A5A]">{p._count.productos} productos</span>
                     </div>
                     <div className="flex items-center gap-1">
-                      <Layers size={11} color="#9CC6EA" strokeWidth={2} />
-                      <span className="text-xs text-[#6B7280]">{p._count.combos} combos</span>
+                      <Layers size={11} color="#B5A28A" strokeWidth={2} />
+                      <span className="text-xs text-[#7A6A5A]">{p._count.combos} combos</span>
                     </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 shrink-0">
-                  <p className="text-xs text-[#6B7280]">{formatFecha(p.createdAt)}</p>
-                  <ChevronRight size={16} color="#E5EAF1" strokeWidth={2} className="group-hover:text-[#9CC6EA] transition-colors" />
+                  <p className="text-xs text-[#7A6A5A]">{formatFecha(p.createdAt)}</p>
+                  <ChevronRight size={16} color="#E2D9CC" strokeWidth={2} className="group-hover:text-[#B5A28A] transition-colors" />
                 </div>
               </div>
             </div>
@@ -151,7 +151,7 @@ export default function PropuestasPage() {
             </div>
             <div>
               <label className={labelClass}>
-                Temática <span className="text-[#6B7280] font-normal">(opcional)</span>
+                Temática <span className="text-[#7A6A5A] font-normal">(opcional)</span>
               </label>
               <input
                 className={inputClass}

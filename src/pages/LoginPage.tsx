@@ -56,34 +56,34 @@ export default function LoginPage() {
         {/* Logo */}
         <div className="flex flex-col items-center mb-6">
           <div className="w-14 h-14 rounded-2xl bg-white/80 backdrop-blur-sm flex items-center justify-center mb-3 shadow-md">
-            <ChefHat size={28} color="#1F2937" strokeWidth={1.8} />
+            <ChefHat size={28} color="#2A1F1A" strokeWidth={1.8} />
           </div>
-          <h1 className="text-xl font-bold text-[#1F2937] drop-shadow-sm">Popipastelería</h1>
-          <p className="text-sm text-[#6B7280] mt-1">Ingresá a tu cuenta</p>
+          <h1 className="text-xl font-bold text-[#2A1F1A] drop-shadow-sm">Popipastelería</h1>
+          <p className="text-sm text-[#7A6A5A] mt-1">Ingresá a tu cuenta</p>
         </div>
 
         {/* Card */}
         <div className="bg-white/90 backdrop-blur-md border border-white/60 rounded-2xl p-6 shadow-xl">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div>
-              <label className="block text-sm font-medium text-[#1F2937] mb-1.5">Usuario</label>
+              <label className="block text-sm font-medium text-[#2A1F1A] mb-1.5">Usuario</label>
               <input
                 type="text"
                 autoComplete="username"
                 autoFocus
-                className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
+                className="w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 text-sm text-[#2A1F1A] placeholder-[#7A6A5A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] transition-colors bg-white"
                 placeholder="tu_usuario"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-[#1F2937] mb-1.5">Contraseña</label>
+              <label className="block text-sm font-medium text-[#2A1F1A] mb-1.5">Contraseña</label>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password"
-                  className="w-full border border-[#E5EAF1] rounded-xl px-3 py-2.5 pr-10 text-sm text-[#1F2937] placeholder-[#6B7280] focus:outline-none focus:ring-2 focus:ring-[#9CC6EA] transition-colors bg-white"
+                  className="w-full border border-[#E2D9CC] rounded-xl px-3 py-2.5 pr-10 text-sm text-[#2A1F1A] placeholder-[#7A6A5A] focus:outline-none focus:ring-2 focus:ring-[#B5A28A] transition-colors bg-white"
                   placeholder="••••••••"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
@@ -91,7 +91,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPassword(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9CC6EA] hover:text-[#6B7280] transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#B5A28A] hover:text-[#7A6A5A] transition-colors"
                 >
                   {showPassword ? <EyeOff size={15} strokeWidth={2} /> : <Eye size={15} strokeWidth={2} />}
                 </button>
@@ -103,9 +103,9 @@ export default function LoginPage() {
                 type="checkbox"
                 checked={rememberMe}
                 onChange={e => setRememberMe(e.target.checked)}
-                className="w-4 h-4 rounded border-[#E5EAF1] text-[#1F2937] accent-[#1F2937] cursor-pointer"
+                className="w-4 h-4 rounded border-[#E2D9CC] text-[#2A1F1A] accent-[#2A1F1A] cursor-pointer"
               />
-              <span className="text-sm text-[#6B7280]">Recordarme</span>
+              <span className="text-sm text-[#7A6A5A]">Recordarme</span>
             </label>
 
             {error && (
@@ -118,7 +118,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-[#1F2937] text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-[#374151] disabled:opacity-40 transition-colors flex items-center justify-center gap-2 mt-1"
+              className="w-full bg-[#2A1F1A] text-white text-sm font-semibold py-2.5 rounded-xl hover:bg-[#1A1310] disabled:opacity-40 transition-colors flex items-center justify-center gap-2 mt-1"
             >
               {loading ? (
                 <>

@@ -2,14 +2,14 @@
 
 @theme {
   --color-ds-bg: #FBF6EC;
-  --color-ds-primary: #CFE6F7;
-  --color-ds-primary-hover: #B6D7F2;
-  --color-ds-primary-active: #9CC6EA;
+  --color-ds-primary: #F1E4CC;
+  --color-ds-primary-hover: #D4C3A8;
+  --color-ds-primary-active: #B5A28A;
   --color-ds-text: #2A1F1A;
   --color-ds-text-secondary: #7A6A5A;
   --color-ds-border: rgba(60, 38, 20, 0.10);
   --color-warm-bg: #FBF6EC;
-  --color-accent: #9CC6EA;
+  --color-accent: #B5A28A;
 
   /* Warm palette */
   --color-cream-0: #FBF6EC;
