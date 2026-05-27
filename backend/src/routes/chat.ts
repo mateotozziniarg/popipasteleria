@@ -196,7 +196,7 @@ const tools: OpenAI.Chat.ChatCompletionTool[] = [
       parameters: {
         type: 'object',
         properties: {
-          estado: { type: 'string', description: 'Filtrar por estado: BORRADOR, ENVIADA, ACEPTADA, RECHAZADA.' },
+          estado: { type: 'string', description: 'Filtrar por estado: BORRADOR, PRESENTADA, CONFIRMADA.' },
           limite: { type: 'number', description: 'Cantidad máxima de resultados (default 15).' },
         },
       },
@@ -477,15 +477,15 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
     case 'listar_materias_primas': {
       const mps = await prisma.materiaPrima.findMany({
         orderBy: { nombre: 'asc' },
-        select: { id: true, nombre: true, unidad: true, precioUnitario: true },
+        select: { id: true, nombre: true, descripcion: true, precioDefault: true },
       })
       return {
         total: mps.length,
         materiasPrimas: mps.map(m => ({
           id: m.id,
           nombre: m.nombre,
-          unidad: m.unidad,
-          precioUnitario: parseFloat(m.precioUnitario.toString()),
+          descripcion: m.descripcion,
+          precioDefault: parseFloat(m.precioDefault.toString()),
         })),
       }
     }
@@ -494,7 +494,7 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
       const where: any = {}
       if (args.eventoId) where.eventoId = args.eventoId
       if (args.fechaDesde || args.fechaHasta) {
-        where.createdAt = {
+        where.fecha = {
           ...(args.fechaDesde ? { gte: new Date(args.fechaDesde + 'T00:00:00') } : {}),
           ...(args.fechaHasta ? { lte: new Date(args.fechaHasta + 'T23:59:59') } : {}),
         }
@@ -502,10 +502,10 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
       const gastos = await prisma.gasto.findMany({
         where,
         include: {
-          materiaPrima: { select: { nombre: true, unidad: true } },
+          materiaPrima: { select: { nombre: true } },
           evento: { select: { nombre: true } },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { fecha: 'desc' },
         take: Math.max(1, Math.min(100, parseInt(String(args.limite)) || 30)),
       })
       const total = gastos.reduce((s, g) => s + parseFloat(g.monto.toString()), 0)
@@ -516,9 +516,9 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
           id: g.id,
           monto: parseFloat(g.monto.toString()),
           descripcion: g.descripcion,
-          materiaPrima: g.materiaPrima ? `${g.materiaPrima.nombre} (${g.materiaPrima.unidad})` : null,
+          materiaPrima: g.materiaPrima?.nombre ?? null,
           evento: g.evento?.nombre ?? null,
-          fecha: g.createdAt.toISOString().split('T')[0],
+          fecha: g.fecha.toISOString().split('T')[0],
         })),
       }
     }
@@ -531,7 +531,7 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
         const desde = new Date(anio, mes - 1, 1)
         const hasta = new Date(anio, mes, 0, 23, 59, 59)
         pedidoWhere = { createdAt: { gte: desde, lte: hasta } }
-        gastoWhere = { createdAt: { gte: desde, lte: hasta } }
+        gastoWhere = { fecha: { gte: desde, lte: hasta } }
       }
       const [pedidos, gastos] = await Promise.all([
         prisma.pedido.findMany({ where: pedidoWhere, select: { precioTotal: true, estadoPago: true, estadoEntrega: true, montoSeña: true } }),
@@ -564,21 +564,20 @@ async function executeTool(name: string, args: Record<string, any>): Promise<Rec
         orderBy: { createdAt: 'desc' },
         take: Math.max(1, Math.min(50, parseInt(String(args.limite)) || 15)),
         include: {
-          items: { select: { cantidad: true, precioUnitario: true, descripcion: true } },
+          productos: { select: { nombre: true, descripcion: true, precio: true } },
         },
       })
       return {
         total: propuestas.length,
         propuestas: propuestas.map(p => {
-          const total = p.items.reduce((s: number, i: { cantidad: number; precioUnitario: any }) => s + parseFloat(i.precioUnitario.toString()) * i.cantidad, 0)
+          const total = p.productos.reduce((s: number, i: { precio: any }) => s + (i.precio ? parseFloat(i.precio.toString()) : 0), 0)
           return {
             id: p.id,
-            titulo: p.titulo,
-            cliente: p.clienteNombre,
+            nombre: p.nombre,
+            tematica: p.tematica ?? null,
             estado: p.estado,
             total,
-            cantidadItems: p.items.length,
-            validezHasta: p.validezHasta ? p.validezHasta.toISOString().split('T')[0] : null,
+            cantidadProductos: p.productos.length,
             creadaEl: p.createdAt.toISOString().split('T')[0],
           }
         }),
