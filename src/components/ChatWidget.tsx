@@ -4,19 +4,24 @@ import { useLocation } from 'react-router-dom'
 import { sendChatMessage, ChatMessage } from '../api/chat'
 
 const TOOL_LABELS: Record<string, string> = {
-  listar_eventos: 'Consultando eventos...',
   listar_pedidos: 'Consultando pedidos...',
-  buscar_clientes: 'Buscando clientes...',
-  listar_productos: 'Buscando productos...',
+  actualizar_pedido: 'Actualizando pedido...',
+  listar_eventos: 'Consultando eventos...',
   obtener_evento: 'Cargando evento...',
+  buscar_clientes: 'Buscando clientes...',
+  obtener_cliente: 'Cargando cliente...',
+  listar_productos: 'Consultando catálogo...',
+  listar_materias_primas: 'Consultando insumos...',
+  listar_gastos: 'Consultando gastos...',
+  resumen_financiero: 'Calculando finanzas...',
+  listar_propuestas: 'Consultando propuestas...',
   crear_pedido: 'Creando pedido...',
-  resumen_financiero: 'Calculando totales...',
 }
 
 const SUGERENCIAS = [
-  '¿Cuántos eventos hay?',
+  '¿Qué entrego hoy?',
   '¿Cuánto falta cobrar?',
-  'Pedidos pendientes de entrega',
+  '¿Cómo va el mes?',
 ]
 
 export default function ChatWidget() {

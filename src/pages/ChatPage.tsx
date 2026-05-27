@@ -3,20 +3,27 @@ import { Send, Loader2, Sparkles, Trash2 } from 'lucide-react'
 import { sendChatMessage, ChatMessage } from '../api/chat'
 
 const TOOL_LABELS: Record<string, string> = {
-  listar_eventos: 'Consultando eventos...',
   listar_pedidos: 'Consultando pedidos...',
-  buscar_clientes: 'Buscando clientes...',
-  listar_productos: 'Buscando productos...',
+  actualizar_pedido: 'Actualizando pedido...',
+  listar_eventos: 'Consultando eventos...',
   obtener_evento: 'Cargando evento...',
+  buscar_clientes: 'Buscando clientes...',
+  obtener_cliente: 'Cargando cliente...',
+  listar_productos: 'Consultando catálogo...',
+  listar_materias_primas: 'Consultando materias primas...',
+  listar_gastos: 'Consultando gastos...',
+  resumen_financiero: 'Calculando finanzas...',
+  listar_propuestas: 'Consultando propuestas...',
   crear_pedido: 'Creando pedido...',
-  resumen_financiero: 'Calculando totales...',
 }
 
 const SUGERENCIAS = [
-  '¿Cuántos eventos hay este mes?',
-  '¿Cuánto falta cobrar en total?',
-  'Mostrame los pedidos pendientes de entrega',
-  '¿Qué productos tengo en el catálogo?',
+  '¿Qué pedidos entrego hoy?',
+  '¿Cuánto falta cobrar?',
+  '¿Cómo estuvo el mes?',
+  'Pedidos pendientes de entrega',
+  '¿Qué propuestas tengo enviadas?',
+  'Creá un pedido para Mati',
 ]
 
 export default function ChatPage() {
