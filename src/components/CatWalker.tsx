@@ -35,8 +35,10 @@ const LEGS_B_DATA: Px[][] = [
 // ── Palettes ───────────────────────────────────────────────────────
 interface Palette { O: string; D: string; W: string; K: string; P: string }
 
-const ORANGE: Palette = { O: '#FF8C00', D: '#7A3000', W: '#FFE8C0', K: '#1A0800', P: '#FF8888' }
-const GREY:   Palette = { O: '#AAAAAA', D: '#555555', W: '#FFFFFF', K: '#111111', P: '#FFB0C0' }
+const BLONDE:      Palette = { O: '#FFD966', D: '#8B5E00', W: '#FFF5CC', K: '#2A1200', P: '#FF9999' }
+const GREY:        Palette = { O: '#AAAAAA', D: '#555555', W: '#FFFFFF', K: '#111111', P: '#FFB0C0' }
+const BLACK_WHITE: Palette = { O: '#F0F0F0', D: '#1A1A1A', W: '#FFFFFF', K: '#000000', P: '#FFB0C0' }
+const LIGHT_GREY:  Palette = { O: '#CACACA', D: '#888888', W: '#F5F5F5', K: '#222222', P: '#FFC0CC' }
 
 function resolve(code: Px, pal: Palette): string | null {
   if (code === '.') return null
@@ -44,9 +46,9 @@ function resolve(code: Px, pal: Palette): string | null {
 }
 
 // ── Sprite renderer ────────────────────────────────────────────────
-const SCALE = 3
-const W_PX  = 22 * SCALE  // 66px
-const H_PX  = 14 * SCALE  // 42px
+const SCALE = 2
+const W_PX  = 22 * SCALE  // 44px
+const H_PX  = 14 * SCALE  // 28px
 
 function PixelGrid({ data, offsetY = 0, pal }: { data: Px[][]; offsetY?: number; pal: Palette }) {
   return (
@@ -92,9 +94,18 @@ const CAT_CSS = `
   0%,49%   { opacity: 0; }
   50%,100% { opacity: 1; }
 }
+@keyframes catJump {
+  0%   { transform: translateY(0) scaleX(1) scaleY(1); }
+  15%  { transform: translateY(-${SCALE * 5}px) scaleX(0.9) scaleY(1.1); }
+  40%  { transform: translateY(-${SCALE * 10}px) scaleX(0.85) scaleY(1.15); }
+  65%  { transform: translateY(-${SCALE * 3}px) scaleX(1.1) scaleY(0.9); }
+  80%  { transform: translateY(-${SCALE}px) scaleX(1.05) scaleY(0.95); }
+  100% { transform: translateY(0) scaleX(1) scaleY(1); }
+}
 .catw-bob   { animation: pixelBob 0.32s steps(1,end) infinite; }
 .catw-frm-a { animation: catFrmA  0.32s steps(1,end) infinite; }
 .catw-frm-b { animation: catFrmB  0.32s steps(1,end) infinite; }
+.catw-jumping { animation: catJump 0.55s ease-out forwards !important; }
 .catw-paused .catw-bob,
 .catw-paused .catw-frm-a,
 .catw-paused .catw-frm-b {
@@ -103,16 +114,19 @@ const CAT_CSS = `
 `
 
 // ── Individual cat with JS-controlled position ─────────────────────
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface CatProps {
   pal: Palette
-  speed: number      // px/s
-  startDelay: number // ms before first appearance
+  speed: number
+  startDelay: number
 }
 
 function Cat({ pal, speed, startDelay }: CatProps) {
-  const wrapRef = useRef<HTMLDivElement>(null)
+  const wrapRef    = useRef<HTMLDivElement>(null)
+  const bobRef     = useRef<HTMLDivElement>(null)
+  const [jumping, setJumping] = useState(false)
+  const jumpTimer  = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     const _wrap = wrapRef.current
@@ -142,9 +156,7 @@ function Cat({ pal, speed, startDelay }: CatProps) {
 
         if (x > window.innerWidth + W_PX) {
           x = -W_PX
-          if (Math.random() < 0.55) {
-            pauseMs = 900 + Math.random() * 1300
-          }
+          if (Math.random() < 0.55) pauseMs = 900 + Math.random() * 1300
           midPauseTimer = 10000 + Math.random() * 8000
         }
 
@@ -160,15 +172,25 @@ function Cat({ pal, speed, startDelay }: CatProps) {
     }
 
     rafId = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(rafId)
+    return () => {
+      cancelAnimationFrame(rafId)
+      if (jumpTimer.current) clearTimeout(jumpTimer.current)
+    }
   }, [speed, startDelay])
+
+  function handleClick() {
+    if (jumping) return
+    setJumping(true)
+    jumpTimer.current = setTimeout(() => setJumping(false), 560)
+  }
 
   return (
     <div
       ref={wrapRef}
-      style={{ position: 'absolute', bottom: 0 }}
+      style={{ position: 'absolute', bottom: 0, cursor: 'pointer', pointerEvents: 'auto' }}
+      onClick={handleClick}
     >
-      <div className="catw-bob">
+      <div ref={bobRef} className={jumping ? 'catw-jumping' : 'catw-bob'}>
         <CatSprite pal={pal} />
       </div>
     </div>
@@ -193,8 +215,10 @@ export default function CatWalker() {
         filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.2))',
         imageRendering: 'pixelated',
       } as React.CSSProperties}>
-        <Cat pal={ORANGE} speed={38} startDelay={300} />
-        <Cat pal={GREY}   speed={30} startDelay={5500} />
+        <Cat pal={BLONDE}      speed={44} startDelay={300}   />
+        <Cat pal={GREY}        speed={30} startDelay={5500}  />
+        <Cat pal={BLACK_WHITE} speed={56} startDelay={10500} />
+        <Cat pal={LIGHT_GREY}  speed={36} startDelay={16000} />
       </div>
     </>
   )
