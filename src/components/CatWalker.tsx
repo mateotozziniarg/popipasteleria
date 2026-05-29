@@ -56,7 +56,7 @@ type Palette = Record<string, string>
 
 const BLONDE: Palette = { o: '#FFD24D', d: '#8A5A12', m: '#E6A832', w: '#FFF3D0', k: '#201000', p: '#FF9A9A', h: '#F0DCA8', l: '#FFE893' }
 const GREY:   Palette = { o: '#ABABAB', d: '#4D4D4D', m: '#878787', w: '#F2F2F2', k: '#111111', p: '#FFB0C0', h: '#DCDCDC', l: '#D2D2D2' }
-const TUXEDO: Palette = { o: '#F4F4F4', d: '#1A1A1A', m: '#3A3A3A', w: '#FFFFFF', k: '#000000', p: '#FFAEC0', h: '#CFCFCF', l: '#FFFFFF' }
+const TUXEDO: Palette = { o: '#2B2B2B', d: '#0A0A0A', m: '#454545', w: '#FFFFFF', k: '#FFD24D', p: '#FFAEC0', h: '#9A9A9A', l: '#FFE893' }
 const SILVER: Palette = { o: '#CFCFCF', d: '#777777', m: '#AEAEAE', w: '#F7F7F7', k: '#222222', p: '#FFC0CC', h: '#E4E4E4', l: '#ECECEC' }
 
 // ── Sprite renderer ────────────────────────────────────────────────
