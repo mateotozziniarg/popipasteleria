@@ -109,91 +109,154 @@ const CAT_CSS = `
   82%  { transform: translateY(-${SCALE}px) scaleX(1.06) scaleY(0.95); }
   100% { transform: translateY(0) scaleX(1) scaleY(1); }
 }
+@keyframes catSit {
+  0%   { transform: scaleY(0.78) scaleX(1.05); }
+  100% { transform: scaleY(0.9) scaleX(1.02); }
+}
+@keyframes catSleep {
+  0%,100% { transform: scaleY(0.56) scaleX(1.14); }
+  50%     { transform: scaleY(0.52) scaleX(1.16); }
+}
+@keyframes catZ {
+  0%   { opacity: 0; transform: translate(0,0) scale(0.5) rotate(0deg); }
+  20%  { opacity: 0.95; }
+  100% { opacity: 0; transform: translate(10px,-18px) scale(1.1) rotate(12deg); }
+}
 .catw-bob   { animation: pixelBob 0.34s steps(1,end) infinite; transform-origin: 50% 100%; }
+.catw-sit   { animation: catSit 0.45s ease-out forwards; transform-origin: 50% 100%; }
+.catw-sleep { animation: catSleep 2.6s ease-in-out infinite; transform-origin: 50% 100%; }
 .catw-frm-a { animation: catFrmA  0.34s steps(1,end) infinite; }
 .catw-frm-b { animation: catFrmB  0.34s steps(1,end) infinite; }
 .catw-jumping { animation: catJump 0.6s ease-out forwards !important; transform-origin: 50% 100%; }
 .catw-paused .catw-bob,
 .catw-paused .catw-frm-a,
 .catw-paused .catw-frm-b { animation-play-state: paused; }
+.catw-zzz { position: absolute; top: -6px; left: 62%; pointer-events: none; }
+.catw-zzz span {
+  position: absolute; font-weight: 800; color: #8aa0b4;
+  font-family: monospace; opacity: 0;
+  animation: catZ 1.9s ease-out infinite;
+}
 `
 
-// ── Individual cat with JS-controlled position ─────────────────────
+// ── Individual cat: roams between screen edges with a small behaviour FSM ─
+type State = 'walk' | 'sit' | 'sleep' | 'jump'
+
 interface CatProps {
   pal: Palette
-  speed: number      // px/s
-  startDelay: number // ms before first appearance
+  speed: number   // base px/s
+  startFrac: number // initial horizontal position (0..1)
 }
 
-function Cat({ pal, speed, startDelay }: CatProps) {
-  const wrapRef = useRef<HTMLDivElement>(null)
-  const [jumping, setJumping] = useState(false)
-  const jumpTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+function Cat({ pal, speed, startFrac }: CatProps) {
+  const wrapRef  = useRef<HTMLDivElement>(null)
+  const faceRef  = useRef<HTMLDivElement>(null)
+  const innerRef = useRef<HTMLDivElement>(null)
+  const ctrlRef  = useRef<{ poke: () => void } | null>(null)
+  const [sleeping, setSleeping] = useState(false)
 
   useEffect(() => {
-    const _wrap = wrapRef.current
-    if (!_wrap) return
-    const wrap: HTMLDivElement = _wrap
+    const wrap = wrapRef.current, face = faceRef.current, inner = innerRef.current
+    if (!wrap || !face || !inner) return
 
-    let x = -W_PX
-    let pauseMs = startDelay
-    let midPauseTimer = 10000 + Math.random() * 8000
+    const maxX = () => Math.max(0, window.innerWidth - W_PX)
+    let dir: 1 | -1 = Math.random() < 0.5 ? 1 : -1
+    let x = startFrac * maxX()
+    let state: State = 'walk'
+    let timer = 1500 + Math.random() * 3000
+    let curSpeed = speed
     let lastTime: number | null = null
     let rafId: number
 
-    wrap.style.transform = `translateX(${-W_PX}px)`
+    const setFacing = () => { face.style.transform = `scaleX(${dir})` }
+    const setPos    = () => { wrap.style.transform = `translateX(${Math.round(x)}px)` }
+
+    function enter(s: State) {
+      state = s
+      if (s === 'walk') {
+        wrap.classList.remove('catw-paused')
+        inner.className = 'catw-bob'
+        setSleeping(false)
+        curSpeed = speed * (0.7 + Math.random() * 0.6)
+        timer = 3500 + Math.random() * 5500
+      } else if (s === 'sit') {
+        wrap.classList.add('catw-paused')
+        inner.className = 'catw-sit'
+        setSleeping(false)
+        timer = 2500 + Math.random() * 3500
+      } else if (s === 'sleep') {
+        wrap.classList.add('catw-paused')
+        inner.className = 'catw-sleep'
+        setSleeping(true)
+        timer = 6000 + Math.random() * 9000
+      } else if (s === 'jump') {
+        wrap.classList.remove('catw-paused')
+        inner.className = 'catw-jumping'
+        setSleeping(false)
+        timer = 620
+      }
+    }
+
+    function decide() {
+      const r = Math.random()
+      if (r < 0.55) { if (Math.random() < 0.35) { dir = (dir * -1) as 1 | -1; setFacing() } enter('walk') }
+      else if (r < 0.8) enter('sit')
+      else enter('sleep')
+    }
+
+    ctrlRef.current = {
+      poke() { if (state !== 'jump') enter('jump') },
+    }
+
+    setFacing()
+    setPos()
+    enter(Math.random() < 0.7 ? 'walk' : (Math.random() < 0.6 ? 'sit' : 'sleep'))
 
     function tick(now: number) {
       if (lastTime === null) lastTime = now
       const dt = Math.min(now - lastTime, 100)
       lastTime = now
+      timer -= dt
 
-      if (pauseMs > 0) {
-        pauseMs -= dt
-        wrap.classList.add('catw-paused')
-      } else {
-        wrap.classList.remove('catw-paused')
-        x += speed * dt / 1000
-        midPauseTimer -= dt
-
-        if (x > window.innerWidth + W_PX) {
-          x = -W_PX
-          if (Math.random() < 0.55) pauseMs = 900 + Math.random() * 1300
-          midPauseTimer = 10000 + Math.random() * 8000
-        }
-
-        if (midPauseTimer <= 0) {
-          pauseMs = 700 + Math.random() * 900
-          midPauseTimer = 10000 + Math.random() * 8000
-        }
-
-        wrap.style.transform = `translateX(${Math.round(x)}px)`
+      if (state === 'walk') {
+        const m = maxX()
+        x += curSpeed * dir * dt / 1000
+        if (x <= 0) { x = 0; dir = 1; setFacing() }
+        else if (x >= m) { x = m; dir = -1; setFacing() }
+        setPos()
+        if (timer <= 0) decide()
+      } else if (timer <= 0) {
+        // leaving sit / sleep / jump
+        if (state !== 'jump' && Math.random() < 0.3) { dir = (dir * -1) as 1 | -1; setFacing() }
+        enter('walk')
       }
 
       rafId = requestAnimationFrame(tick)
     }
 
     rafId = requestAnimationFrame(tick)
-    return () => {
-      cancelAnimationFrame(rafId)
-      if (jumpTimer.current) clearTimeout(jumpTimer.current)
-    }
-  }, [speed, startDelay])
-
-  function handleClick() {
-    if (jumping) return
-    setJumping(true)
-    jumpTimer.current = setTimeout(() => setJumping(false), 620)
-  }
+    const onResize = () => { const m = maxX(); if (x > m) { x = m; setPos() } }
+    window.addEventListener('resize', onResize)
+    return () => { cancelAnimationFrame(rafId); window.removeEventListener('resize', onResize) }
+  }, [speed, startFrac])
 
   return (
     <div
       ref={wrapRef}
       style={{ position: 'absolute', bottom: 0, cursor: 'pointer', pointerEvents: 'auto' }}
-      onClick={handleClick}
+      onClick={() => ctrlRef.current?.poke()}
     >
-      <div className={jumping ? 'catw-jumping' : 'catw-bob'}>
-        <CatSprite pal={pal} />
+      {sleeping && (
+        <div className="catw-zzz" aria-hidden>
+          <span style={{ fontSize: 8,  animationDelay: '0s'   }}>z</span>
+          <span style={{ fontSize: 10, animationDelay: '0.6s', left: 4 }}>z</span>
+          <span style={{ fontSize: 12, animationDelay: '1.2s', left: 9 }}>z</span>
+        </div>
+      )}
+      <div ref={faceRef}>
+        <div ref={innerRef}>
+          <CatSprite pal={pal} />
+        </div>
       </div>
     </div>
   )
@@ -217,10 +280,10 @@ export default function CatWalker() {
         filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.2))',
         imageRendering: 'pixelated',
       } as React.CSSProperties}>
-        <Cat pal={BLONDE} speed={44} startDelay={300}   />
-        <Cat pal={GREY}   speed={30} startDelay={5500}  />
-        <Cat pal={TUXEDO} speed={56} startDelay={10500} />
-        <Cat pal={SILVER} speed={36} startDelay={16000} />
+        <Cat pal={BLONDE} speed={42} startFrac={0.12} />
+        <Cat pal={GREY}   speed={28} startFrac={0.40} />
+        <Cat pal={TUXEDO} speed={52} startFrac={0.64} />
+        <Cat pal={SILVER} speed={34} startFrac={0.86} />
       </div>
     </>
   )
