@@ -156,7 +156,9 @@ function Cat({ pal, speed, startFrac }: CatProps) {
   const [sleeping, setSleeping] = useState(false)
 
   useEffect(() => {
-    const wrap = wrapRef.current, face = faceRef.current, inner = innerRef.current
+    const wrap = wrapRef.current as HTMLDivElement
+    const face = faceRef.current as HTMLDivElement
+    const inner = innerRef.current as HTMLDivElement
     if (!wrap || !face || !inner) return
 
     const maxX = () => Math.max(0, window.innerWidth - W_PX)
